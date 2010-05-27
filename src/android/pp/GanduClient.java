@@ -118,6 +118,7 @@ public class GanduClient extends Activity {
                 socket.close();
                 Log.d("ClientActivity", "C: Closed.");
             } 
+            //ZMIANA :)
             catch (Exception e) 
             {
                
