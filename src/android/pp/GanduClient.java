@@ -3,6 +3,7 @@ package android.pp;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
@@ -22,12 +23,15 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 
 
 public class GanduClient extends Activity {
 
 	String[] ip = null;
 	private Button connectPhones;
+	private EditText ggNumberEdit;
+	private EditText ggPasswordEdit;
 	private String serverIpAddress = "91.197.13.211";
 	private boolean connected = false;
 
@@ -37,6 +41,8 @@ public class GanduClient extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
+		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
+		ggPasswordEdit = (EditText) findViewById(R.id.EditText02);
 		connectPhones = (Button) findViewById(R.id.Button01);
 		connectPhones.setText("Zaloguj...");
 		connectPhones.setOnClickListener(connectListener);
@@ -118,13 +124,24 @@ public class GanduClient extends Activity {
 						// skompletowaniem
 						// paczki ktora pozniej trzeba odeslac;)
 
-						// to jakas proba wysylanie czegokolwiek do socketa
-						/*
-						 * DataOutputStream out = new
-						 * DataOutputStream(socket.getOutputStream());
-						 * out.writeByte(8); out.flush(); out.writeByte(9);
-						 * out.flush();
-						 */
+                    	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
+						int numergg = Integer.parseInt(ggNumberEdit.getText().toString());
+						String haslogg = ggPasswordEdit.getText().toString();
+                    	Logowanie logowanie = new Logowanie(ziarno, haslogg, numergg, 0x0004, (byte)0, "Moj opis");
+                    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
+                    	DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                    	//wyslanie paczki logowania 
+                    	//#define GG_LOGIN80 0x0031
+                    	//do serwera
+                    	out.write(paczkalogowania);
+                    	out.flush();
+                    	byte odpowiedzserw[] = new byte[1500];
+                    	in.read(odpowiedzserw);
+                    	//...niestety jeszcze nie dziala, serwer otrzymuje ta paczke 
+                    	//i odpowiadam pustym pakietem TCP ACK, ale nie zwraca ani pakietu bledu
+                    	//#define GG_LOGIN80_FAILED 0x0043, 
+                    	//ani akceptacji
+                    	//#define GG_LOGIN80_OK 0x0035
 					} catch (Exception e) {
 						Log.e("ClientActivity", "S: Error", e);
 						connected = false;
