@@ -46,6 +46,9 @@ import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 public class Logowanie {
 	//#define GG_LOGIN80 0x0031
 	int typKomunikatu = Integer.reverseBytes(0x0031);
@@ -83,17 +86,50 @@ public class Logowanie {
 			MessageDigest alg = MessageDigest.getInstance("SHA-1");
 			byte buf[] = new byte[4];
             ByteBuffer bb = ByteBuffer.wrap(buf);
+            //test dla porownania sktotu mojego hasla i ziarna (little-endian) 67 66 46 a9
+            ziarno = 0xa9466667;
             bb.putInt(Integer.reverseBytes(ziarno));
+            //bb.putInt(ziarno);
 			alg.update(bb.array());
-			alg.update(haslo.getBytes("UTF-8"));
+            alg.update(haslo.getBytes("UTF-8"));
+			//alg.update(haslo.getBytes("UTF-8"));
+			//alg.update(bb.array());
 			//bb.clear();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
 			/* skrot hasla */
 			dos.write(alg.digest());
+			
+			/*
+             * test HMACsha1
+             *
+			Mac mac = Mac.getInstance("HmacSHA1");
+			
+            String key = "123";
+			String data = "456";
+
+			//SecretKeySpec spec = new SecretKeySpec(key.getBytes(),"HmacSHA1");
+			SecretKeySpec spec = new SecretKeySpec(bb.array(),"HmacSHA1");
+			mac.init(spec);
+			byte[] byteHMAC = null;
+			//byteHMAC = mac.doFinal(data.getBytes());
+			byteHMAC = mac.doFinal("januszz1".getBytes("UTF-8"));
+			
+			dos.write(byteHMAC);
+			 *
+			 * koniec test HMACsha1
+			 */
 			//bb.put(alg.digest());
 			/* dopelniony \0 */
 			dos.write(0);
+			/*lacznie w skrocie hasla jest teraz 20 bajtow skrotu sha1 + jeden bajt dopelniajacy \0,
+			 * wiec trzeba dopisac kolejnych 64-(20+1)=43 bajtow z 0, poniewaz pole hash w wysylanej
+			 * paczce ma miec dlugosc 64 bajtow*/
+			dos.write(new byte[]{0,0,0,0,0,0,0,0,0,0,
+								0,0,0,0,0,0,0,0,0,0,
+								0,0,0,0,0,0,0,0,0,0,
+								0,0,0,0,0,0,0,0,0,0,
+								0,0,0});
 			//bb.put((byte)0);
 			//this.hash = bb.array();         
 			this.hash = baos.toByteArray();
