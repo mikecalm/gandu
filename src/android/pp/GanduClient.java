@@ -2,14 +2,13 @@ package android.pp;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,7 +18,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -57,7 +55,7 @@ public class GanduClient extends Activity {
 	private OnClickListener connectListener = new OnClickListener() {
 		public void onClick(View v) {
 			if (!connected && serverIpAddress != "") {
-				Thread cThread = new Thread(new ClientThread(GanduClient.this));
+				Thread cThread = new Thread(new ClientThread());
 				cThread.start();
 
 			}
@@ -65,11 +63,6 @@ public class GanduClient extends Activity {
 	};
 
 	public class ClientThread implements Runnable {
-		GanduClient gc = null;
-		public ClientThread(GanduClient gc)
-		{
-			this.gc = gc;
-		}
 		public void run() {
 			try {
 				HttpClient httpclient = new DefaultHttpClient();
@@ -124,7 +117,7 @@ public class GanduClient extends Activity {
                     	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
 						int numergg = Integer.parseInt(ggNumberEdit.getText().toString());
 						String haslogg = ggPasswordEdit.getText().toString();
-                    	Logowanie logowanie = new Logowanie(ziarno, haslogg, numergg, 0x0004, (byte)0xff, "Moj opis");
+                    	Logowanie logowanie = new Logowanie(ziarno, haslogg, numergg, 0x0004, (byte)0xff, "Gandu szal:]");
                     	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
                     	DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                     	//wyslanie paczki logowania 
@@ -138,10 +131,33 @@ public class GanduClient extends Activity {
                     	//#define GG_LOGIN80_FAILED 0x0043
                     	int typOdpSerw = Integer.reverseBytes(in.readInt());
                     	int dlugoscOdpSerw = Integer.reverseBytes(in.readInt());
-                    	int poleUnknownOdpSerw = Integer.reverseBytes(in.readInt());
+                    	int poleUnknownOdpSerw = 0;
+                    	if(dlugoscOdpSerw != 0)
+                    		poleUnknownOdpSerw = Integer.reverseBytes(in.readInt());
                     	if(typOdpSerw == 0x00000035)
                 		{
                     		Log.i("Zalogowany", "Pole unknown: "+poleUnknownOdpSerw);
+                    		ggNumberEdit.post(new Runnable() 
+                    		{
+								@Override
+								public void run() {
+									ggNumberEdit.setText("Zalogowany");
+								}
+                    		});
+                    		//wyslanie do serwera GG pakietu (o zerowej d³ugoœci) 
+                    		//z informacja ze nie mamy nikogo na liscie kontaktow
+                    		//#define GG_LIST_EMPTY 0x0012
+                    		ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                			DataOutputStream dos2 = new DataOutputStream(baos2);
+                			dos2.writeInt(Integer.reverseBytes(0x0012));
+                			dos2.writeInt(Integer.reverseBytes(0x0000));
+                    		out.write(baos2.toByteArray());
+                    		//odebranie odpowiedzi serwera
+                    		int typOdpSerw2 = Integer.reverseBytes(in.readInt());
+                        	int dlugoscOdpSerw2 = Integer.reverseBytes(in.readInt());
+                        	byte[] resztaOdp = new byte[dlugoscOdpSerw2];
+                        	if(dlugoscOdpSerw2 != 0)
+                        		in.read(resztaOdp, 0, dlugoscOdpSerw2);
                 		}
                     	else
                     	{
