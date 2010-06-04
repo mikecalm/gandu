@@ -19,15 +19,18 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 
 public class GanduClient extends Activity {
 
+	public Toast toastGandu;
 	String[] ip = null;
 	private Button connectPhones;
 	private EditText ggNumberEdit;
@@ -46,13 +49,15 @@ public class GanduClient extends Activity {
 		connectPhones = (Button) findViewById(R.id.Button01);
 		connectPhones.setText("Zaloguj...");
 		connectPhones.setOnClickListener(connectListener);
-
+		/*toastGandu = new Toast(this);
+		toastGandu.setView(this.getCurrentFocus());
+		toastGandu.makeText(this, "toastTest", 3000);*/
 	}
 
 	private OnClickListener connectListener = new OnClickListener() {
 		public void onClick(View v) {
 			if (!connected && serverIpAddress != "") {
-				Thread cThread = new Thread(new ClientThread());
+				Thread cThread = new Thread(new ClientThread(GanduClient.this));
 				cThread.start();
 
 			}
@@ -60,11 +65,16 @@ public class GanduClient extends Activity {
 	};
 
 	public class ClientThread implements Runnable {
+		GanduClient gc = null;
+		public ClientThread(GanduClient gc)
+		{
+			this.gc = gc;
+		}
 		public void run() {
 			try {
 				HttpClient httpclient = new DefaultHttpClient();
 				HttpGet httpget = new HttpGet(
-						"http://appmsg.gadu-gadu.pl/appsvc/appmsg_ver8.asp?fmnumber=6063724&lastmsg=0&version=10.1.1.11119");
+						"http://appmsg.gadu-gadu.pl/appsvc/appmsg_ver8.asp?fmnumber="+ggNumberEdit.getText().toString()+"&lastmsg=20429&version=10.0.0.10450");
 				HttpResponse response = httpclient.execute(httpget);
 				HttpEntity entity = response.getEntity();
 
@@ -79,19 +89,6 @@ public class GanduClient extends Activity {
 						ip = readline.split(" ");
 					}
 				}
-				// ------------------> Tworzenie skrótu SHA1 wraz z ziarnem otrzymanym od serwera
-				Mac mac = Mac.getInstance("HmacSHA1");
-
-				String key = "123";
-				String data = "456";
-
-				SecretKeySpec spec = new SecretKeySpec(key.getBytes(),"HmacSHA1");
-				mac.init(spec);
-				byte[] byteHMAC = null;
-				byteHMAC = mac.doFinal(data.getBytes());
-
-				String oauth = Base64.encodeBytes(byteHMAC);
-				Log.i("GANDU-TESTING", oauth);
 				Log.d("ClientActivity", "Polaczenie....");
 
 				String ipWyizolowany = ip[2].split(":")[0];
@@ -127,7 +124,7 @@ public class GanduClient extends Activity {
                     	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
 						int numergg = Integer.parseInt(ggNumberEdit.getText().toString());
 						String haslogg = ggPasswordEdit.getText().toString();
-                    	Logowanie logowanie = new Logowanie(ziarno, haslogg, numergg, 0x0004, (byte)0, "Moj opis");
+                    	Logowanie logowanie = new Logowanie(ziarno, haslogg, numergg, 0x0004, (byte)0xff, "Moj opis");
                     	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
                     	DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                     	//wyslanie paczki logowania 
@@ -135,13 +132,21 @@ public class GanduClient extends Activity {
                     	//do serwera
                     	out.write(paczkalogowania);
                     	out.flush();
-                    	byte odpowiedzserw[] = new byte[1500];
-                    	in.read(odpowiedzserw);
-                    	//...niestety jeszcze nie dziala, serwer otrzymuje ta paczke 
-                    	//i odpowiadam pustym pakietem TCP ACK, ale nie zwraca ani pakietu bledu
-                    	//#define GG_LOGIN80_FAILED 0x0043, 
-                    	//ani akceptacji
+                    	//po prawidlowym zalogowaniu sie serwer zawraca pakiet typu
                     	//#define GG_LOGIN80_OK 0x0035
+                    	//w przypadku bledy autoryzacji otrzymamy pakiet
+                    	//#define GG_LOGIN80_FAILED 0x0043
+                    	int typOdpSerw = Integer.reverseBytes(in.readInt());
+                    	int dlugoscOdpSerw = Integer.reverseBytes(in.readInt());
+                    	int poleUnknownOdpSerw = Integer.reverseBytes(in.readInt());
+                    	if(typOdpSerw == 0x00000035)
+                		{
+                    		Log.i("Zalogowany", "Pole unknown: "+poleUnknownOdpSerw);
+                		}
+                    	else
+                    	{
+                    		Log.i("Blad autoryzacji", "Typ bledu: "+typOdpSerw);
+                		}
 					} catch (Exception e) {
 						Log.e("ClientActivity", "S: Error", e);
 						connected = false;
