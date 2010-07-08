@@ -141,8 +141,8 @@ public class GanduClient extends Activity {
 
             // As part of the sample, tell the user what happened.
             //Toast.makeText(Binding.this, R.string.remote_service_connected,
-            Toast.makeText(GanduClient.this, "remote_service_connected",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(GanduClient.this, "remote_service_connected",
+            //        Toast.LENGTH_SHORT).show();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -153,8 +153,8 @@ public class GanduClient extends Activity {
 
             // As part of the sample, tell the user what happened.
             //Toast.makeText(Binding.this, R.string.remote_service_disconnected,
-            Toast.makeText(GanduClient.this, "remote_service_disconnected",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(GanduClient.this, "remote_service_disconnected",
+            //        Toast.LENGTH_SHORT).show();
         }
     };
 
