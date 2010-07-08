@@ -80,11 +80,9 @@ public class GanduClient extends Activity {
 			wysylany.putString("numerGG", ggNumberEdit.getText().toString());
 			wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
 			msg.setData(wysylany);		
-			Log.i("michalowe", "michalowe");
 			try
 			{
 				mService.send(msg);
-				Log.i("piotrkowe", "piotrkowe");
 			}catch(Exception excccc)
 			{
 				Log.e("Blad","Blad!!!!\n"+excccc.getMessage());
