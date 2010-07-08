@@ -56,7 +56,10 @@ public class GanduClient extends Activity {
 		setContentView(R.layout.main);
 
 		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
+		ggNumberEdit.setText("23543809");
+		
 		ggPasswordEdit = (EditText) findViewById(R.id.EditText02);
+		ggPasswordEdit.setText("password");
 		connectPhones = (Button) findViewById(R.id.Button01);
 		connectPhones.setText("Zaloguj...");
 		connectPhones.setOnClickListener(connectListener);
@@ -76,7 +79,8 @@ public class GanduClient extends Activity {
 			Bundle wysylany = new Bundle();
 			wysylany.putString("numerGG", ggNumberEdit.getText().toString());
 			wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
-			msg.setData(wysylany);
+			msg.setData(wysylany);		
+			Log.i("michalowe", "michalowe");
 			try
 			{
 				mService.send(msg);
