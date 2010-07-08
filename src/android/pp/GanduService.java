@@ -37,6 +37,8 @@ public class GanduService extends Service {
 	Socket socket;
 	DataInputStream in;
 	DataOutputStream out;
+	String ggnum;
+	String ggpass;
     /** For showing and hiding our notification. */
     NotificationManager mNM;
     /** Keeps track of all current registered clients. */
@@ -58,18 +60,11 @@ public class GanduService extends Service {
      * the client as previously given with MSG_REGISTER_CLIENT.
      */
     static final int MSG_UNREGISTER_CLIENT = 2;
-
-    /**
-     * Command to service to set a new value.  This can be sent to the
-     * service to supply a new value, and will be sent by the service to
-     * any registered clients with the new value.
-     */
-    static final int MSG_SET_VALUE = 3;
     
     /**
      * Command to service to login user.
     */
-   static final int MSG_LOGIN = 4;
+   static final int MSG_LOGIN = 3;
     
     
     public void wyloguj()
@@ -77,7 +72,7 @@ public class GanduService extends Service {
     	;
     }
     
-	public Boolean zaloguj(String numerGG, String hasloGG)
+    public Boolean inicjujLogowanie(String numerGG)
     {
     	try {
 			HttpClient httpclient = new DefaultHttpClient();
@@ -100,92 +95,66 @@ public class GanduService extends Service {
 			Log.d("ClientActivity", "Polaczenie....");
 
 			String ipWyizolowany = ip[2].split(":")[0];
-			int portWyizolowany = Integer.parseInt(ip[2].split(":")[1]);
+			//int portWyizolowany = Integer.parseInt(ip[2].split(":")[1]);
+			int portWyizolowany = 443;
 			socket = new Socket(ipWyizolowany, portWyizolowany);
+			in = new DataInputStream(socket.getInputStream());
+			out = new DataOutputStream(socket.getOutputStream());
 			//Socket socket = new Socket(ipWyizolowany, portWyizolowany);
 			//Socket socket = new Socket(ipWyizolowany, 443);
-			
 			connected = true;
-			try {
-				//DataInputStream in = new DataInputStream(socket.getInputStream());
-				in = new DataInputStream(socket.getInputStream());
-				int typKom = Integer.reverseBytes(in.readInt());
-				int dlugoscDanych = Integer.reverseBytes(in.readInt());
-				int ziarno = Integer.reverseBytes(in.readInt());
-				Log.i("GANDU-TESTING typ komunikatu: ", "" + typKom);
-				Log.i("GANDU-TESTING dlugosc danych: ", ""
-						+ dlugoscDanych);
-				Log.i("GANDU-TESTING ziarno: ", "" + ziarno);
-				/*
-				 * po podsluchaniu wiresharkiem i wychwyceniu paczki z
-				 * ziarnem
-				 * i przeliczeniu go z systemu szesnastkowego na
-				 * dziesietny
-				 * wartosc ziarna zgadza sie z ta uzyskana w zmiennej
-				 * int ziarno
-				 * wiec jest dobrze, teraz mozna dalej kombinowac ze
-				 * skompletowaniem
-				 * paczki ktora pozniej trzeba odeslac;)
-				*/
-
-            	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
-				int numergg = Integer.parseInt(numerGG);
-            	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, 0x0004, (byte)0xff, "Gandu sza³:]");
-            	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
-            	//DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            	out = new DataOutputStream(socket.getOutputStream());
-            	//wyslanie paczki logowania 
-            	//#define GG_LOGIN80 0x0031
-            	//do serwera
-            	out.write(paczkalogowania);
-            	out.flush();
-            	//po prawidlowym zalogowaniu sie serwer zawraca pakiet typu
-            	//#define GG_LOGIN80_OK 0x0035
-            	//w przypadku bledy autoryzacji otrzymamy pakiet
-            	//#define GG_LOGIN80_FAILED 0x0043
-            	int typOdpSerw = Integer.reverseBytes(in.readInt());
-            	int dlugoscOdpSerw = Integer.reverseBytes(in.readInt());
-            	int poleUnknownOdpSerw = 0;
-            	if(dlugoscOdpSerw != 0)
-            		poleUnknownOdpSerw = Integer.reverseBytes(in.readInt());
-            	if(typOdpSerw == 0x00000035)
-        		{
-            		Log.i("Zalogowany", "Pole unknown: "+poleUnknownOdpSerw);
-            		Toast.makeText(GanduService.this, "Zalogowany", Toast.LENGTH_LONG).show();
-            		//wyslanie do serwera GG pakietu (o zerowej d³ugoœci) 
-            		//z informacja ze nie mamy nikogo na liscie kontaktow
-            		//#define GG_LIST_EMPTY 0x0012
-            		ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-        			DataOutputStream dos2 = new DataOutputStream(baos2);
-        			dos2.writeInt(Integer.reverseBytes(0x0012));
-        			dos2.writeInt(Integer.reverseBytes(0x0000));
-            		out.write(baos2.toByteArray());
-            		//odebranie odpowiedzi serwera
-            		int typOdpSerw2 = Integer.reverseBytes(in.readInt());
-                	int dlugoscOdpSerw2 = Integer.reverseBytes(in.readInt());
-                	byte[] resztaOdp = new byte[dlugoscOdpSerw2];
-                	if(dlugoscOdpSerw2 != 0)
-                		in.read(resztaOdp, 0, dlugoscOdpSerw2);
-        		}
-            	else
-            	{
-            		Log.i("Blad autoryzacji", "Typ bledu: "+typOdpSerw);
-        		}
-			} catch (Exception e) {
-				Log.e("ClientActivity", "S: Error", e);
-				connected = false;
-			}
-			//socket.close();
-		} catch (Exception e) {
-			;
-		}
-		finally{
-			if(connected)
-				//jesli udalo sie polaczyc z serwerem funkcja zwraca true
-				return true;
-			//w przypadku nieudanej proby zalogowania funkcja zwraca false
-			return false;
-		}
+			//uruchom watek odbierajacy komunikaty z serwera GG
+			Thread cThread = new Thread(new ReplyInterpreter());
+			cThread.start();
+    	}
+    	catch(Exception excinit)
+    	{
+    		return false;
+    	}
+    	return true;
+    }
+    
+    public Boolean wyslijPaczkeLogowania(String numerGG, String hasloGG, int ziarno)
+    {
+    	try
+    	{
+	    	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
+			int numergg = Integer.parseInt(numerGG);
+	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, 0x0004, (byte)0xff, "Gandu sza³:]");
+	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
+	    	//DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+	    	//out = new DataOutputStream(socket.getOutputStream());
+	    	//wyslanie paczki logowania 
+	    	//#define GG_LOGIN80 0x0031
+	    	//do serwera
+	    	out.write(paczkalogowania);
+	    	out.flush();
+			Toast.makeText(GanduService.this, "Zalogowany", Toast.LENGTH_LONG).show();
+    	}catch(Exception exclog2)
+    	{
+    		return false;
+    	}
+    	return true;
+    }
+    
+    public Boolean wyslijWiadomoscOPustejLiscieKontaktow()
+    {
+    	try
+    	{
+			//wyslanie do serwera GG pakietu (o zerowej d³ugoœci) 
+			//z informacja ze nie mamy nikogo na liscie kontaktow
+			//#define GG_LIST_EMPTY 0x0012
+			ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+			DataOutputStream dos2 = new DataOutputStream(baos2);
+			dos2.writeInt(Integer.reverseBytes(0x0012));
+			dos2.writeInt(Integer.reverseBytes(0x0000));
+			out.write(baos2.toByteArray());
+    	}
+    	catch(Exception excpustl)
+    	{
+    		return false;
+    	}
+    	return true;
     }
 
     /**
@@ -201,46 +170,13 @@ public class GanduService extends Service {
                 case MSG_UNREGISTER_CLIENT:
                     mClients.remove(msg.replyTo);
                     break;
-                case MSG_SET_VALUE:
-                    mValue = msg.arg1;
-                    if(msg.arg1==0)
-                    {
-                    	Bundle odebrany = msg.getData();
-                    	Log.i("S_odebrane: ",odebrany.getString("widomoscString"));
-                    	Log.i("S_odebrane: ",""+odebrany.getInt("widomoscInt"));
-                    	for (int i=mClients.size()-1; i>=0; i--) {
-	                        try {
-	                            mClients.get(i).send(Message.obtain(null,
-	                                    MSG_SET_VALUE, mValue, 0));
-	                        } catch (RemoteException e) {
-	                            // The client is dead.  Remove it from the list;
-	                            // we are going through the list from back to front
-	                            // so this is safe to do inside the loop.
-	                            mClients.remove(i);
-	                        }
-	                    }
-                    }
-                    else
-                    {
-	                    for (int i=mClients.size()-1; i>=0; i--) {
-	                        try {
-	                            mClients.get(i).send(Message.obtain(null,
-	                                    MSG_SET_VALUE, mValue, 0));
-	                        } catch (RemoteException e) {
-	                            // The client is dead.  Remove it from the list;
-	                            // we are going through the list from back to front
-	                            // so this is safe to do inside the loop.
-	                            mClients.remove(i);
-	                        }
-	                    }
-                    }
-                    break;
                 case MSG_LOGIN:
                 	Bundle odebrany = msg.getData();
-                	String ggnum = odebrany.getString("numerGG");
-                	String ggpass = odebrany.getString("hasloGG");
+                	ggnum = odebrany.getString("numerGG");
+                	ggpass = odebrany.getString("hasloGG");
                 	//jesli logowanie powiedzie sie
-                	if(zaloguj(ggnum, ggpass))
+                	//if(zaloguj(ggnum, ggpass))
+                	if(inicjujLogowanie(ggnum))
                 	{
                 		showNotification("Zalogowany "+ggnum);
                 		//Toast.makeText(GanduService.this, "Zalogowany!!", Toast.LENGTH_LONG).show();
@@ -320,5 +256,53 @@ public class GanduService extends Service {
         // We use a string id because it is a unique number.  We use it later to cancel.
         //mNM.notify(R.string.remote_service_started, notification);
         mNM.notify(111, notification);
+    }
+    
+    //watek odbierajacy wiadomosci od serwera GG
+    public class ReplyInterpreter implements Runnable {
+		public void run() {
+			Log.i("WSZEDLEM DO WATKU!!!!!", "WSZEDLEM DO WATKU!!!!!");
+			while(connected)
+			{
+				try
+				{
+					int typWiadomosci = Integer.reverseBytes(in.readInt());
+					switch(typWiadomosci){
+					case 0x0001:
+						Log.i("Odebrane: ", ""+typWiadomosci);
+						int dlugoscDanych = Integer.reverseBytes(in.readInt());
+						int ziarno = Integer.reverseBytes(in.readInt());
+						wyslijPaczkeLogowania(ggnum, ggpass, ziarno);
+						break;
+					case 0x0035:
+						Log.i("Odebrane: ", ""+typWiadomosci);
+						wyslijWiadomoscOPustejLiscieKontaktow();
+						break;
+					case 0x0009:
+						Log.i("Odebrane: ", ""+typWiadomosci);
+						connected = false;
+						break;
+					case 0x002e:
+						Log.i("Odebrane: ", ""+typWiadomosci);
+						break;
+					default:
+							Log.i("Odebrane default: ", ""+typWiadomosci);
+							int dlugoscBadziewia = Integer.reverseBytes(in.readInt());
+							byte[] smieci = new byte[2048];
+							//in.read(smieci, 0, dlugoscBadziewia);
+							in.read(smieci, 0, dlugoscBadziewia);
+							Log.i("Odczytalem smieci typu: ", ""+typWiadomosci);
+							Log.i("Odczytalem smieci o dlugosci: ", ""+dlugoscBadziewia);
+					}
+				}
+				catch(Exception excThread)
+				{
+					Log.i("WYPIEPRZYLEM SIE!!", ""+excThread.getMessage());
+					connected = false;
+				}
+			}
+			Log.i("WYSZEDLEM Z WATKU!!!!!", "WYSZEDLEM Z WATKU!!!!!");
+			Log.i("wartosc connected = ", ""+connected);
+		}
     }
 }
