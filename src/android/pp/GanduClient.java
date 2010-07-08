@@ -84,6 +84,7 @@ public class GanduClient extends Activity {
 			try
 			{
 				mService.send(msg);
+				Log.i("piotrkowe", "piotrkowe");
 			}catch(Exception excccc)
 			{
 				Log.e("Blad","Blad!!!!\n"+excccc.getMessage());
