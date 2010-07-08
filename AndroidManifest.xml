@@ -5,13 +5,11 @@
       android:versionName="1.0">
     <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon">
 
-	<activity android:name=".GanduTest" android:label="@string/app_name">
+	<activity android:name=".GanduClient" android:label="@string/app_name">
 		<intent-filter>
 			<action android:name="android.intent.action.MAIN"></action>
 			<category android:name="android.intent.category.LAUNCHER"></category>
 		</intent-filter>	
-	</activity>
-	<activity android:name=".GanduClient">
 	</activity>
 
     

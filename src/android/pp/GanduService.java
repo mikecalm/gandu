@@ -129,7 +129,7 @@ public class GanduService extends Service {
 	    	//do serwera
 	    	out.write(paczkalogowania);
 	    	out.flush();
-			Toast.makeText(GanduService.this, "Zalogowany", Toast.LENGTH_LONG).show();
+			Toast.makeText(GanduService.this, "Zalogowany", Toast.LENGTH_SHORT).show();
     	}catch(Exception exclog2)
     	{
     		return false;
@@ -195,7 +195,7 @@ public class GanduService extends Service {
 
     @Override
     public void onCreate() {
-    	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_LONG).show();
+    	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
     	
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
