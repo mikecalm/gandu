@@ -1,22 +1,6 @@
 package android.pp;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.Socket;
-
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import android.app.Activity;
+import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,68 +11,28 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.pp.GanduClient.IncomingHandler;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 
+public class ContactBook extends ListActivity{
 
-public class GanduClient extends Activity {
-
-	//
-	static final int MSG_POSTLOGIN = 1;
+	boolean mIsBound;
 	/** Messenger for communicating with service. */
     Messenger mService = null;
-    /** Flag indicating whether we have called bind on the service. */
-    boolean mIsBound;
-	public Toast toastGandu;
-	String[] ip = null;
-	private Button connectPhones;
-	private EditText ggNumberEdit;
-	private EditText ggPasswordEdit;
-	private boolean connected = false;
-
-	// ------------------> OnCreate()
+    static final int REGISTERED = 10;
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
-
-		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
-		ggNumberEdit.setText("23543809");
+		setContentView(R.layout.contactbook);
 		
-		ggPasswordEdit = (EditText) findViewById(R.id.EditText02);
-		ggPasswordEdit.setText("password");
-		connectPhones = (Button) findViewById(R.id.Button01);
-		connectPhones.setText("Zaloguj...");
-		connectPhones.setOnClickListener(connectListener);
-			
 		//uruchomienie serwisu Gandu
-		startService(new Intent("android.pp.GanduS"));
+		//startService(new Intent("android.pp.GanduS"));
 		//zbindowanie aktywnosci do serwisu
 		doBindService();
+		
 	}
-
-	private OnClickListener connectListener = new OnClickListener() {
-		public void onClick(View v) {
-			Message msg = Message.obtain(null,GanduService.MSG_LOGIN, 0, 0);
-			Bundle wysylany = new Bundle();
-			wysylany.putString("numerGG", ggNumberEdit.getText().toString());
-			wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
-			msg.setData(wysylany);
-			
-			try
-			{
-				mService.send(msg);
-				
-			}catch(Exception excccc)
-			{
-				Log.e("Blad","Blad!!!!\n"+excccc.getMessage());
-			}
-		}
-	};
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
@@ -99,30 +43,26 @@ public class GanduClient extends Activity {
         public void handleMessage(Message msg) {
         	Log.i("ganduClient","Odebra³em"+msg.what);
             switch (msg.what) {
-                case GanduClient.MSG_POSTLOGIN:
-                	Log.i("ganduClient","Odebra³em"+msg.what);
-                	//Toast.makeText(getApplicationContext(), "ta dam", Toast.LENGTH_LONG);
-                	//Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-                	Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-                	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                	try
-                	{
-                		startActivity(intent);
-                	}catch(Exception  e)
-                	{
-                		Log.e("KLIENT",""+e.getMessage());
-                	}
-                	break;
                 case ContactBook.REGISTERED:
-                	Log.i("GanduClient","zarejestrowany przez serwis.");
+                	Log.i("ContactBook","Odebra³em"+msg.what);
+                	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
+            		Message msg2 = Message.obtain(null,GanduService.MSG_GET_CONTACTBOOK, 0, 0);
+            		try
+            		{
+            			mService.send(msg2);
+            		}catch(Exception excMsg)
+            		{
+            			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
+            		}
                 	break;
+                
                 default:
                     super.handleMessage(msg);
             }
         }
     }
 
-    /**
+	/**
      * Target we publish for clients to send messages to IncomingHandler.
      */
     final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -173,13 +113,14 @@ public class GanduClient extends Activity {
             //        Toast.LENGTH_SHORT).show();
         }
     };
-
+    
     void doBindService() {
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        bindService(new Intent(GanduClient.this, 
+        bindService(new Intent(ContactBook.this, 
                 GanduService.class), mConnection, Context.BIND_AUTO_CREATE);
+        		//GanduService.class), mConnection, Context.);
         
         mIsBound = true;
         //mCallbackText.setText("Binding.");

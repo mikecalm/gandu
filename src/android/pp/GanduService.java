@@ -31,7 +31,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class GanduService extends Service {
-	//Toast tst = new Toast(this);
 	String[] ip = null;
 	private boolean connected = false;
 	Socket socket;
@@ -47,6 +46,10 @@ public class GanduService extends Service {
     int mValue = 0;
 
 
+    //KODY KOMUNIKATÓW DLA SERWERA
+    public static int GG_USERLIST_REQUEST80 = 0x002f;
+    public static int GG_USERLIST_REPLY80 = 0x0030;
+    
     /**
      * Command to the service to register a client, receiving callbacks
      * from the service.  The Message's replyTo field must be a Messenger of
@@ -65,7 +68,37 @@ public class GanduService extends Service {
      * Command to service to login user.
     */
    static final int MSG_LOGIN = 3;
+   static final int MSG_GET_CONTACTBOOK = 4;
     
+   public Boolean getContactbook()
+   {
+	  //typ pola 'type'
+	  byte GG_USERLIST_GET=  0x02;            /* import listy */
+	  //
+	  int type = Integer.reverseBytes(GG_USERLIST_REQUEST80);
+	  byte contactbook_frame_type = GG_USERLIST_GET;
+	  //byte [] request ;
+	  byte [] paczkaBajtow = null;
+	  
+	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	  DataOutputStream dos = new DataOutputStream(baos);
+	  try
+	  {
+		  dos.writeInt(type);
+		  dos.writeInt(Integer.reverseBytes(1));		
+		  dos.write(contactbook_frame_type);
+		  paczkaBajtow = baos.toByteArray();
+		  out.write(paczkaBajtow);
+		  out.flush();
+		  Log.i("Wykonalem getContactbook()","Wykonalem getContactbook()");
+	  }catch(Exception e)
+	  {
+		  return false;
+	  }
+	  return true;
+	  
+	  
+   }
     
     public void wyloguj()
     {
@@ -120,7 +153,7 @@ public class GanduService extends Service {
     	{
 	    	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
 			int numergg = Integer.parseInt(numerGG);
-	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, 0x0004, (byte)0xff, "Gandu sza³:]");
+	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, 0x0004, (byte)0xff, "http://code.google.com/p/gandu/");
 	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
 	    	//DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 	    	//out = new DataOutputStream(socket.getOutputStream());
@@ -141,7 +174,7 @@ public class GanduService extends Service {
     {
     	try
     	{
-			//wyslanie do serwera GG pakietu (o zerowej d³ugoœci) 
+			//wyslanie do serwera GG pakietu (o zerowej dlugosci) 
 			//z informacja ze nie mamy nikogo na liscie kontaktow
 			//#define GG_LIST_EMPTY 0x0012
 			ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
@@ -166,6 +199,17 @@ public class GanduService extends Service {
             switch (msg.what) {
                 case MSG_REGISTER_CLIENT:
                     mClients.add(msg.replyTo);
+                    Message msg2 = Message.obtain(null,ContactBook.REGISTERED, 0, 0);
+                    for(int i=0; i<mClients.size(); i++)
+                    {
+                    	try
+                    	{
+                    		mClients.get(i).send(msg2);
+                    	}catch(Exception excMsg2)
+                    	{
+                    		Log.i("Blad", ""+excMsg2.getMessage());
+                    	}
+                    }
                     break;
                 case MSG_UNREGISTER_CLIENT:
                     mClients.remove(msg.replyTo);
@@ -181,6 +225,14 @@ public class GanduService extends Service {
                 		showNotification("Zalogowany "+ggnum);
                 		//Toast.makeText(GanduService.this, "Zalogowany!!", Toast.LENGTH_LONG).show();
                 	}
+                	break;
+                case MSG_GET_CONTACTBOOK:
+                	if(getContactbook())
+                	{
+                		showNotification("Pobieram listê kontaktów...");
+                	}
+                	Log.i("Pobieram liste","cadasdad");
+                	
                 	break;
                 default:
                     super.handleMessage(msg);
@@ -241,7 +293,7 @@ public class GanduService extends Service {
         // Set the icon, scrolling text and timestamp
         //Notification notification = new Notification(R.drawable.stat_sample, text,
         //        System.currentTimeMillis());
-    	Notification notification = new Notification(R.drawable.icon, text,
+    	Notification notification = new Notification(R.drawable.icon, wiadomosc,
     			System.currentTimeMillis());
 
         // The PendingIntent to launch our activity if the user selects this notification
@@ -250,7 +302,7 @@ public class GanduService extends Service {
 
         // Set the info for the views that show in the notification panel.
         //notification.setLatestEventInfo(this, getText(R.string.remote_service_label),
-        notification.setLatestEventInfo(this, text, wiadomosc, contentIntent);
+        notification.setLatestEventInfo(this, wiadomosc, text, contentIntent);
 
         // Send the notification.
         // We use a string id because it is a unique number.  We use it later to cancel.
@@ -275,12 +327,22 @@ public class GanduService extends Service {
 						wyslijPaczkeLogowania(ggnum, ggpass, ziarno);
 						break;
 					case 0x0035:
+						int dlugoscOK = Integer.reverseBytes(in.readInt());
+						byte[] zawartoscOK = new byte[dlugoscOK];
+						in.read(zawartoscOK, 0, dlugoscOK);
 						Log.i("Odebrane: ", ""+typWiadomosci);
 						wyslijWiadomoscOPustejLiscieKontaktow();
+						Message msg = Message.obtain(null, GanduClient.MSG_POSTLOGIN, 0 ,0 );
+						mClients.get(0).send(msg);
+						Log.i("ganduService","Wys³alem do Client"+msg.what);
 						break;
 					case 0x0009:
 						Log.i("Odebrane: ", ""+typWiadomosci);
 						connected = false;
+						break;
+					case 0x0030:
+						Log.i("Odebrane: ", ""+typWiadomosci);
+						startActivity(new Intent("android.pp.ContactBook"));
 						break;
 					case 0x002e:
 						Log.i("Odebrane: ", ""+typWiadomosci);
@@ -288,6 +350,7 @@ public class GanduService extends Service {
 					default:
 							Log.i("Odebrane default: ", ""+typWiadomosci);
 							int dlugoscBadziewia = Integer.reverseBytes(in.readInt());
+							//byte[] smieci = new byte[dlugoscBadziewia];
 							byte[] smieci = new byte[2048];
 							//in.read(smieci, 0, dlugoscBadziewia);
 							in.read(smieci, 0, dlugoscBadziewia);
