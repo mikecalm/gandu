@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:background="@color/background"
+	android:background="@drawable/background"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -14,7 +14,8 @@
 		android:id="@+id/ImageView01" 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
-		android:src="@drawable/logo">
+		android:paddingTop="30px"
+		android:src="@drawable/banner_50">
 	</ImageView>
 		
 	<TableRow 
@@ -25,7 +26,8 @@
 		android:gravity="center">
 		<TextView 
 			android:paddingRight="10px"
-			android:text="@string/login" 
+			android:text="@string/login"
+			android:textColor="@color/black"
 			android:id="@+id/TextView01" 
 			android:layout_width="wrap_content" 
 			android:layout_height="wrap_content">
@@ -43,6 +45,7 @@
 		android:layout_height="wrap_content"
 		android:gravity="center">
 		<TextView 
+			android:textColor="@color/black"
 			android:paddingRight="10px"
 			android:text="@string/haslo" 
 			android:id="@+id/TextView02" 

@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.pp.GanduClient.IncomingHandler;
 import android.util.Log;
 import android.widget.TextView;
 
