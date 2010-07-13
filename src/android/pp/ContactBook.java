@@ -13,20 +13,24 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.pp.GanduClient.IncomingHandler;
 import android.util.Log;
+import android.widget.TextView;
 
 public class ContactBook extends ListActivity{
 
 	boolean mIsBound;
+	String gglista;
+	TextView tv;
 	/** Messenger for communicating with service. */
     Messenger mService = null;
     static final int REGISTERED = 10;
+    static final int CONNTACT_BOOK = 11;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contactbook);
-		
+		tv = (TextView)findViewById(R.id.android_tv);
 		//uruchomienie serwisu Gandu
 		//startService(new Intent("android.pp.GanduS"));
 		//zbindowanie aktywnosci do serwisu
@@ -55,7 +59,12 @@ public class ContactBook extends ListActivity{
             			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
             		}
                 	break;
-                
+                case ContactBook.CONNTACT_BOOK:
+                	Log.i("ContactBook", "odebralem od serwisu");
+                	Bundle odebrany = msg.getData();
+                	gglista = odebrany.getString("listaGG");
+                	tv.setText(gglista);
+                	break;
                 default:
                     super.handleMessage(msg);
             }

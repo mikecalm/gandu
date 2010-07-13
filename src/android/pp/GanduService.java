@@ -9,6 +9,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -98,6 +101,25 @@ public class GanduService extends Service {
 	  return true;
 	  
 	  
+   }
+   
+   public String inflateContactBook(byte [] paczkaBajtow)
+   {
+	   Inflater inf = new Inflater();
+	   inf.setInput(paczkaBajtow,0,paczkaBajtow.length);
+	   Log.i("miejsce2 - dlugosc skompresowana", ""+paczkaBajtow.length);
+	   byte [] result  = new byte [100000];
+	   int resultLength;
+	   String str = null;
+	   try {
+		   resultLength = inf.inflate(result);
+		   inf.end();
+		   str = new String(result, 0, resultLength, "UTF-8");
+	    }catch (Exception e) {
+	    	Log.i("Blad Inflater",e.getMessage());
+	   }  
+	  
+	   return str;
    }
     
     public void wyloguj()
@@ -342,10 +364,37 @@ public class GanduService extends Service {
 						break;
 					case 0x0030:
 						Log.i("Odebrane: ", ""+typWiadomosci);
-						startActivity(new Intent("android.pp.ContactBook"));
-						break;
-					case 0x002e:
-						Log.i("Odebrane: ", ""+typWiadomosci);
+						int dlugoscBadziewia2 = Integer.reverseBytes(in.readInt());
+						byte typListaKont = in.readByte();
+						if(typListaKont == 0x06)
+							Log.i("typ replay import","0x06");
+						else
+							Log.i("INNY!! typ replay import",""+typListaKont);
+						//byte[] smieci = new byte[dlugoscBadziewia];
+						byte[] smieci2 = new byte[dlugoscBadziewia2-1];
+						//in.read(smieci, 0, dlugoscBadziewia);
+						in.read(smieci2, 0, dlugoscBadziewia2-1);
+						String lista = inflateContactBook(smieci2);
+						
+						Message msg2 = Message.obtain(null,ContactBook.CONNTACT_BOOK, 0, 0);
+						Bundle wysylany = new Bundle();
+						wysylany.putString("listaGG", lista);
+						msg2.setData(wysylany);
+						for(int i=0; i<mClients.size(); i++)
+	                    {
+	                    	try
+	                    	{
+	                    		mClients.get(i).send(msg2);
+	                    	}catch(Exception excMsg2)
+	                    	{
+	                    		Log.i("Blad", ""+excMsg2.getMessage());
+	                    	}
+	                    }
+						
+						Log.i("Lista kontaktow", lista);
+						Log.i("Odczytalem smieci typu: ", ""+typWiadomosci);
+						Log.i("Odczytalem smieci o dlugosci: ", ""+dlugoscBadziewia2);
+						//startActivity(new Intent("android.pp.ContactBook"));
 						break;
 					default:
 							Log.i("Odebrane default: ", ""+typWiadomosci);
