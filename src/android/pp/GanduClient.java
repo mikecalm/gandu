@@ -21,6 +21,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -90,6 +91,30 @@ public class GanduClient extends Activity {
 		}
 	};
 	
+	/*
+	  final Runnable runInUIThread = new Runnable() {
+	    public void run() {
+	      Toast.makeText(getApplicationContext(), "wywolane z watku", Toast.LENGTH_LONG).show();
+	      Intent intent = new Intent(getApplicationContext(),ContactBook.class);
+			//intent.addFlags(CONTEXT_IGNORE_SECURITY);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			try{
+      		startActivity(intent);
+	      	}catch(Exception  e)
+	      	{
+	      		Log.e("KLIENT",""+e.getMessage());
+	      	}
+	    }
+	  };*/
+	/*private Handler handler = new Handler(){
+		@Override
+		public void handleMessage(Message msg)
+		{
+			Intent intent = new Intent(getApplicationContext(),ContactBook.class);
+			startActivity(intent);
+		}
+	};*/
+	  
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
      * Handler of incoming messages from service.
@@ -101,12 +126,11 @@ public class GanduClient extends Activity {
             switch (msg.what) {
                 case GanduClient.MSG_POSTLOGIN:
                 	Log.i("ganduClient","Odebra³em"+msg.what);
-                	//Toast.makeText(getApplicationContext(), "ta dam", Toast.LENGTH_LONG);
-                	//Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-                	Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-                	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                	try
-                	{
+                	//handler.sendEmptyMessage(1);
+                	//this.post(runInUIThread);
+					Intent intent = new Intent(getApplicationContext(),ContactBook.class);
+					//intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					try{
                 		startActivity(intent);
                 	}catch(Exception  e)
                 	{
