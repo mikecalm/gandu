@@ -1,27 +1,10 @@
 package android.pp;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.Socket;
-
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -39,7 +22,7 @@ import android.widget.Toast;
 public class GanduClient extends Activity {
 
 	//
-	static final int MSG_POSTLOGIN = 1;
+	
 	/** Messenger for communicating with service. */
     Messenger mService = null;
     /** Flag indicating whether we have called bind on the service. */
@@ -49,8 +32,6 @@ public class GanduClient extends Activity {
 	private Button connectPhones;
 	private EditText ggNumberEdit;
 	private EditText ggPasswordEdit;
-	private boolean connected = false;
-
 	// ------------------> OnCreate()
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +55,7 @@ public class GanduClient extends Activity {
 
 	private OnClickListener connectListener = new OnClickListener() {
 		public void onClick(View v) {
-			Message msg = Message.obtain(null,GanduService.MSG_LOGIN, 0, 0);
+			Message msg = Message.obtain(null,Common.CLIENT_LOGIN, 0, 0);
 			Bundle wysylany = new Bundle();
 			wysylany.putString("numerGG", ggNumberEdit.getText().toString());
 			wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
@@ -91,30 +72,7 @@ public class GanduClient extends Activity {
 		}
 	};
 	
-	/*
-	  final Runnable runInUIThread = new Runnable() {
-	    public void run() {
-	      Toast.makeText(getApplicationContext(), "wywolane z watku", Toast.LENGTH_LONG).show();
-	      Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-			//intent.addFlags(CONTEXT_IGNORE_SECURITY);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			try{
-      		startActivity(intent);
-	      	}catch(Exception  e)
-	      	{
-	      		Log.e("KLIENT",""+e.getMessage());
-	      	}
-	    }
-	  };*/
-	/*private Handler handler = new Handler(){
-		@Override
-		public void handleMessage(Message msg)
-		{
-			Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-			startActivity(intent);
-		}
-	};*/
-	  
+  
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
      * Handler of incoming messages from service.
@@ -122,23 +80,20 @@ public class GanduClient extends Activity {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	Log.i("ganduClient","Odebra³em"+msg.what);
+        	Log.i("GanduClient","Received: "+msg.what);
             switch (msg.what) {
-                case GanduClient.MSG_POSTLOGIN:
-                	Log.i("ganduClient","Odebra³em"+msg.what);
-                	//handler.sendEmptyMessage(1);
-                	//this.post(runInUIThread);
-					Intent intent = new Intent(getApplicationContext(),ContactBook.class);
-					//intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                case Common.CLIENT_START_INTENT_CONTACTBOOK:
+                	Log.i("GanduClient","Odebralem"+msg.what);
+                	Intent intent = new Intent(getApplicationContext(),ContactBook.class);
 					try{
                 		startActivity(intent);
                 	}catch(Exception  e)
                 	{
-                		Log.e("KLIENT",""+e.getMessage());
+                		Log.e("GanduClient",""+e.getMessage());
                 	}
                 	break;
-                case ContactBook.REGISTERED:
-                	Log.i("GanduClient","zarejestrowany przez serwis.");
+                case Common.FLAG_ACTIVITY_REGISTER:
+                	Log.i("GanduClient","Zarejestrowany przez serwis.");
                 	break;
                 default:
                     super.handleMessage(msg);
@@ -169,7 +124,7 @@ public class GanduClient extends Activity {
             // connected to it.
             try {
                 Message msg = Message.obtain(null,
-                        GanduService.MSG_REGISTER_CLIENT);
+                        Common.CLIENT_REGISTER);
                 msg.replyTo = mMessenger;
                 mService.send(msg);
             } catch (RemoteException e) {
@@ -216,7 +171,7 @@ public class GanduClient extends Activity {
             if (mService != null) {
                 try {
                     Message msg = Message.obtain(null,
-                            GanduService.MSG_UNREGISTER_CLIENT);
+                            Common.CLIENT_UNREGISTER);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                   

@@ -9,8 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.apache.http.HttpEntity;
@@ -29,7 +27,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -47,39 +44,12 @@ public class GanduService extends Service {
     ArrayList<Messenger> mClients = new ArrayList<Messenger>();
     /** Holds last value set by a client. */
     int mValue = 0;
-
-
-    //KODY KOMUNIKATÓW DLA SERWERA
-    public static int GG_USERLIST_REQUEST80 = 0x002f;
-    public static int GG_USERLIST_REPLY80 = 0x0030;
     
-    /**
-     * Command to the service to register a client, receiving callbacks
-     * from the service.  The Message's replyTo field must be a Messenger of
-     * the client where callbacks should be sent.
-     */
-    static final int MSG_REGISTER_CLIENT = 1;
-
-    /**
-     * Command to the service to unregister a client, ot stop receiving callbacks
-     * from the service.  The Message's replyTo field must be a Messenger of
-     * the client as previously given with MSG_REGISTER_CLIENT.
-     */
-    static final int MSG_UNREGISTER_CLIENT = 2;
-    
-    /**
-     * Command to service to login user.
-    */
-   static final int MSG_LOGIN = 3;
-   static final int MSG_GET_CONTACTBOOK = 4;
-    
+  
    public Boolean getContactbook()
    {
-	  //typ pola 'type'
-	  byte GG_USERLIST_GET=  0x02;            /* import listy */
-	  //
-	  int type = Integer.reverseBytes(GG_USERLIST_REQUEST80);
-	  byte contactbook_frame_type = GG_USERLIST_GET;
+	   int type = Integer.reverseBytes(Common.GG_USERLIST_REQUEST80);
+	  byte contactbook_frame_type = Common.GG_USERLIST_GET;
 	  //byte [] request ;
 	  byte [] paczkaBajtow = null;
 	  
@@ -93,7 +63,7 @@ public class GanduService extends Service {
 		  paczkaBajtow = baos.toByteArray();
 		  out.write(paczkaBajtow);
 		  out.flush();
-		  Log.i("Wykonalem getContactbook()","Wykonalem getContactbook()");
+		  Log.i("GanduService","Wykonalem getContactbook()");
 	  }catch(Exception e)
 	  {
 		  return false;
@@ -107,7 +77,7 @@ public class GanduService extends Service {
    {
 	   Inflater inf = new Inflater();
 	   inf.setInput(paczkaBajtow,0,paczkaBajtow.length);
-	   Log.i("miejsce2 - dlugosc skompresowana", ""+paczkaBajtow.length);
+	   Log.i("GanduService", "Dlugosc skompresowana = "+paczkaBajtow.length);
 	   byte [] result  = new byte [100000];
 	   int resultLength;
 	   String str = null;
@@ -116,7 +86,7 @@ public class GanduService extends Service {
 		   inf.end();
 		   str = new String(result, 0, resultLength, "UTF-8");
 	    }catch (Exception e) {
-	    	Log.i("Blad Inflater",e.getMessage());
+	    	Log.e("GanduService","Blad Inflater"+e.getMessage());
 	   }  
 	  
 	   return str;
@@ -147,7 +117,7 @@ public class GanduService extends Service {
 					ip = readline.split(" ");
 				}
 			}
-			Log.d("ClientActivity", "Polaczenie....");
+			Log.i("ClientActivity", "Polaczenie....");
 
 			String ipWyizolowany = ip[2].split(":")[0];
 			//int portWyizolowany = Integer.parseInt(ip[2].split(":")[1]);
@@ -175,13 +145,12 @@ public class GanduService extends Service {
     	{
 	    	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
 			int numergg = Integer.parseInt(numerGG);
-	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, 0x0004, (byte)0xff, "http://code.google.com/p/gandu/");
+	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, "http://code.google.com/p/gandu/");
 	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
 	    	//DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 	    	//out = new DataOutputStream(socket.getOutputStream());
 	    	//wyslanie paczki logowania 
-	    	//#define GG_LOGIN80 0x0031
-	    	//do serwera
+	      	//do serwera
 	    	out.write(paczkalogowania);
 	    	out.flush();
 			Toast.makeText(GanduService.this, "Zalogowany", Toast.LENGTH_SHORT).show();
@@ -201,7 +170,7 @@ public class GanduService extends Service {
 			//#define GG_LIST_EMPTY 0x0012
 			ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
 			DataOutputStream dos2 = new DataOutputStream(baos2);
-			dos2.writeInt(Integer.reverseBytes(0x0012));
+			dos2.writeInt(Integer.reverseBytes(Common.GG_LIST_EMPTY));
 			dos2.writeInt(Integer.reverseBytes(0x0000));
 			out.write(baos2.toByteArray());
     	}
@@ -219,9 +188,9 @@ public class GanduService extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MSG_REGISTER_CLIENT:
+                case Common.CLIENT_REGISTER:
                     mClients.add(msg.replyTo);
-                    Message msg2 = Message.obtain(null,ContactBook.REGISTERED, 0, 0);
+                    Message msg2 = Message.obtain(null,Common.FLAG_ACTIVITY_REGISTER, 0, 0);
                     for(int i=0; i<mClients.size(); i++)
                     {
                     	try
@@ -233,27 +202,25 @@ public class GanduService extends Service {
                     	}
                     }
                     break;
-                case MSG_UNREGISTER_CLIENT:
+                case Common.CLIENT_UNREGISTER:
                     mClients.remove(msg.replyTo);
                     break;
-                case MSG_LOGIN:
+                case Common.CLIENT_LOGIN:
                 	Bundle odebrany = msg.getData();
                 	ggnum = odebrany.getString("numerGG");
                 	ggpass = odebrany.getString("hasloGG");
-                	//jesli logowanie powiedzie sie
-                	//if(zaloguj(ggnum, ggpass))
+                	
                 	if(inicjujLogowanie(ggnum))
                 	{
                 		showNotification("Zalogowany "+ggnum);
-                		//Toast.makeText(GanduService.this, "Zalogowany!!", Toast.LENGTH_LONG).show();
                 	}
                 	break;
-                case MSG_GET_CONTACTBOOK:
+                case Common.CLIENT_GET_CONTACTBOOK:
                 	if(getContactbook())
                 	{
-                		showNotification("Pobieram listê kontaktów...");
+                		showNotification("Pobieram liste kontaktow...");
                 	}
-                	Log.i("Pobieram liste","cadasdad");
+                	Log.i("GanduService","Pobieram liste kontaktow");
                 	
                 	break;
                 default:
@@ -335,48 +302,51 @@ public class GanduService extends Service {
     //watek odbierajacy wiadomosci od serwera GG
     public class ReplyInterpreter implements Runnable {
 		public void run() {
-			Log.i("WSZEDLEM DO WATKU!!!!!", "WSZEDLEM DO WATKU!!!!!");
+			Log.i("ReplyInterpreter", "WSZEDLEM DO WATKU!!!!!");
 			while(connected)
 			{
 				try
 				{
 					int typWiadomosci = Integer.reverseBytes(in.readInt());
 					switch(typWiadomosci){
-					case 0x0001:
-						Log.i("Odebrane: ", ""+typWiadomosci);
+					
+					case Common.GG_WELCOME:
+						Log.i("GanduService received: ", ""+typWiadomosci);
 						int dlugoscDanych = Integer.reverseBytes(in.readInt());
 						int ziarno = Integer.reverseBytes(in.readInt());
 						wyslijPaczkeLogowania(ggnum, ggpass, ziarno);
 						break;
-					case 0x0035:
+						
+					case Common.GG_LOGIN_OK80:
 						int dlugoscOK = Integer.reverseBytes(in.readInt());
 						byte[] zawartoscOK = new byte[dlugoscOK];
 						in.read(zawartoscOK, 0, dlugoscOK);
-						Log.i("Odebrane: ", ""+typWiadomosci);
+						Log.i("GanduService received: ", ""+typWiadomosci);
 						wyslijWiadomoscOPustejLiscieKontaktow();
-						Message msg = Message.obtain(null, GanduClient.MSG_POSTLOGIN, 0 ,0 );
+						Message msg = Message.obtain(null, Common.CLIENT_START_INTENT_CONTACTBOOK, 0 ,0 );
 						mClients.get(0).send(msg);
-						Log.i("ganduService","Wys³alem do Client"+msg.what);
+						Log.i("GanduService","Sent to Client "+msg.what);
 						break;
-					case 0x0009:
-						Log.i("Odebrane: ", ""+typWiadomosci);
+						
+					case Common.GG_LOGIN_FAILED:
+						Log.i("Received: ", ""+typWiadomosci);
 						connected = false;
 						break;
-					case 0x0030:
-						Log.i("Odebrane: ", ""+typWiadomosci);
+						
+					case Common.GG_USERLIST_REPLY80:
+						Log.i("GanduService received: ", ""+typWiadomosci);
 						int dlugoscBadziewia2 = Integer.reverseBytes(in.readInt());
 						byte typListaKont = in.readByte();
 						if(typListaKont == 0x06)
 							Log.i("typ replay import","0x06");
 						else
 							Log.i("INNY!! typ replay import",""+typListaKont);
-						//byte[] smieci = new byte[dlugoscBadziewia];
+						
 						byte[] smieci2 = new byte[dlugoscBadziewia2-1];
-						//in.read(smieci, 0, dlugoscBadziewia);
 						in.read(smieci2, 0, dlugoscBadziewia2-1);
 						String lista = inflateContactBook(smieci2);
 						
-						Message msg2 = Message.obtain(null,ContactBook.CONNTACT_BOOK, 0, 0);
+						Message msg2 = Message.obtain(null,Common.FLAG_CONTACTBOOK, 0, 0);
 						Bundle wysylany = new Bundle();
 						wysylany.putString("listaGG", lista);
 						msg2.setData(wysylany);
@@ -387,7 +357,7 @@ public class GanduService extends Service {
 	                    		mClients.get(i).send(msg2);
 	                    	}catch(Exception excMsg2)
 	                    	{
-	                    		Log.i("Blad", ""+excMsg2.getMessage());
+	                    		Log.e("GanduService", ""+excMsg2.getMessage());
 	                    	}
 	                    }
 						
@@ -397,7 +367,7 @@ public class GanduService extends Service {
 						//startActivity(new Intent("android.pp.ContactBook"));
 						break;
 					default:
-							Log.i("Odebrane default: ", ""+typWiadomosci);
+							Log.i("GanduService received default: ", ""+typWiadomosci);
 							int dlugoscBadziewia = Integer.reverseBytes(in.readInt());
 							//byte[] smieci = new byte[dlugoscBadziewia];
 							byte[] smieci = new byte[2048];
@@ -409,12 +379,12 @@ public class GanduService extends Service {
 				}
 				catch(Exception excThread)
 				{
-					Log.i("WYPIEPRZYLEM SIE!!", ""+excThread.getMessage());
+					Log.e("GanduService: ", ""+excThread.getMessage());
 					connected = false;
 				}
 			}
-			Log.i("WYSZEDLEM Z WATKU!!!!!", "WYSZEDLEM Z WATKU!!!!!");
-			Log.i("wartosc connected = ", ""+connected);
+			Log.i("GanduService", "WYSZEDLEM Z WATKU!!!!!");
+			Log.i("GanduServicew", "wartosc connected = "+connected);
 		}
     }
 }

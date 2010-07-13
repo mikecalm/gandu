@@ -21,9 +21,8 @@ public class ContactBook extends ListActivity{
 	String gglista;
 	TextView tv;
 	/** Messenger for communicating with service. */
+	
     Messenger mService = null;
-    static final int REGISTERED = 10;
-    static final int CONNTACT_BOOK = 11;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +30,6 @@ public class ContactBook extends ListActivity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contactbook);
 		tv = (TextView)findViewById(R.id.android_tv);
-		//uruchomienie serwisu Gandu
-		//startService(new Intent("android.pp.GanduS"));
 		//zbindowanie aktywnosci do serwisu
 		doBindService();
 		
@@ -45,12 +42,14 @@ public class ContactBook extends ListActivity{
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	Log.i("ganduClient","Odebra³em"+msg.what);
+        	Log.i("ganduClient","Odebralem"+msg.what);
             switch (msg.what) {
-                case ContactBook.REGISTERED:
-                	Log.i("ContactBook","Odebra³em"+msg.what);
+                case Common.FLAG_ACTIVITY_REGISTER:
+                	Log.i("ContactBook","Received: "+msg.what);
+                	
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
-            		Message msg2 = Message.obtain(null,GanduService.MSG_GET_CONTACTBOOK, 0, 0);
+            		
+                	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
             		try
             		{
             			mService.send(msg2);
@@ -59,7 +58,7 @@ public class ContactBook extends ListActivity{
             			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
             		}
                 	break;
-                case ContactBook.CONNTACT_BOOK:
+                case Common.FLAG_CONTACTBOOK:
                 	Log.i("ContactBook", "odebralem od serwisu");
                 	Bundle odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
@@ -94,7 +93,7 @@ public class ContactBook extends ListActivity{
             // connected to it.
             try {
                 Message msg = Message.obtain(null,
-                        GanduService.MSG_REGISTER_CLIENT);
+                        Common.CLIENT_REGISTER);
                 msg.replyTo = mMessenger;
                 mService.send(msg);
             } catch (RemoteException e) {
@@ -142,7 +141,7 @@ public class ContactBook extends ListActivity{
             if (mService != null) {
                 try {
                     Message msg = Message.obtain(null,
-                            GanduService.MSG_UNREGISTER_CLIENT);
+                    		Common.CLIENT_UNREGISTER);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                   
