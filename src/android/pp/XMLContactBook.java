@@ -1,19 +1,11 @@
 package android.pp;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.StringReader;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-
 import android.util.Log;
-
-
 
 public class XMLContactBook{
 	
@@ -25,23 +17,17 @@ public class XMLContactBook{
 		{
 			SAXParser sp = spf.newSAXParser();
 			XMLReader xr = sp.getXMLReader();
-			
 			XMLHandler handler = new XMLHandler();
-			
 			xr.setContentHandler(handler);
-			
 			InputSource is = new InputSource(new StringReader(tmp));
 			xr.parse(is);			
-			
-			pds = handler.getParsedData();
-			
+			pds = handler.getParsedData();			
 			
 		}catch(Exception e)
 		{
 			Log.e("XMLContactBook",e.getMessage());
 		}
-		// TODO Auto-generated constructor stub
-	
+		// TODO Auto-generated constructor stub	
 		return pds;
 	}	
 }

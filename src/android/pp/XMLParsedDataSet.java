@@ -1,26 +1,46 @@
 package android.pp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class XMLParsedDataSet {
-	 private String extractedString = null;
-     private int extractedInt = 0;
 
-     public String getExtractedString() {
-             return extractedString;
-     }
-     public void setExtractedString(String extractedString) {
-             this.extractedString = extractedString;
-     }
+	public GroupContact GCItem;
+	
+	XMLParsedDataSet() {
+		GCItem = new GroupContact(); 
+	}
+	
+	
+	public String getGroupID()
+	{
+		return GCItem.gp.getGroupId();
+	}
+	
+	public void setGroupID(String data)
+	{
+		this.GCItem.gp.setGroupId(data);
+		//this.groupId.add(data);
+	}
+	
+	public String getName()
+	{
+		return GCItem.gp.getName();
+	}
+	public void setName(String data)
+	{
+		this.GCItem.gp.setName(data);
+	}
+	
+	public String toString(){
+		String tmp = null; 
+		for (int i = 0 ; i<= GCItem.size(); i++)
+		{
+			tmp +=GCItem.gp.getGroupId()+"\n "+GCItem.gp.getName()+"\n";
+		}
 
-     public int getExtractedInt() {
-             return extractedInt;
-     }
-     public void setExtractedInt(int extractedInt) {
-             this.extractedInt = extractedInt;
-     }
-    
-     public String toString(){
-             return "ExtractedString = " + this.extractedString
-                             + "nExtractedInt = " + this.extractedInt;
-     }
+		return tmp;
+	}
 
 }

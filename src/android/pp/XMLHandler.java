@@ -16,7 +16,18 @@ public class XMLHandler extends DefaultHandler{
 	private boolean inName = false;
 	private boolean inIsExpanded = false;
 	private boolean inIsRemovable = false;
+	
 	private boolean inContacts = false;
+	private boolean inContact = false;
+	private boolean inGuid = false;
+	private boolean inGGNumber = false;
+	private boolean inShowName = false;
+	private boolean inCGroups = false;
+	private boolean inGroupId = false;
+	private boolean inAvatars = false;
+	private boolean inFlagBuddy = false;
+	private boolean inFlagNormal = false;
+	private boolean inFlagFriend =false;
 	
 	private XMLParsedDataSet pds = new XMLParsedDataSet();
 	
@@ -91,10 +102,23 @@ public class XMLHandler extends DefaultHandler{
 	@Override
 	public void characters(char ch[], int start, int length)
 	{
-		if(this.inName)
+		if (this.inContactBook)
 		{
-			pds.setExtractedString(new String(ch, start, length));
-			
+			if (this.inGroups)
+			{
+				if (this.inGroup)
+				{
+					if(this.inId)
+					{
+						pds.setGroupID(new String(ch, start, length));
+					}
+					else if(this.inName)
+					{
+						pds.setName(new String(ch, start, length));
+					}
+				}
+				
+			}
 		}
 	}
 	
