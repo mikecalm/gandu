@@ -61,10 +61,9 @@ public class ContactBook extends ListActivity{
                 	Log.i("ContactBook", "odebralem od serwisu");
                 	Bundle odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
-                	XMLContactBook  xcb = new XMLContactBook();
-                	
+                	XMLContactBook  xcb = new XMLContactBook();                	
                 	XMLParsedDataSet xpds = xcb.xmlparse(gglista);
-                	tv.setText(xpds.getExtractedString());
+                	tv.setText(xpds.toString());
                 	//tv.setText(gglista);
                 	break;
                 default:
