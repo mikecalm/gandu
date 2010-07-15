@@ -5,42 +5,37 @@ import java.util.Collections;
 import java.util.List;
 
 public class XMLParsedDataSet {
-
+	
+	public static ArrayList<GroupContact> GCList = new ArrayList<GroupContact>();
 	public GroupContact GCItem;
-	
-	XMLParsedDataSet() {
-		GCItem = new GroupContact(); 
-	}
-	
-	
+
 	public String getGroupID()
 	{
 		return GCItem.gp.getGroupId();
 	}
 	
-	public void setGroupID(String data)
+	public void setGroupID(GroupContact GCItem,String data)
 	{
-		this.GCItem.gp.setGroupId(data);
-		//this.groupId.add(data);
+		GCItem.gp.setGroupId(data);
+	
 	}
 	
 	public String getName()
 	{
 		return GCItem.gp.getName();
 	}
-	public void setName(String data)
+	public void setName(GroupContact GCItem,String data)
 	{
-		this.GCItem.gp.setName(data);
+		GCItem.gp.setName(data);
 	}
-	
-	public String toString(){
-		String tmp = null; 
-		for (int i = 0 ; i<= GCItem.size(); i++)
+	public String toString()
+	{
+		String tmp = null;
+		for (int i =0; i < GCList.size(); i++)
 		{
-			tmp +=GCItem.gp.getGroupId()+"\n "+GCItem.gp.getName()+"\n";
+			tmp += GCList.get(i).gp.getName()+"\n";
 		}
-
+		
 		return tmp;
 	}
-
 }

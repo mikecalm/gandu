@@ -20,8 +20,8 @@ public class XMLContactBook{
 			XMLHandler handler = new XMLHandler();
 			xr.setContentHandler(handler);
 			InputSource is = new InputSource(new StringReader(tmp));
-			xr.parse(is);			
-			pds = handler.getParsedData();			
+			xr.parse(is);		
+			pds = handler.getParsedData();		
 			
 		}catch(Exception e)
 		{

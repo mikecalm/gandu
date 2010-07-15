@@ -1,5 +1,7 @@
 package android.pp;
 
+import java.util.ArrayList;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -29,7 +31,10 @@ public class XMLHandler extends DefaultHandler{
 	private boolean inFlagNormal = false;
 	private boolean inFlagFriend =false;
 	
-	private XMLParsedDataSet pds = new XMLParsedDataSet();
+	public GroupContact GCItem = new GroupContact();
+	
+	public  XMLParsedDataSet pds = new XMLParsedDataSet();
+
 	
 	public  XMLParsedDataSet getParsedData() {
 		return this.pds;
@@ -61,6 +66,7 @@ public class XMLHandler extends DefaultHandler{
 		else if(localName.equals("Group"))
 		{
 			this.inGroup = true;
+			GCItem = new GroupContact();
 		}
 		else if (localName.equals("Id"))
 		{
@@ -87,6 +93,8 @@ public class XMLHandler extends DefaultHandler{
 		else if(localName.equals("Group"))
 		{
 			this.inGroup = false;
+			XMLParsedDataSet.GCList.add(GCItem);			
+			
 		}
 		else if (localName.equals("Id"))
 		{
@@ -108,13 +116,14 @@ public class XMLHandler extends DefaultHandler{
 			{
 				if (this.inGroup)
 				{
+					
 					if(this.inId)
 					{
-						pds.setGroupID(new String(ch, start, length));
+						pds.setGroupID(GCItem, new String(ch, start, length));
 					}
 					else if(this.inName)
 					{
-						pds.setName(new String(ch, start, length));
+						pds.setName(GCItem, new String(ch, start, length));
 					}
 				}
 				
