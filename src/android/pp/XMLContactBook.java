@@ -1,6 +1,8 @@
 package android.pp;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
@@ -8,6 +10,7 @@ import org.xml.sax.XMLReader;
 import android.util.Log;
 
 public class XMLContactBook{
+	public static ArrayList<GroupContact> GCList = new ArrayList<GroupContact>();
 	
 	public XMLParsedDataSet xmlparse(String tmp) {
 	

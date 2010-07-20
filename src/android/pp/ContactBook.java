@@ -58,6 +58,7 @@ public class ContactBook extends ListActivity{
             		}
                 	break;
                 case Common.FLAG_CONTACTBOOK:
+                	tv.setText("");
                 	Log.i("ContactBook", "odebralem od serwisu");
                 	Bundle odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");

@@ -8,7 +8,9 @@ public class XMLParsedDataSet {
 	
 	public static ArrayList<GroupContact> GCList = new ArrayList<GroupContact>();
 	public GroupContact GCItem;
+	
 
+	
 	public String getGroupID()
 	{
 		return GCItem.gp.getGroupId();
@@ -20,6 +22,19 @@ public class XMLParsedDataSet {
 	
 	}
 	
+	
+	public void addContact(Contact ct)
+	{
+		for (GroupContact gc : GCList)
+		{			
+				if(gc.gp.getGroupId().equals(ct.getGroupId()))
+				{
+					gc.ctt_list.add(ct);
+				}
+			
+		}
+	}
+	
 	public String getName()
 	{
 		return GCItem.gp.getName();
@@ -28,14 +43,24 @@ public class XMLParsedDataSet {
 	{
 		GCItem.gp.setName(data);
 	}
+	//CONTACTS 
+	
+	public void setGGNumber(String data)
+	{
+		;
+	}
 	public String toString()
 	{
-		String tmp = null;
-		for (int i =0; i < GCList.size(); i++)
+		String tmp = "";
+		for(GroupContact gc : GCList)
 		{
-			tmp += GCList.get(i).gp.getName()+"\n";
+			tmp += gc.gp.getName()+"\n";
+			for(int i = 0; i < gc.ctt_list.size(); i++)
+			{
+				tmp += gc.ctt_list.get(i).toString() + " , ";
+			}
 		}
-		
+	
 		return tmp;
 	}
 }
