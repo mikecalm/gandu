@@ -46,7 +46,7 @@ public class Contact {
 	}
 	public String toString()
 	{
-		return guid+";\n"+ggnumber+";\n"+showName+";\n"+CGroupId+";\n"+flagBuddy+";\n"+flagNormal+";\n"+flagFriend+"\n";
+		return /*guid+";\n"+*/"---------------" +showName+"\n"+ ggnumber+";\n"+CGroupId+";\n"+flagBuddy+";\n"+flagNormal+";\n"+flagFriend+"\n";
 	}
 
 }
