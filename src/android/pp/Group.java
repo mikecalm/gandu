@@ -11,6 +11,7 @@ public class Group {
 	{
 		this.groupId = data;
 	}
+	
 	public String getGroupId()
 	{
 		return groupId;
@@ -20,14 +21,17 @@ public class Group {
 	{
 		this.name = data;
 	}
+	
 	public String getName()
 	{
 		return name;
 	}
+	
 	public void setIsExpanded(boolean data)
 	{
 		this.isExpanded = data;
 	}
+	
 	public void setIsRemovable(boolean data)
 	{
 		this.isRemovable = data;
