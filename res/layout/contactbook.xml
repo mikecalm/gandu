@@ -14,7 +14,7 @@ android:layout_height="fill_parent"
 		android:id="@+id/ImageView01" 
 		android:layout_width="wrap_content" 
 		android:layout_height="wrap_content" 
-		android:src="@drawable/icon" android:layout_gravity="left|center_vertical" android:layout_weight="0.03">
+		android:src="@drawable/icon" android:layout_gravity="left|center_vertical" android:layout_weight="0.03" android:layout_margin="5dip">
 		</ImageView>
 		<EditText 
 		android:id="@+id/EditText01" 
@@ -24,7 +24,7 @@ android:layout_height="fill_parent"
 		<ImageButton 
 		android:id="@+id/ImageButton01" 
 		android:layout_height="wrap_content" 
-		android:src="@drawable/icon" android:layout_width="wrap_content" android:layout_gravity="right|center_vertical" android:layout_weight="0.01">
+		android:layout_width="wrap_content" android:layout_gravity="right|center_vertical" android:layout_weight="0.01" android:src="@drawable/available" android:scaleType="fitCenter" android:layout_margin="5dip">
 		</ImageButton>
 	</LinearLayout>
      <LinearLayout
