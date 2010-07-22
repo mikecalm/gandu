@@ -4,11 +4,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import android.util.Log;
+
 public class XMLHandler extends DefaultHandler{
 	
 	/**
 	 * Names of marks in .XML file with contactbook
 	 */
+	//Groups flags
 	private boolean inContactBook = false;
 	private boolean inGroups = false;
 	private boolean inGroup = false;
@@ -16,7 +19,7 @@ public class XMLHandler extends DefaultHandler{
 	private boolean inName = false;
 	private boolean inIsExpanded = false;
 	private boolean inIsRemovable = false;
-	
+	//Contacts flags
 	private boolean inContacts = false;
 	private boolean inContact = false;
 	private boolean inGuid = false;
@@ -29,12 +32,12 @@ public class XMLHandler extends DefaultHandler{
 	private boolean inFlagNormal = false;
 	private boolean inFlagFriend =false;
 	
-	private boolean x = false;
-	public GroupContact GCItem = new GroupContact();
+	private boolean x = false; //true when second "Groups" tag
+	
 	public Contact ctt = new Contact();
+	public Group gp = new Group();
 	
 	public  XMLParsedDataSet pds = new XMLParsedDataSet();
-
 	
 	public  XMLParsedDataSet getParsedData() {
 		return this.pds;
@@ -43,23 +46,24 @@ public class XMLHandler extends DefaultHandler{
 	@Override
 	public void startDocument() throws SAXException
 	{
+		Log.i("XMLHandler","Start XMLDocument parsing");
 		this.pds = new XMLParsedDataSet();
 	}
 	
 	@Override
 	public void endDocument() throws SAXException
 	{
-		//  ntd
+		Log.i("XMLHandler","Finish XMLDocument parsing");
 	}
 	
 	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException
-	{
-	
+	{	
 		if (localName.equals("ContactBook"))
 		{
 			this.inContactBook = true;
 		}
+		
 		//GROUPS
 		else if (localName.equals("Groups"))
 		{
@@ -75,7 +79,7 @@ public class XMLHandler extends DefaultHandler{
 		else if(localName.equals("Group"))
 		{
 			this.inGroup = true;
-			GCItem = new GroupContact();
+			gp = new Group(); //create new Group class		
 		}
 		else if (localName.equals("Id"))
 		{
@@ -98,14 +102,12 @@ public class XMLHandler extends DefaultHandler{
 		else if( localName.equals("Contacts"))
 		{
 			this.inContacts = true;
-		}
+		}		
 		else if(localName.equals("Contact"))
 		{
 			this.inContact = true;
-			ctt = new Contact();
-			
-		}
-		
+			ctt = new Contact(); //create new Contact class			
+		}		
 		else if (localName.equals("Guid"))
 		{
 			this.inGuid = true;
@@ -162,13 +164,11 @@ public class XMLHandler extends DefaultHandler{
 			{
 				this.inGroups = false;
 				x = true;
-			}
-			
+			}			
 		}
 		else if(localName.equals("Group"))
 		{
 			this.inGroup = false;
-			XMLParsedDataSet.GCList.add(GCItem);	
 		}
 		else if (localName.equals("Id"))
 		{
@@ -176,8 +176,7 @@ public class XMLHandler extends DefaultHandler{
 		}
 		else if (localName.equals("Name"))
 		{
-			this.inName = false;
-			
+			this.inName = false;			
 		}
 		else if (localName.equals("IsExpanded"))
 		{
@@ -186,20 +185,17 @@ public class XMLHandler extends DefaultHandler{
 		else if (localName.equals("IsRemovable"))
 		{
 			this.inIsRemovable = false;
-		}
+		}	
 		
-		//CONTACTS
-		
+		//CONTACTS		
 		else if( localName.equals("Contacts"))
 		{
 			this.inContacts = false;
 		}
 		else if(localName.equals("Contact"))
 		{
-			this.inContact = false;
-			
-		}
-		
+			this.inContact = false;			
+		}		
 		else if (localName.equals("Guid"))
 		{
 			this.inGuid = false;
@@ -212,10 +208,6 @@ public class XMLHandler extends DefaultHandler{
 		{
 			this.inShowName = false;
 		}
-		/*else if (localName.equals("Groups"))
-		{
-			this.inCGroups = false;
-		}*/
 		else if (localName.equals("GroupId"))
 		{
 			this.inGroupId = false;
@@ -252,11 +244,20 @@ public class XMLHandler extends DefaultHandler{
 					
 					if(this.inId)
 					{
-						pds.setGroupID(GCItem, new String(ch, start, length));
+						gp.setGroupId(new String(ch, start, length));						
 					}
 					else if(this.inName)
 					{
-						pds.setName(GCItem, new String(ch, start, length));
+						gp.setName(new String(ch, start, length));						
+					}
+					else if(this.inIsExpanded)
+					{
+						gp.setIsExpanded(Boolean.getBoolean(new String(ch, start, length)));
+					}
+					else if(this.inIsRemovable)
+					{
+						gp.setIsRemovable(Boolean.getBoolean(new String(ch, start, length)));
+						pds.addGroup(gp); //add group to list
 					}
 					
 				}
@@ -278,36 +279,31 @@ public class XMLHandler extends DefaultHandler{
 					else if(this.inShowName)
 					{
 						ctt.setShowName(new String(ch, start, length));
-					}
-					/*else if(this.inShowName)
-					{
-						ShowName = new String(ch, start, length);
-					}*/
+					}					
 					else if(this.inCGroups)
 					{
 						if(this.inGroupId)
 						{							
-							ctt.setGroupId(new String(ch, start, length));
-							pds.addContact(ctt);
+							ctt.setGroupId(new String(ch, start, length));						
 						}
 					}
 					else if(this.inAvatars)
 					{
-						;
+						; //TODO
 					}
 					else if(this.inFlagBuddy)
 					{
-						;
+						ctt.setflagBuddy(new String(ch, start, length));
 					}
 					else if(this.inFlagNormal)
 					{
-						;
+						ctt.setflagNormal(new String(ch, start, length));
 					}
 					else if(this.inFlagFriend)
 					{
-						;
-					}
-					
+						ctt.setflagFriend(new String(ch, start, length));
+						pds.addContact(ctt); //add Contact to list into proper list
+					}					
 				}
 			}
 		}

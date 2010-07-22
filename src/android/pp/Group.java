@@ -2,8 +2,8 @@ package android.pp;
 
 public class Group {
 
-	private String groupId = null;
-	private String name = null;
+	private String groupId;
+	private String name;
 	private boolean isExpanded = true;
 	private boolean isRemovable = true;
 	
@@ -25,6 +25,16 @@ public class Group {
 	public String getName()
 	{
 		return name;
+	}
+	
+	public String getIsExpanded()
+	{
+		return Boolean.toString(isExpanded);
+	}
+	
+	public String getIsRemovable()
+	{
+		return Boolean.toString(isRemovable);
 	}
 	
 	public void setIsExpanded(boolean data)
