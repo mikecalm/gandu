@@ -1,8 +1,10 @@
 package android.pp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-import android.app.ListActivity;
+import android.app.ExpandableListActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,15 +16,21 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.SimpleExpandableListAdapter;
 
-public class ContactBook extends ListActivity{
+public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
 	String gglista;
-	TextView tv;
-	/** Messenger for communicating with service. */
+		
+		List groupData; 
+		List childData;
+		SimpleExpandableListAdapter expListAdapter;
 	
+	/** Messenger for communicating with service. */
     Messenger mService = null;
     
 	@Override
@@ -30,11 +38,79 @@ public class ContactBook extends ListActivity{
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contactbook);
-		tv = (TextView)findViewById(R.id.android_tv);
 		//zbindowanie aktywnosci do serwisu
 		doBindService();
 		
 	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu){
+		super.onCreateOptionsMenu(menu);
+		MenuInflater inflater=getMenuInflater();
+		inflater.inflate(R.menu.contactbookmenu, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+	switch (item.getItemId())
+	{
+		case R.id.item01:			
+			//wyslanie do serwisu wiadomosci, ze importowana jest lista kontaktow    		
+        	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
+    		try
+    		{
+    			mService.send(msg2);
+    		}catch(Exception excMsg)
+    		{
+    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
+    		}
+			return true;
+		//Moreitemsgohere(ifany)...
+	}
+	return false;
+	}
+	
+	/**
+	  * Creates the group list out of the groups[] array according to
+	  * the structure required by SimpleExpandableListAdapter. The resulting
+	  * List contains Maps. Each Map contains one entry with key "groupName" and
+	  * value of an entry in the groups[] array.
+	  */
+		private List createGroupList(ArrayList<GroupContact> gcl) {
+			ArrayList result = new ArrayList();
+			for(GroupContact gc : gcl)
+			{
+				HashMap m = new HashMap();
+			    m.put( "groupName",gc.gp.getName());
+				result.add( m );
+			}
+		  return (List)result;
+	    }
+
+	/**
+	  * Creates the child list out of the users[] array according to the
+	  * structure required by SimpleExpandableListAdapter. The resulting List
+	  * contains one list for each group. Each such second-level group contains
+	  * Maps. Each such Map contains two keys: "contactname" is the name of the
+	  * contact and "description" is the users description.
+	  */
+	  private List createChildList(ArrayList<GroupContact> gcl) {
+		ArrayList result = new ArrayList();
+		for(GroupContact gc : gcl)
+		{
+			ArrayList secList = new ArrayList();
+			for(int i = 0; i < gc.ctt_list.size(); i++)
+			{
+				HashMap child = new HashMap();
+				child.put( "username", gc.ctt_list.get(i).getShowName() );
+				child.put( "description", gc.ctt_list.get(i).getGGNumber() );
+				secList.add( child );
+			}
+			result.add( secList );
+		}
+		return result;
+	  }
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
@@ -47,27 +123,28 @@ public class ContactBook extends ListActivity{
             switch (msg.what) {
                 case Common.FLAG_ACTIVITY_REGISTER:
                 	Log.i("ContactBook","Received: "+msg.what);
-                	
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
-            		
-                	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
-            		try
-            		{
-            			mService.send(msg2);
-            		}catch(Exception excMsg)
-            		{
-            			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
-            		}
                 	break;
                 case Common.FLAG_CONTACTBOOK:
-                	tv.setText("");
-                	Log.i("ContactBook", "odebralem od serwisu");
                 	Bundle odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
-                	XMLContactBook  xcb = new XMLContactBook();                	
+                	XMLContactBook  xcb = new XMLContactBook();
                 	XMLParsedDataSet xpds = xcb.xmlparse(gglista);
-                	tv.setText(xpds.toString());
-                	//tv.setText(gglista);
+                	groupData = createGroupList(xpds.GCList); 
+        			childData = createChildList(xpds.GCList);
+        			expListAdapter =
+        				new SimpleExpandableListAdapter(
+        					getApplicationContext(),
+        					groupData,	// groupData describes the first-level entries
+        					R.layout.group_row,	// Layout for the first-level entries
+        					new String[] { "groupName" },	// Key in the groupData maps to display
+        					new int[] { R.id.groupname },		// Data under "colorName" key goes into this TextView
+        					childData,	// childData describes second-level entries
+        					R.layout.child_row,	// Layout for second-level entries
+        					new String[] { "username", "description" },	// Keys in childData maps to display
+        					new int[] { R.id.username, R.id.description }	// Data under the keys above go into these TextViews
+        				);
+        			setListAdapter( expListAdapter );
                 	break;
                 default:
                     super.handleMessage(msg);
