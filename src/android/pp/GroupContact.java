@@ -7,4 +7,9 @@ public class GroupContact {
 	public Group gp = new Group();
 	public ArrayList<Contact> ctt_list = new ArrayList<Contact>();
 	
+	public GroupContact(Group tmp)
+	{
+		this.gp = tmp;
+	}
+	
 }
