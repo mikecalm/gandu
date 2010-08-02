@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 public class XMLParsedDataSet {
 	
-	public static ArrayList<GroupContact> GCList = new ArrayList<GroupContact>();
+	//public static ArrayList<GroupContact> GCList = new ArrayList<GroupContact>();
+	public ArrayList<GroupContact> GCList = new ArrayList<GroupContact>();
 	
 	public void addGroup(Group gp)
 	{

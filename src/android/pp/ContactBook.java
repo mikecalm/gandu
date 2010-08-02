@@ -1,12 +1,12 @@
 package android.pp;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ExpandableListActivity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -19,16 +19,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.Toast;
 
 public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
 	String gglista;
+	private static final int DIALOG_STATUS = 1;
 		
-		List groupData; 
-		List childData;
-		SimpleExpandableListAdapter expListAdapter;
+	//List groupData; 
+	//List childData;
+	SimpleExpandableListAdapter expListAdapter;
+	AlertDialog alertDialog;
+
+	//Adapter utrzymujacy dane z listy kontaktow	
+	MyExpandableListAdapter mAdapter;
 	
 	/** Messenger for communicating with service. */
     Messenger mService = null;
@@ -41,6 +50,20 @@ public class ContactBook extends ExpandableListActivity{
 		//zbindowanie aktywnosci do serwisu
 		doBindService();
 		
+        //Ustawienie adaptera z danymi listy kontaktow
+        mAdapter = new MyExpandableListAdapter(getApplicationContext());
+        setListAdapter(mAdapter);
+		
+		/* Wyswietl liste statusow */
+		ImageButton statusButton = (ImageButton) findViewById(R.id.ImageButton01);
+        statusButton.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                showDialog(DIALOG_STATUS);
+            	//int wybrany = alertDialog.getListView().getCheckedItemPosition();
+            	//Toast.makeText(getApplicationContext(), "wybrano", wybrany).show();
+            }
+        });
+		
 	}
 	
 	@Override
@@ -51,6 +74,7 @@ public class ContactBook extends ExpandableListActivity{
 		return true;
 	}
 	
+	//zdarzenia zwiazane z wyborem opcji menu
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
 	switch (item.getItemId())
@@ -71,13 +95,39 @@ public class ContactBook extends ExpandableListActivity{
 	return false;
 	}
 	
+	//zdarzenia realizowane po wywolaniu metody showDialog(id); 
+	@Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+        case DIALOG_STATUS:
+            //return new AlertDialog.Builder(ContactBook.this)
+        	return alertDialog = new AlertDialog.Builder(ContactBook.this)
+                .setTitle("Status")
+                .setItems(new String[]{"Dostepny","Niewidoczny","Niedostepny"}, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        /* User clicked so do some stuff */
+                        String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
+                        /*new AlertDialog.Builder(ContactBook.this)
+                                .setMessage("Status: " + items[which])
+                                .show();*/
+                    }
+                })
+                .create();
+            //w tym przypadku nie jest potrzebny break na koncu, bo w case jest zwracany obiekt
+        	//break;
+        }
+        
+        return null;
+	}
+	
 	/**
 	  * Creates the group list out of the groups[] array according to
 	  * the structure required by SimpleExpandableListAdapter. The resulting
 	  * List contains Maps. Each Map contains one entry with key "groupName" and
 	  * value of an entry in the groups[] array.
 	  */
-		private List createGroupList(ArrayList<GroupContact> gcl) {
+		/*private List createGroupList(ArrayList<GroupContact> gcl) {
 			ArrayList result = new ArrayList();
 			for(GroupContact gc : gcl)
 			{
@@ -86,6 +136,15 @@ public class ContactBook extends ExpandableListActivity{
 				result.add( m );
 			}
 		  return (List)result;
+	    }*/
+		
+		private String[] createGroupArray(ArrayList<GroupContact> gcl) {
+			String[] result = new String[gcl.size()];
+			for(int i=0; i<result.length; i++)
+			{
+				result[i] = gcl.get(i).gp.getName();
+			}
+		  return result;
 	    }
 
 	/**
@@ -95,7 +154,7 @@ public class ContactBook extends ExpandableListActivity{
 	  * Maps. Each such Map contains two keys: "contactname" is the name of the
 	  * contact and "description" is the users description.
 	  */
-	  private List createChildList(ArrayList<GroupContact> gcl) {
+	  /*private List createChildList(ArrayList<GroupContact> gcl) {
 		ArrayList result = new ArrayList();
 		for(GroupContact gc : gcl)
 		{
@@ -110,7 +169,20 @@ public class ContactBook extends ExpandableListActivity{
 			result.add( secList );
 		}
 		return result;
-	  }
+	  }*/
+	  
+	  private String[][] createChildArray(ArrayList<GroupContact> gcl) {
+			String[][] result = new String[gcl.size()][];
+			for(int i=0; i<result.length; i++)
+			{
+				result[i] = new String[gcl.get(i).ctt_list.size()];
+				for(int j=0; j<result[i].length; j++)
+				{
+					result[i][j] = gcl.get(i).ctt_list.get(j).getShowName();
+				}
+			}
+			return result;
+		  }
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
@@ -130,7 +202,11 @@ public class ContactBook extends ExpandableListActivity{
                 	gglista = odebrany.getString("listaGG");
                 	XMLContactBook  xcb = new XMLContactBook();
                 	XMLParsedDataSet xpds = xcb.xmlparse(gglista);
-                	groupData = createGroupList(xpds.GCList); 
+                	//if(groupData != null)
+                	//	groupData.clear();
+                	/*groupData = createGroupList(xpds.GCList);
+                	//if(childData != null)
+                	//	childData.clear();
         			childData = createChildList(xpds.GCList);
         			expListAdapter =
         				new SimpleExpandableListAdapter(
@@ -144,7 +220,20 @@ public class ContactBook extends ExpandableListActivity{
         					new String[] { "username", "description" },	// Keys in childData maps to display
         					new int[] { R.id.username, R.id.description }	// Data under the keys above go into these TextViews
         				);
-        			setListAdapter( expListAdapter );
+        			//expListAdapter.notifyDataSetChanged();
+        			//if(getExpandableListAdapter() == null)
+        				setListAdapter( expListAdapter );
+        			for(int grupy=0; grupy<groupData.size(); grupy++)
+        				getExpandableListView().expandGroup(grupy);*/
+
+                	String[] grupy = createGroupArray(xpds.GCList);
+                	String[][] kontakty = createChildArray(xpds.GCList);
+        			mAdapter.setAdapterData(grupy, kontakty);
+        			mAdapter.notifyDataSetChanged();
+        			for(int parent=0; parent<grupy.length; parent++)
+        				getExpandableListView().expandGroup(parent);
+        			
+        			//getExpandableListAdapter()
                 	break;
                 default:
                     super.handleMessage(msg);
