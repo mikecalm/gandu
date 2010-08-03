@@ -43,7 +43,7 @@ import android.widget.TextView;
         {
         	this.groups = groups;
         	this.children = contacts;
-        	//this.notifyDataSetChanged();
+        	notifyDataSetChanged();
         }
         
         public Object getChild(int groupPosition, int childPosition) {
@@ -59,11 +59,14 @@ import android.widget.TextView;
         }
         
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
-                View convertView, ViewGroup parent) {            
-        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);
-            ((TextView)convertView.findViewById(R.id.username)).setText(getChild(groupPosition, childPosition).toString());
-            if(getChild(groupPosition, childPosition).toString().equals("Barry"))
-            	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
+                View convertView, ViewGroup parent) {  
+        	//if(convertView == null)
+            //{
+	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);
+	            ((TextView)convertView.findViewById(R.id.username)).setText(getChild(groupPosition, childPosition).toString());
+	            if(getChild(groupPosition, childPosition).toString().equals("Barry"))
+	            	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
+            //}
             
             return convertView;
         }
