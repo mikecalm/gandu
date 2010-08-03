@@ -1,6 +1,9 @@
 package android.pp;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
@@ -183,6 +186,23 @@ public class ContactBook extends ExpandableListActivity{
 			}
 			return result;
 		  }
+	  
+	//Posortowanie listy kontaktow przed jej prezentacja
+	private void sortContactList(XMLParsedDataSet unsortedList)
+	{
+	  	try
+	  	{
+	  		Collections.sort(unsortedList.GCList);
+	  		for (GroupContact gc : unsortedList.GCList)
+	  		{
+	  			gc.sortContacts();
+	  		}
+		}
+		catch(Exception excSortG)
+		{
+			;
+		}
+	}
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
@@ -225,11 +245,14 @@ public class ContactBook extends ExpandableListActivity{
         				setListAdapter( expListAdapter );
         			for(int grupy=0; grupy<groupData.size(); grupy++)
         				getExpandableListView().expandGroup(grupy);*/
-
+                	
+                	//Posortowanie listy kontaktow przed jej prezentacja
+                	//xpds = sortContactList(xpds);
+                	sortContactList(xpds);
                 	String[] grupy = createGroupArray(xpds.GCList);
                 	String[][] kontakty = createChildArray(xpds.GCList);
         			mAdapter.setAdapterData(grupy, kontakty);
-        			mAdapter.notifyDataSetChanged();
+        			//mAdapter.notifyDataSetChanged();
         			for(int parent=0; parent<grupy.length; parent++)
         				getExpandableListView().expandGroup(parent);
         			

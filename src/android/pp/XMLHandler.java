@@ -31,6 +31,7 @@ public class XMLHandler extends DefaultHandler{
 	private boolean inFlagBuddy = false;
 	private boolean inFlagNormal = false;
 	private boolean inFlagFriend =false;
+	private boolean inFlagIgnored = false;
 	
 	private boolean x = false; //true when second "Groups" tag
 	
@@ -79,7 +80,7 @@ public class XMLHandler extends DefaultHandler{
 		else if(localName.equals("Group"))
 		{
 			this.inGroup = true;
-			gp = new Group(); //create new Group class		
+			gp = new Group(); //create new Group class
 		}
 		else if (localName.equals("Id"))
 		{
@@ -106,7 +107,7 @@ public class XMLHandler extends DefaultHandler{
 		else if(localName.equals("Contact"))
 		{
 			this.inContact = true;
-			ctt = new Contact(); //create new Contact class			
+			ctt = new Contact(); //create new Contact class		
 		}		
 		else if (localName.equals("Guid"))
 		{
@@ -145,6 +146,10 @@ public class XMLHandler extends DefaultHandler{
 		{
 			this.inFlagFriend = true;
 		}
+		else if (localName.equals("FlagIgnored"))
+		{
+			this.inFlagIgnored = true;
+		}
 	}
 	
 	@Override
@@ -169,6 +174,7 @@ public class XMLHandler extends DefaultHandler{
 		else if(localName.equals("Group"))
 		{
 			this.inGroup = false;
+			pds.addGroup(gp); //add group to list
 		}
 		else if (localName.equals("Id"))
 		{
@@ -194,7 +200,8 @@ public class XMLHandler extends DefaultHandler{
 		}
 		else if(localName.equals("Contact"))
 		{
-			this.inContact = false;			
+			this.inContact = false;
+			pds.addContact(ctt); //add Contact to list into proper list
 		}		
 		else if (localName.equals("Guid"))
 		{
@@ -228,6 +235,10 @@ public class XMLHandler extends DefaultHandler{
 		{
 			this.inFlagFriend = false;
 		}
+		else if (localName.equals("FlagIgnored"))
+		{
+			this.inFlagIgnored = false;
+		}
 	}
 	
 	
@@ -257,9 +268,7 @@ public class XMLHandler extends DefaultHandler{
 					else if(this.inIsRemovable)
 					{
 						gp.setIsRemovable(Boolean.getBoolean(new String(ch, start, length)));
-						pds.addGroup(gp); //add group to list
 					}
-					
 				}
 				
 			}
@@ -302,8 +311,11 @@ public class XMLHandler extends DefaultHandler{
 					else if(this.inFlagFriend)
 					{
 						ctt.setflagFriend(new String(ch, start, length));
-						pds.addContact(ctt); //add Contact to list into proper list
-					}					
+					}
+					else if(this.inFlagIgnored)
+					{
+						ctt.setflagIgnored(new String(ch, start, length));
+					}
 				}
 			}
 		}

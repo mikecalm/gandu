@@ -1,6 +1,6 @@
 package android.pp;
 
-public class Contact {
+public class Contact implements Comparable{
 	
 	private String guid = null;
 	private String ggnumber = null;
@@ -9,6 +9,14 @@ public class Contact {
 	private boolean flagBuddy = true;
 	private boolean flagNormal = true;
 	private boolean flagFriend = true;
+	private boolean flagIgnored = false;
+	
+	public int compareTo(Object o) 
+	{
+		String thisVal = this.showName;
+		String anotherVal = ((Contact)o).showName;
+		return thisVal.compareTo(anotherVal);
+	}
 	
 	public String getflagBuddy()
 	{
@@ -24,6 +32,11 @@ public class Contact {
 	{
 		return Boolean.toString(flagNormal);
 	}
+
+	public String getflagIgnored(String data)
+	{
+		return Boolean.toString(flagIgnored);
+	}
 	
 	public void setflagBuddy(String data)
 	{
@@ -38,6 +51,11 @@ public class Contact {
 	public void setflagFriend(String data)
 	{
 		this.flagFriend= Boolean.getBoolean(data);
+	}
+	
+	public void setflagIgnored(String data)
+	{
+		this.flagIgnored= Boolean.getBoolean(data);
 	}
 	
 	public String getGuid()
@@ -81,7 +99,7 @@ public class Contact {
 	
 	public String toString()
 	{
-		return "\n"+"-> Nazwa:" +showName+"\nNumer GG: "+ ggnumber+"\nGUID: "+guid+ ";\nGroupId: "+CGroupId+";\n"+flagBuddy+";\n"+flagNormal+";\n"+flagFriend+"\n";
+		return "\n"+"-> Nazwa:" +showName+"\nNumer GG: "+ ggnumber+"\nGUID: "+guid+ ";\nGroupId: "+CGroupId+";\n"+flagBuddy+";\n"+flagNormal+";\n"+flagFriend+"\n"+flagIgnored+"\n";
 	}
 
 }
