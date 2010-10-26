@@ -6,6 +6,8 @@ public class Contact implements Comparable{
 	private String ggnumber = null;
 	private String showName = null;
 	private String CGroupId = null;
+	private String description = null;
+	private int status = -1; 
 	private boolean flagBuddy = true;
 	private boolean flagNormal = true;
 	private boolean flagFriend = true;
@@ -16,6 +18,16 @@ public class Contact implements Comparable{
 		String thisVal = this.showName;
 		String anotherVal = ((Contact)o).showName;
 		return thisVal.compareTo(anotherVal);
+	}
+	
+	public String getDescription()
+	{
+		return description;
+	}
+	
+	public int getStatus()
+	{
+		return status;
 	}
 	
 	public String getflagBuddy()
@@ -36,6 +48,16 @@ public class Contact implements Comparable{
 	public String getflagIgnored(String data)
 	{
 		return Boolean.toString(flagIgnored);
+	}
+	
+	public void setDescription(String data)
+	{
+		this.description = data;
+	}
+	
+	public void setSatatus(int data)
+	{
+		this.status = data;
 	}
 	
 	public void setflagBuddy(String data)

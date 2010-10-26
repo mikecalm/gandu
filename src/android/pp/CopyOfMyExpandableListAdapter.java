@@ -15,32 +15,26 @@ import android.widget.TextView;
      * list of photos and adding a new photo.
      *
      */
-    public class MyExpandableListAdapter extends BaseExpandableListAdapter {
+    public class CopyOfMyExpandableListAdapter extends BaseExpandableListAdapter {
     	private Context mContext;
         private LayoutInflater mInflater;
-        // Sample data set.  children[i] contains the children (String[]) for groups[i].
-        /*private String[] groups = { "People Names", "Dog Names", "Cat Names", "Fish Names" };
-        private String[][] children = {
-                { "Arnold", "Barry", "Chuck", "David" },
-                { "Ace", "Bandit", "Cha-Cha", "Deuce" },
-                { "Fluffy", "Snuggles" },
-                { "Goldy", "Bubbles" }
-        };*/
+        private CopyOfContactBook listaKontaktow;
         private String[] groups = {};
         private String[][] children = {{}};
         
         //Do kontruktora MyExpandableListAdapter przekazywany jest kontekst aplikacji
         //potrzebny do LayoutInflater, zeby moc wczytac layout wierszy i grup na liscie
         //z pliku xml
-        public MyExpandableListAdapter(Context kontekst)
-        {
+        public CopyOfMyExpandableListAdapter(Context kontekst)
+        {        	
         	this.mContext = kontekst;
         	this.mInflater = LayoutInflater.from(this.mContext);
         }
         
         //Ustawianie danych listy kontaktow
-        public void setAdapterData(String[] groups, String contacts[][])
+        public void setAdapterData(String[] groups, String contacts[][], CopyOfContactBook lista)
         {
+        	this.listaKontaktow = lista;
         	this.groups = groups;
         	this.children = contacts;
         	notifyDataSetChanged();
