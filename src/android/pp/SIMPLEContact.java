@@ -1,9 +1,7 @@
 package android.pp;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.simpleframework.xml.*;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.Root;
 
 @Root(name="Contact")
 public class SIMPLEContact implements Comparable{
