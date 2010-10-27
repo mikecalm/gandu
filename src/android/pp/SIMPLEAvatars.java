@@ -7,7 +7,7 @@ import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 @Root
-public class CopyOfAvatars {
+public class SIMPLEAvatars {
 	
 	@ElementList(required=false, inline=true, entry="URL")
 	   List<String> Avatars;

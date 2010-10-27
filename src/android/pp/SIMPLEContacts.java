@@ -3,10 +3,12 @@ package android.pp;
 import java.util.List;
 
 import org.simpleframework.xml.ElementList;
+import org.simpleframework.xml.Root;
 
-public class CopyOfGroups {
+@Root
+public class SIMPLEContacts {
 	
 	@ElementList(required=false, inline=true)
-	public List<CopyOfGroup> Groups;
+	public List<SIMPLEContact> Contacts;
 
 }

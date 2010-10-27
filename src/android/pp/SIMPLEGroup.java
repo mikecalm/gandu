@@ -4,7 +4,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 @Root(name="Group")
-public class CopyOfGroup implements Comparable{
+public class SIMPLEGroup implements Comparable{
 	
 	//przedrostki A1, A2.. sa wymagane, poniewaz elementy
 	//do pliku XML zapisywane sa wedlug kolejnosci alfabetycznej
@@ -22,7 +22,7 @@ public class CopyOfGroup implements Comparable{
 	@Element(required=false, name="IsRemovable")
 	public Boolean A4IsRemovable;
 	
-	public CopyOfGroup()
+	public SIMPLEGroup()
 	{
 		this.A1Id = "Id";
 		this.A2Name = "Name";
@@ -31,7 +31,7 @@ public class CopyOfGroup implements Comparable{
 	@Override
 	public int compareTo(Object arg0) {
 		String thisVal = this.A1Id;
-		String anotherVal = ((CopyOfGroup)arg0).A1Id;
+		String anotherVal = ((SIMPLEGroup)arg0).A1Id;
 		//return thisVal.compareTo(anotherVal);
 		return thisVal.compareToIgnoreCase(anotherVal);
 	}

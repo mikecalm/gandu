@@ -1,6 +1,6 @@
 package android.pp;
 
-public class CopyOfViewableContacts {
+public class ViewableContacts {
 	
 	public String showName;
 	public int GGNumber;

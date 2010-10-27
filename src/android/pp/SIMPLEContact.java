@@ -6,7 +6,7 @@ import java.util.List;
 import org.simpleframework.xml.*;
 
 @Root(name="Contact")
-public class CopyOfContact implements Comparable{
+public class SIMPLEContact implements Comparable{
 	
 	//przedrostki A1, A2.. sa wymagane, poniewaz elementy
 	//do pliku XML zapisywane sa wedlug kolejnosci alfabetycznej
@@ -42,11 +42,11 @@ public class CopyOfContact implements Comparable{
 	@Element(required=false, name="Province")
 	public String AB4Province;
 	@Element(name="Groups")
-	CopyOfContactGroups AB5Groups;
+	SIMPLEContactGroups AB5Groups;
 	@Element(required=false, name="CurrentAvatar")
 	public String AB6CurrentAvatar;
 	@Element(required=false, name="Avatars")
-	CopyOfAvatars AB7Avatars;
+	SIMPLEAvatars AB7Avatars;
 	@Element(required=false, name="UserActivatedInMG")
 	public Boolean AB8UserActivatedInMG;
 	@Element(required=false, name="FlagBuddy")
@@ -60,15 +60,15 @@ public class CopyOfContact implements Comparable{
 	@Element(required=false, name="NickName")
 	public String AC4NickName;	
 
-	public CopyOfContact() {
-		this.AB7Avatars = new CopyOfAvatars();
+	public SIMPLEContact() {
+		this.AB7Avatars = new SIMPLEAvatars();
 		this.AB7Avatars.Avatars = new ArrayList<String>();
 		this.AB7Avatars.Avatars.add("avatar1");
 		this.AB7Avatars.Avatars.add("avatar2");    
 		this.AA3ShowName = "showName";
 		this.AA1Guid = "Guid";
 		this.AA2GGNumber = "123456";
-		this.AB5Groups = new CopyOfContactGroups();
+		this.AB5Groups = new SIMPLEContactGroups();
 		this.AB5Groups.Groups = new ArrayList<String>();
 		this.AB5Groups.Groups.add("grupa1");
 		this.AB5Groups.Groups.add("grupa2");
@@ -77,7 +77,7 @@ public class CopyOfContact implements Comparable{
 	@Override
 	public int compareTo(Object another) {
 		String thisVal = this.AA3ShowName;
-		String anotherVal = ((CopyOfContact)another).AA3ShowName;
+		String anotherVal = ((SIMPLEContact)another).AA3ShowName;
 		//return thisVal.compareTo(anotherVal);
 		return thisVal.compareToIgnoreCase(anotherVal);
 	}
