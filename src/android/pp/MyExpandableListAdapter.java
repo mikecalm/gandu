@@ -1,11 +1,7 @@
 package android.pp;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import org.simpleframework.xml.Serializer;
-import org.simpleframework.xml.core.Persister;
 
 import android.content.Context;
 import android.view.LayoutInflater;
