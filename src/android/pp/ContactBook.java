@@ -49,14 +49,10 @@ public class ContactBook extends ExpandableListActivity{
 	List<List<ViewableContacts>> contactsExpandableList;
 	List<ViewableGroups> groupsExpandableList;
 	private static final int DIALOG_STATUS = 1;
-		
-	//List groupData; 
-	//List childData;
-	//SimpleExpandableListAdapter expListAdapter;
+	
 	AlertDialog alertDialog;
 
-	//Adapter utrzymujacy dane z listy kontaktow	
-	//MyExpandableListAdapter mAdapter;
+	//Adapter utrzymujacy dane z listy kontaktow
 	MyExpandableListAdapter mAdapter;
 	
 	/** Messenger for communicating with service. */
@@ -150,86 +146,6 @@ public class ContactBook extends ExpandableListActivity{
 		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, 2000).show();
         return false;
     }
-	
-	/**
-	  * Creates the group list out of the groups[] array according to
-	  * the structure required by SimpleExpandableListAdapter. The resulting
-	  * List contains Maps. Each Map contains one entry with key "groupName" and
-	  * value of an entry in the groups[] array.
-	  */
-		/*private List createGroupList(ArrayList<GroupContact> gcl) {
-			ArrayList result = new ArrayList();
-			for(GroupContact gc : gcl)
-			{
-				HashMap m = new HashMap();
-			    m.put( "groupName",gc.gp.getName());
-				result.add( m );
-			}
-		  return (List)result;
-	    }*/
-		
-		/*private String[] createGroupArray(ArrayList<GroupContact> gcl) {
-			String[] result = new String[gcl.size()];
-			for(int i=0; i<result.length; i++)
-			{
-				result[i] = gcl.get(i).gp.getName();
-			}
-		  return result;
-	    }*/
-
-	/**
-	  * Creates the child list out of the users[] array according to the
-	  * structure required by SimpleExpandableListAdapter. The resulting List
-	  * contains one list for each group. Each such second-level group contains
-	  * Maps. Each such Map contains two keys: "contactname" is the name of the
-	  * contact and "description" is the users description.
-	  */
-	  /*private List createChildList(ArrayList<GroupContact> gcl) {
-		ArrayList result = new ArrayList();
-		for(GroupContact gc : gcl)
-		{
-			ArrayList secList = new ArrayList();
-			for(int i = 0; i < gc.ctt_list.size(); i++)
-			{
-				HashMap child = new HashMap();
-				child.put( "username", gc.ctt_list.get(i).getShowName() );
-				child.put( "description", gc.ctt_list.get(i).getGGNumber() );
-				secList.add( child );
-			}
-			result.add( secList );
-		}
-		return result;
-	  }*/
-	  
-	  /*private String[][] createChildArray(ArrayList<GroupContact> gcl) {
-			String[][] result = new String[gcl.size()][];
-			for(int i=0; i<result.length; i++)
-			{
-				result[i] = new String[gcl.get(i).ctt_list.size()];
-				for(int j=0; j<result[i].length; j++)
-				{
-					result[i][j] = gcl.get(i).ctt_list.get(j).getShowName();
-				}
-			}
-			return result;
-		  }*/
-	  
-	//Posortowanie listy kontaktow przed jej prezentacja
-	/*private void sortContactList(XMLParsedDataSet unsortedList)
-	{
-	  	try
-	  	{
-	  		Collections.sort(unsortedList.GCList);
-	  		for (GroupContact gc : unsortedList.GCList)
-	  		{
-	  			gc.sortContacts();
-	  		}
-		}
-		catch(Exception excSortG)
-		{
-			;
-		}
-	}*/
 
 	public void prepareContactBook(String xmlList)
     {
@@ -289,20 +205,6 @@ public class ContactBook extends ExpandableListActivity{
 			}
 		}			
     }
-	/*
-	private CopyOfViewableContacts[][] createChildArray_expandable(CopyOfContactBook gcl) {
-		CopyOfViewableContacts[][] result = new CopyOfViewableContacts[gcl.A1Groupsy.Groups.size()][];
-		for(int i=0; i<result.length; i++)
-		{
-			//result[i] = new Array();
-			List<CopyOfViewableContacts> resultList = new ArrayList<CopyOfViewableContacts>();
-			for(int j=0; j<result[i].length; j++)
-			{
-				result[i][j] = gcl.get(i).ctt_list.get(j).getShowName();
-			}
-		}
-		return result;
-	  }*/	
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
@@ -320,28 +222,10 @@ public class ContactBook extends ExpandableListActivity{
                 case Common.FLAG_CONTACTBOOK:
                 	Bundle odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
-                	
-                	//!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!
-                	//saveOnSDCard(gglista); 
                 	prepareContactBook(gglista);
-                	//!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!
-                	
-                	//XMLContactBook  xcb = new XMLContactBook();
-                	//XMLParsedDataSet xpds = xcb.xmlparse(gglista);
-                	
-                	//Posortowanie listy kontaktow przed jej prezentacja
-                	//sortContactList(xpds);
-                	//String[] grupy = createGroupArray(xpds.GCList);
-                	//String[][] kontakty = createChildArray(xpds.GCList);
-        			//mAdapter.setAdapterData(grupy, kontakty);
                 	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
-                	//mAdapter.prepareContactBook(gglista);
-        			//mAdapter.notifyDataSetChanged();
-        			//for(int parent=0; parent<grupy.length; parent++)
                 	for(int parent=0; parent<groupsExpandableList.size(); parent++)
         				getExpandableListView().expandGroup(parent);
-        			
-        			//getExpandableListAdapter()
                 	break;
                 default:
                     super.handleMessage(msg);
@@ -407,7 +291,6 @@ public class ContactBook extends ExpandableListActivity{
         // applications replace our component.
         bindService(new Intent(ContactBook.this, 
                 GanduService.class), mConnection, Context.BIND_AUTO_CREATE);
-        		//GanduService.class), mConnection, Context.);
         
         mIsBound = true;
         //mCallbackText.setText("Binding.");
@@ -435,114 +318,5 @@ public class ContactBook extends ExpandableListActivity{
             mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
-    }     
-    
-    public void saveOnSDCard(String tmp)
-    {
- 	   boolean mExternalStorageAvailable = false;
- 	   boolean mExternalStorageWriteable = false;
- 	   String state = Environment.getExternalStorageState();
-
- 	   if (Environment.MEDIA_MOUNTED.equals(state)) {
- 	       // We can read and write the media
- 	       mExternalStorageAvailable = mExternalStorageWriteable = true;
- 	   } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
- 	       // We can only read the media
- 	       mExternalStorageAvailable = true;
- 	       mExternalStorageWriteable = false;
- 	   } else {
- 	       // Something else is wrong. It may be one of many other states, but all we need
- 	       //  to know is we can neither read nor write
- 	       mExternalStorageAvailable = mExternalStorageWriteable = false;
- 	      
- 		
- 	   }
- 	   String extStorageDirectory = Environment.getExternalStorageDirectory().toString() ;
- 	   File file = new File(extStorageDirectory, "tmp.xml");
- 	   
- 	   if(mExternalStorageWriteable)
- 	   {
- 		   //!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!
- 		   
- 		   	/*Serializer serializer = new Persister();
- 		   	CopyOfContact example = new CopyOfContact();
- 		   	CopyOfGroup exampleGroup = new CopyOfGroup();
-		   	CopyOfContactBook examplefinal = new CopyOfContactBook();
-		   	examplefinal.A2Contactsy = new CopyOfContacts();
-		   	examplefinal.A2Contactsy.Contacts = new ArrayList<CopyOfContact>();
-		   	examplefinal.A1Groupsy = new CopyOfGroups();
-		   	examplefinal.A1Groupsy.Groups = new ArrayList<CopyOfGroup>();
-		   	examplefinal.A2Contactsy.Contacts.add(example);
-		   	examplefinal.A2Contactsy.Contacts.add(example);
-		   	examplefinal.A1Groupsy.Groups.add(exampleGroup);
-		   	examplefinal.A1Groupsy.Groups.add(exampleGroup);
-	      	File result = new File(extStorageDirectory, "result.xml");*/
-
-			try {
-				//serializer.write(examplefinal, result);
-				
-				Serializer serializer = new Persister();
-
-				//false na koñcu odpowiada za ignorowanie elementow w pliku XML ktorych
-				//nie ma zadeklarowanych w klasie do ktorej wczytuje XMLa. Gdyby GG dorzucilo
-				//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
-				//ktore ma zadeklarowane w klasie z lista kontaktow.
-				//CopyOfContactBook nowy = serializer.read(CopyOfContactBook.class, result, false);
-				/*
-				CopyOfContactBook nowy2 = serializer.read(CopyOfContactBook.class, tmp, false);
-				sortContactListSIMPLE(nowy2);
-				List<List<CopyOfViewableContacts>> kontaktyExp = new ArrayList<List<CopyOfViewableContacts>>();
-				List<CopyOfViewableGroups> grupyExp = new ArrayList<CopyOfViewableGroups>();
-				createExpandableAdapter(nowy2, kontaktyExp, grupyExp);
-				*/
-				
-				//Wyszukiwanie kontaktu na liscie nowy2.A2Contactsy.Contacts
-				//po showName kontaktu.
-				//Jesli kontaktu o danym showName nie ma na liscie, to zostanie zwrocona
-				//wartosc ujemna (-(X)-1), gdzie X to indeks na liscie pod ktorym
-				//moglby zostac umieszczony element tak, aby lista ciagle pozostawala
-				//posortowana rosnaco.
-				//UWAGA
-				//Przed wykonaniem Collections.binarySearch lista nowy2.A2Contactsy.Contacts
-				//musi zostac posortowana rosnaco wedlug showName: 
-				//sortContactListSIMPLE(CopyOfContactBook kontakty);
-				//W przeciwnym wypadku wynik funkcji binarySearch nie gwarantuje poprawnego wyniku.
-				//UWAGA
-				//Zrodlo:
-				//http://download.oracle.com/javase/6/docs/api/java/util/Collections.html#binarySearch%28java.util.List,%20T,%20java.util.Comparator%29
-				
-				/*
-				CopyOfContact szukany = new CopyOfContact();
-				szukany.AA3ShowName = "Blip.pl";
-				int miejsce = Collections.binarySearch(nowy2.A2Contactsy.Contacts,szukany,null);
-				String numerznalezionego = null;
-				if(miejsce>0)
-					numerznalezionego = nowy2.A2Contactsy.Contacts.get(miejsce).AA2GGNumber;
-				
-				//Collections.binarySearch(nowy2.A2Contactsy.Contacts, "Blip");
-				//nowy2.A2Contactsy.Contacts
-				File result2 = new File(extStorageDirectory, "pobranaIZinterpretowana.xml");
-				//serializer2.write(nowy2,result2);
-				serializer.write(nowy2,result2);
-				*/
-				//nowy.Avatars.Avatars.add("ADAD");
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			//!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!
- 		   
-	 	   try {
-		 		FileOutputStream fos = new FileOutputStream(file);
-		 		byte [] buffer = tmp.getBytes("UTF-8");
-		 		fos.write(buffer);
-		 		fos.flush();
-		 		fos.close();
-	 		
-		 	} catch (Exception e) {
-		 		// TODO Auto-generated catch block
-		 		e.printStackTrace();
-		 	}
- 	   }
-    }
+    }   
 }
