@@ -61,24 +61,12 @@ public class SIMPLEContact implements Comparable{
 	public String AC4NickName;	
 
 	public SIMPLEContact() {
-		this.AB7Avatars = new SIMPLEAvatars();
-		this.AB7Avatars.Avatars = new ArrayList<String>();
-		this.AB7Avatars.Avatars.add("avatar1");
-		this.AB7Avatars.Avatars.add("avatar2");    
-		this.AA3ShowName = "showName";
-		this.AA1Guid = "Guid";
-		this.AA2GGNumber = "123456";
-		this.AB5Groups = new SIMPLEContactGroups();
-		this.AB5Groups.Groups = new ArrayList<String>();
-		this.AB5Groups.Groups.add("grupa1");
-		this.AB5Groups.Groups.add("grupa2");
 	}
 	
 	@Override
 	public int compareTo(Object another) {
 		String thisVal = this.AA3ShowName;
 		String anotherVal = ((SIMPLEContact)another).AA3ShowName;
-		//return thisVal.compareTo(anotherVal);
 		return thisVal.compareToIgnoreCase(anotherVal);
 	}
 }

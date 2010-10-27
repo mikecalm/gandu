@@ -9,7 +9,6 @@ public class ViewableGroups implements Comparable{
 	public int compareTo(Object another) {
 		String thisVal = this.groupid;
 		String anotherVal = ((ViewableGroups)another).groupid;
-		//return thisVal.compareTo(anotherVal);
 		return thisVal.compareToIgnoreCase(anotherVal);
 	}
 

@@ -24,15 +24,12 @@ public class SIMPLEGroup implements Comparable{
 	
 	public SIMPLEGroup()
 	{
-		this.A1Id = "Id";
-		this.A2Name = "Name";
 	}
 
 	@Override
 	public int compareTo(Object arg0) {
 		String thisVal = this.A1Id;
 		String anotherVal = ((SIMPLEGroup)arg0).A1Id;
-		//return thisVal.compareTo(anotherVal);
 		return thisVal.compareToIgnoreCase(anotherVal);
 	}
 
