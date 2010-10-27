@@ -45,9 +45,9 @@ public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
 	String gglista;
-	CopyOfContactBook contactBookFull;
-	List<List<CopyOfViewableContacts>> contactsExpandableList;
-	List<CopyOfViewableGroups> groupsExpandableList;
+	SIMPLEContactBookList contactBookFull;
+	List<List<ViewableContacts>> contactsExpandableList;
+	List<ViewableGroups> groupsExpandableList;
 	private static final int DIALOG_STATUS = 1;
 		
 	//List groupData; 
@@ -57,7 +57,7 @@ public class ContactBook extends ExpandableListActivity{
 
 	//Adapter utrzymujacy dane z listy kontaktow	
 	//MyExpandableListAdapter mAdapter;
-	CopyOfMyExpandableListAdapter mAdapter;
+	MyExpandableListAdapter mAdapter;
 	
 	/** Messenger for communicating with service. */
     Messenger mService = null;
@@ -72,7 +72,7 @@ public class ContactBook extends ExpandableListActivity{
 		
         //Ustawienie adaptera z danymi listy kontaktow
         //mAdapter = new MyExpandableListAdapter(getApplicationContext());
-		mAdapter = new CopyOfMyExpandableListAdapter(getApplicationContext());
+		mAdapter = new MyExpandableListAdapter(getApplicationContext());
         setListAdapter(mAdapter);
 		
 		/* Wyswietl liste statusow */
@@ -239,10 +239,10 @@ public class ContactBook extends ExpandableListActivity{
 		//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
 		//ktore ma zadeklarowane w klasie z lista kontaktow.
 		try {
-			this.contactBookFull = serializer.read(CopyOfContactBook.class, xmlList, false);
+			this.contactBookFull = serializer.read(SIMPLEContactBookList.class, xmlList, false);
 			sortContactListSIMPLE(this.contactBookFull);
-			this.contactsExpandableList = new ArrayList<List<CopyOfViewableContacts>>();
-			this.groupsExpandableList = new ArrayList<CopyOfViewableGroups>();
+			this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
+			this.groupsExpandableList = new ArrayList<ViewableGroups>();
 			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 		} catch (Exception excSimp) {
 			;
@@ -250,7 +250,7 @@ public class ContactBook extends ExpandableListActivity{
     }
 	
 	//Posortowanie listy kontaktow przed jej prezentacja
-	private void sortContactListSIMPLE(CopyOfContactBook unsortedList)
+	private void sortContactListSIMPLE(SIMPLEContactBookList unsortedList)
 	{
 	  	try
 	  	{
@@ -263,26 +263,26 @@ public class ContactBook extends ExpandableListActivity{
 		}
 	}
 	
-	private void createExpandableAdapter(CopyOfContactBook gcl, List<List<CopyOfViewableContacts>> kontaktyExp, List<CopyOfViewableGroups> grupyExp) 
+	private void createExpandableAdapter(SIMPLEContactBookList gcl, List<List<ViewableContacts>> kontaktyExp, List<ViewableGroups> grupyExp) 
 	{
 		for(int i=0; i<gcl.A1Groupsy.Groups.size(); i++)
 		{
-			CopyOfViewableGroups nowaGrupa = new CopyOfViewableGroups();
+			ViewableGroups nowaGrupa = new ViewableGroups();
 			nowaGrupa.name = gcl.A1Groupsy.Groups.get(i).A2Name;
 			nowaGrupa.groupid = gcl.A1Groupsy.Groups.get(i).A1Id;
 			grupyExp.add(nowaGrupa);
 			
-			kontaktyExp.add(new ArrayList<CopyOfViewableContacts>());
+			kontaktyExp.add(new ArrayList<ViewableContacts>());
 		}
 		for(int i=0; i<gcl.A2Contactsy.Contacts.size(); i++)
 		{
 			for(int j=0; j<gcl.A2Contactsy.Contacts.get(i).AB5Groups.Groups.size(); j++)
 			{
 				String grupaDoKtorejDodacKontakt = gcl.A2Contactsy.Contacts.get(i).AB5Groups.Groups.get(j);
-				CopyOfViewableGroups szukana = new CopyOfViewableGroups();
+				ViewableGroups szukana = new ViewableGroups();
 				szukana.groupid = grupaDoKtorejDodacKontakt;
 				int indeksTab_kontaktyExp = Collections.binarySearch(grupyExp, szukana, null);
-				CopyOfViewableContacts dodawany = new CopyOfViewableContacts();
+				ViewableContacts dodawany = new ViewableContacts();
 				dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
 				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;
 				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.simpleframework.xml.ElementList;
 
-public class CopyOfContactGroups {
+public class SIMPLEContactGroups {
 	
 	@ElementList(entry="GroupId", inline=true)
 	public List<String> Groups;

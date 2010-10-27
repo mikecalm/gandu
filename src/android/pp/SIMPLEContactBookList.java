@@ -4,7 +4,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 @Root(name="ContactBook")
-public class CopyOfContactBook{
+public class SIMPLEContactBookList{
 	
 	//przedrostki A1, A2.. sa wymagane, poniewaz elementy
 	//do pliku XML zapisywane sa wedlug kolejnosci alfabetycznej
@@ -13,8 +13,8 @@ public class CopyOfContactBook{
 	//gdy elementy w pliku XML sa w innej kolejnosc to 
 	//klient GG nie zaimportuje listy.
 	@Element(required=false, name="Groups")
-	public CopyOfGroups A1Groupsy;
+	public SIMPLEGroups A1Groupsy;
 	@Element(required=false, name="Contacts")
-	public CopyOfContacts A2Contactsy;	
+	public SIMPLEContacts A2Contactsy;	
 
 }
