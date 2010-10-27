@@ -1,5 +1,12 @@
 package android.pp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,9 +25,11 @@ import android.widget.TextView;
     public class CopyOfMyExpandableListAdapter extends BaseExpandableListAdapter {
     	private Context mContext;
         private LayoutInflater mInflater;
-        private CopyOfContactBook listaKontaktow;
-        private String[] groups = {};
-        private String[][] children = {{}};
+        //private CopyOfContactBook listaKontaktow;
+        private List<CopyOfViewableGroups> groups = new ArrayList<CopyOfViewableGroups>();
+        private List<List<CopyOfViewableContacts>> children = new ArrayList<List<CopyOfViewableContacts>>();
+        //private String[] groups = {};
+        //private String[][] children = {{}};
         
         //Do kontruktora MyExpandableListAdapter przekazywany jest kontekst aplikacji
         //potrzebny do LayoutInflater, zeby moc wczytac layout wierszy i grup na liscie
@@ -32,16 +41,18 @@ import android.widget.TextView;
         }
         
         //Ustawianie danych listy kontaktow
-        public void setAdapterData(String[] groups, String contacts[][], CopyOfContactBook lista)
+        //public void setAdapterData(String[] groups, String contacts[][], CopyOfContactBook lista)
+        public void setAdapterData(List<CopyOfViewableGroups> groups, List<List<CopyOfViewableContacts>> contacts)
         {
-        	this.listaKontaktow = lista;
+        	//this.listaKontaktow = lista;
         	this.groups = groups;
         	this.children = contacts;
         	notifyDataSetChanged();
         }
         
         public Object getChild(int groupPosition, int childPosition) {
-            return children[groupPosition][childPosition];
+            //return children[groupPosition][childPosition];
+        	return children.get(groupPosition).get(childPosition);
         	//return "cos: "+groupPosition+","+childPosition;
         }        
 
@@ -50,7 +61,8 @@ import android.widget.TextView;
         }
 
         public int getChildrenCount(int groupPosition) {
-            return children[groupPosition].length;
+            //return children[groupPosition].length;
+        	return children.get(groupPosition).size();
         }
         
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
@@ -58,8 +70,8 @@ import android.widget.TextView;
         	//if(convertView == null)
             //{
 	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);
-	            ((TextView)convertView.findViewById(R.id.username)).setText(getChild(groupPosition, childPosition).toString());
-	            if(getChild(groupPosition, childPosition).toString().equals("Blip.pl"))
+	            ((TextView)convertView.findViewById(R.id.username)).setText(((CopyOfViewableContacts)(getChild(groupPosition, childPosition))).showName);
+	            if(((CopyOfViewableContacts)(getChild(groupPosition, childPosition))).showName.equals("Blip.pl"))
 	            	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
             //}
             
@@ -67,11 +79,13 @@ import android.widget.TextView;
         }
 
         public Object getGroup(int groupPosition) {
-            return groups[groupPosition];
+            //return groups[groupPosition];
+        	return groups.get(groupPosition);
         }
 
         public int getGroupCount() {
-            return groups.length;
+            //return groups.length;
+        	return groups.size();
         }
 
         public long getGroupId(int groupPosition) {
@@ -88,7 +102,7 @@ import android.widget.TextView;
                  convertView = (TextView)mInflater.inflate(R.layout.group_row, parent, false);
                  TextView tv = ((TextView)convertView.findViewById(R.id.groupname));
                  //tv.setText(mParentGroups.get(groupPosition).toString());
-                 tv.setText(getGroup(groupPosition).toString());
+                 tv.setText(((CopyOfViewableGroups)getGroup(groupPosition)).name);
              //}
              return convertView;
 

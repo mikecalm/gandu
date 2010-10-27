@@ -45,16 +45,19 @@ public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
 	String gglista;
+	CopyOfContactBook contactBookFull;
+	List<List<CopyOfViewableContacts>> contactsExpandableList;
+	List<CopyOfViewableGroups> groupsExpandableList;
 	private static final int DIALOG_STATUS = 1;
 		
 	//List groupData; 
 	//List childData;
-	SimpleExpandableListAdapter expListAdapter;
+	//SimpleExpandableListAdapter expListAdapter;
 	AlertDialog alertDialog;
 
 	//Adapter utrzymujacy dane z listy kontaktow	
-	MyExpandableListAdapter mAdapter;
-	//CopyOfMyExpandableListAdapter mAdapter;
+	//MyExpandableListAdapter mAdapter;
+	CopyOfMyExpandableListAdapter mAdapter;
 	
 	/** Messenger for communicating with service. */
     Messenger mService = null;
@@ -68,8 +71,8 @@ public class ContactBook extends ExpandableListActivity{
 		doBindService();
 		
         //Ustawienie adaptera z danymi listy kontaktow
-        mAdapter = new MyExpandableListAdapter(getApplicationContext());
-		//mAdapter = new CopyOfMyExpandableListAdapter(getApplicationContext());
+        //mAdapter = new MyExpandableListAdapter(getApplicationContext());
+		mAdapter = new CopyOfMyExpandableListAdapter(getApplicationContext());
         setListAdapter(mAdapter);
 		
 		/* Wyswietl liste statusow */
@@ -80,8 +83,7 @@ public class ContactBook extends ExpandableListActivity{
             	//int wybrany = alertDialog.getListView().getCheckedItemPosition();
             	//Toast.makeText(getApplicationContext(), "wybrano", wybrany).show();
             }
-        });
-		
+        });		
 	}
 	
 	@Override
@@ -166,14 +168,14 @@ public class ContactBook extends ExpandableListActivity{
 		  return (List)result;
 	    }*/
 		
-		private String[] createGroupArray(ArrayList<GroupContact> gcl) {
+		/*private String[] createGroupArray(ArrayList<GroupContact> gcl) {
 			String[] result = new String[gcl.size()];
 			for(int i=0; i<result.length; i++)
 			{
 				result[i] = gcl.get(i).gp.getName();
 			}
 		  return result;
-	    }
+	    }*/
 
 	/**
 	  * Creates the child list out of the users[] array according to the
@@ -199,7 +201,7 @@ public class ContactBook extends ExpandableListActivity{
 		return result;
 	  }*/
 	  
-	  private String[][] createChildArray(ArrayList<GroupContact> gcl) {
+	  /*private String[][] createChildArray(ArrayList<GroupContact> gcl) {
 			String[][] result = new String[gcl.size()][];
 			for(int i=0; i<result.length; i++)
 			{
@@ -210,10 +212,10 @@ public class ContactBook extends ExpandableListActivity{
 				}
 			}
 			return result;
-		  }
+		  }*/
 	  
 	//Posortowanie listy kontaktow przed jej prezentacja
-	private void sortContactList(XMLParsedDataSet unsortedList)
+	/*private void sortContactList(XMLParsedDataSet unsortedList)
 	{
 	  	try
 	  	{
@@ -227,19 +229,67 @@ public class ContactBook extends ExpandableListActivity{
 		{
 			;
 		}
-	}
+	}*/
 
-	/*
-	private CopyOfViewableGroups[] createGroupArray_expandable(CopyOfContactBook gcl) {
-		CopyOfViewableGroups[] result = new CopyOfViewableGroups[gcl.A1Groupsy.Groups.size()];
-		for(int i=0; i<result.length; i++)
-		{
-			result[i].name = gcl.A1Groupsy.Groups.get(i).A2Name;
-			result[i].groupid = gcl.A1Groupsy.Groups.get(i).A1Id;
+	public void prepareContactBook(String xmlList)
+    {
+    	Serializer serializer = new Persister();
+		//false na koñcu odpowiada za ignorowanie elementow w pliku XML ktorych
+		//nie ma zadeklarowanych w klasie do ktorej wczytuje XMLa. Gdyby GG dorzucilo
+		//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
+		//ktore ma zadeklarowane w klasie z lista kontaktow.
+		try {
+			this.contactBookFull = serializer.read(CopyOfContactBook.class, xmlList, false);
+			sortContactListSIMPLE(this.contactBookFull);
+			this.contactsExpandableList = new ArrayList<List<CopyOfViewableContacts>>();
+			this.groupsExpandableList = new ArrayList<CopyOfViewableGroups>();
+			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
+		} catch (Exception excSimp) {
+			;
 		}
-	  return result;
     }
 	
+	//Posortowanie listy kontaktow przed jej prezentacja
+	private void sortContactListSIMPLE(CopyOfContactBook unsortedList)
+	{
+	  	try
+	  	{
+	  		Collections.sort(unsortedList.A1Groupsy.Groups);
+	  		Collections.sort(unsortedList.A2Contactsy.Contacts);
+		}
+		catch(Exception excSortG)
+		{
+			;
+		}
+	}
+	
+	private void createExpandableAdapter(CopyOfContactBook gcl, List<List<CopyOfViewableContacts>> kontaktyExp, List<CopyOfViewableGroups> grupyExp) 
+	{
+		for(int i=0; i<gcl.A1Groupsy.Groups.size(); i++)
+		{
+			CopyOfViewableGroups nowaGrupa = new CopyOfViewableGroups();
+			nowaGrupa.name = gcl.A1Groupsy.Groups.get(i).A2Name;
+			nowaGrupa.groupid = gcl.A1Groupsy.Groups.get(i).A1Id;
+			grupyExp.add(nowaGrupa);
+			
+			kontaktyExp.add(new ArrayList<CopyOfViewableContacts>());
+		}
+		for(int i=0; i<gcl.A2Contactsy.Contacts.size(); i++)
+		{
+			for(int j=0; j<gcl.A2Contactsy.Contacts.get(i).AB5Groups.Groups.size(); j++)
+			{
+				String grupaDoKtorejDodacKontakt = gcl.A2Contactsy.Contacts.get(i).AB5Groups.Groups.get(j);
+				CopyOfViewableGroups szukana = new CopyOfViewableGroups();
+				szukana.groupid = grupaDoKtorejDodacKontakt;
+				int indeksTab_kontaktyExp = Collections.binarySearch(grupyExp, szukana, null);
+				CopyOfViewableContacts dodawany = new CopyOfViewableContacts();
+				dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
+				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;
+				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);
+			}
+		}			
+    }
+	/*
 	private CopyOfViewableContacts[][] createChildArray_expandable(CopyOfContactBook gcl) {
 		CopyOfViewableContacts[][] result = new CopyOfViewableContacts[gcl.A1Groupsy.Groups.size()][];
 		for(int i=0; i<result.length; i++)
@@ -252,20 +302,7 @@ public class ContactBook extends ExpandableListActivity{
 			}
 		}
 		return result;
-	  }*/
-	
-	//Posortowanie listy kontaktow przed jej prezentacja
-	private void sortContactListSIMPLE(CopyOfContactBook unsortedList)
-	{
-	  	try
-	  	{
-	  		Collections.sort(unsortedList.A2Contactsy.Contacts);
-		}
-		catch(Exception excSortG)
-		{
-			;
-		}
-	}
+	  }*/	
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
@@ -285,43 +322,23 @@ public class ContactBook extends ExpandableListActivity{
                 	gglista = odebrany.getString("listaGG");
                 	
                 	//!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!
-                	saveOnSDCard(gglista);                	
+                	//saveOnSDCard(gglista); 
+                	prepareContactBook(gglista);
                 	//!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!!TEST SIMPLE!
                 	
-                	XMLContactBook  xcb = new XMLContactBook();
-                	XMLParsedDataSet xpds = xcb.xmlparse(gglista);
-                	//if(groupData != null)
-                	//	groupData.clear();
-                	/*groupData = createGroupList(xpds.GCList);
-                	//if(childData != null)
-                	//	childData.clear();
-        			childData = createChildList(xpds.GCList);
-        			expListAdapter =
-        				new SimpleExpandableListAdapter(
-        					getApplicationContext(),
-        					groupData,	// groupData describes the first-level entries
-        					R.layout.group_row,	// Layout for the first-level entries
-        					new String[] { "groupName" },	// Key in the groupData maps to display
-        					new int[] { R.id.groupname },		// Data under "colorName" key goes into this TextView
-        					childData,	// childData describes second-level entries
-        					R.layout.child_row,	// Layout for second-level entries
-        					new String[] { "username", "description" },	// Keys in childData maps to display
-        					new int[] { R.id.username, R.id.description }	// Data under the keys above go into these TextViews
-        				);
-        			//expListAdapter.notifyDataSetChanged();
-        			//if(getExpandableListAdapter() == null)
-        				setListAdapter( expListAdapter );
-        			for(int grupy=0; grupy<groupData.size(); grupy++)
-        				getExpandableListView().expandGroup(grupy);*/
+                	//XMLContactBook  xcb = new XMLContactBook();
+                	//XMLParsedDataSet xpds = xcb.xmlparse(gglista);
                 	
                 	//Posortowanie listy kontaktow przed jej prezentacja
-                	//xpds = sortContactList(xpds);
-                	sortContactList(xpds);
-                	String[] grupy = createGroupArray(xpds.GCList);
-                	String[][] kontakty = createChildArray(xpds.GCList);
-        			mAdapter.setAdapterData(grupy, kontakty);
+                	//sortContactList(xpds);
+                	//String[] grupy = createGroupArray(xpds.GCList);
+                	//String[][] kontakty = createChildArray(xpds.GCList);
+        			//mAdapter.setAdapterData(grupy, kontakty);
+                	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
+                	//mAdapter.prepareContactBook(gglista);
         			//mAdapter.notifyDataSetChanged();
-        			for(int parent=0; parent<grupy.length; parent++)
+        			//for(int parent=0; parent<grupy.length; parent++)
+                	for(int parent=0; parent<groupsExpandableList.size(); parent++)
         				getExpandableListView().expandGroup(parent);
         			
         			//getExpandableListAdapter()
@@ -418,7 +435,7 @@ public class ContactBook extends ExpandableListActivity{
             mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
-    }
+    }     
     
     public void saveOnSDCard(String tmp)
     {
@@ -471,8 +488,13 @@ public class ContactBook extends ExpandableListActivity{
 				//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
 				//ktore ma zadeklarowane w klasie z lista kontaktow.
 				//CopyOfContactBook nowy = serializer.read(CopyOfContactBook.class, result, false);
+				/*
 				CopyOfContactBook nowy2 = serializer.read(CopyOfContactBook.class, tmp, false);
 				sortContactListSIMPLE(nowy2);
+				List<List<CopyOfViewableContacts>> kontaktyExp = new ArrayList<List<CopyOfViewableContacts>>();
+				List<CopyOfViewableGroups> grupyExp = new ArrayList<CopyOfViewableGroups>();
+				createExpandableAdapter(nowy2, kontaktyExp, grupyExp);
+				*/
 				
 				//Wyszukiwanie kontaktu na liscie nowy2.A2Contactsy.Contacts
 				//po showName kontaktu.
@@ -488,6 +510,8 @@ public class ContactBook extends ExpandableListActivity{
 				//UWAGA
 				//Zrodlo:
 				//http://download.oracle.com/javase/6/docs/api/java/util/Collections.html#binarySearch%28java.util.List,%20T,%20java.util.Comparator%29
+				
+				/*
 				CopyOfContact szukany = new CopyOfContact();
 				szukany.AA3ShowName = "Blip.pl";
 				int miejsce = Collections.binarySearch(nowy2.A2Contactsy.Contacts,szukany,null);
@@ -500,6 +524,7 @@ public class ContactBook extends ExpandableListActivity{
 				File result2 = new File(extStorageDirectory, "pobranaIZinterpretowana.xml");
 				//serializer2.write(nowy2,result2);
 				serializer.write(nowy2,result2);
+				*/
 				//nowy.Avatars.Avatars.add("ADAD");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

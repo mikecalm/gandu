@@ -30,8 +30,8 @@ public class CopyOfGroup implements Comparable{
 
 	@Override
 	public int compareTo(Object arg0) {
-		String thisVal = this.A2Name;
-		String anotherVal = ((CopyOfGroup)arg0).A2Name;
+		String thisVal = this.A1Id;
+		String anotherVal = ((CopyOfGroup)arg0).A1Id;
 		//return thisVal.compareTo(anotherVal);
 		return thisVal.compareToIgnoreCase(anotherVal);
 	}
