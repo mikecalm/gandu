@@ -12,11 +12,11 @@ public class SIMPLEContact implements Comparable{
 	//Klient GG jest wrazliwy na kolejnosc pol, w przypadku
 	//gdy elementy w pliku XML sa w innej kolejnosc to 
 	//klient GG nie zaimportuje listy.
-	@Element(name="Guid")
+	@Element(required=false, name="Guid")
 	public String AA1Guid;
-	@Element(name="GGNumber")
+	@Element(required=false, name="GGNumber")
 	public String AA2GGNumber;
-	@Element(name="ShowName")
+	@Element(required=false, name="ShowName")
 	public String AA3ShowName;
 	
 	@Element(required=false, name="MobilePhone")
