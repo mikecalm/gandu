@@ -135,7 +135,18 @@ public class ContactBook extends ExpandableListActivity{
             long id) {
 		
 		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, 2000).show();
-        return false;
+		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
+		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
+		
+		try
+		{
+			startActivity(intent);
+		}
+		catch(Exception e)
+		{
+			Log.i("ContactBook",""+e.getMessage());
+		}
+		return false;
     }
 
 	public void prepareContactBook(String xmlList)
