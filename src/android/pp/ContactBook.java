@@ -152,7 +152,7 @@ public class ContactBook extends ExpandableListActivity{
 			this.groupsExpandableList = new ArrayList<ViewableGroups>();
 			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 		} catch (Exception excSimp) {
-			;
+			Log.e("SIMPLE Error",excSimp.getMessage());
 		}
     }
 	
@@ -190,7 +190,24 @@ public class ContactBook extends ExpandableListActivity{
 				szukana.groupid = grupaDoKtorejDodacKontakt;
 				int indeksTab_kontaktyExp = Collections.binarySearch(grupyExp, szukana, null);
 				ViewableContacts dodawany = new ViewableContacts();
-				dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
+				//kontakt GG musi miec podany conajmniej showName oraz
+				//GGNumber lub MobilePhone lub HomePhone lub Email
+				if(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber != null)
+				{
+					try
+					{
+						dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
+					}catch(Exception ExcAdd1)
+					{
+						Log.e("ExcAdd1", ExcAdd1.getMessage());
+					}
+				}
+				if(gcl.A2Contactsy.Contacts.get(i).AA4MobilePhone != null)
+					dodawany.MobilePhone = gcl.A2Contactsy.Contacts.get(i).AA4MobilePhone;
+				if(gcl.A2Contactsy.Contacts.get(i).AA5HomePhone != null)
+					dodawany.HomePhone = gcl.A2Contactsy.Contacts.get(i).AA5HomePhone;
+				if(gcl.A2Contactsy.Contacts.get(i).AA6Email != null)
+					dodawany.Email = gcl.A2Contactsy.Contacts.get(i).AA6Email;
 				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;
 				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);
 			}
