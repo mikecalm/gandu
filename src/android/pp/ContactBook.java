@@ -146,7 +146,18 @@ public class ContactBook extends ExpandableListActivity{
             long id) {
 		
 		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, 2000).show();
-        return false;
+		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
+		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
+		
+		try
+		{
+			startActivity(intent);
+		}
+		catch(Exception e)
+		{
+			Log.i("ContactBook",""+e.getMessage());
+		}
+		return false;
     }
 	
 	/**
@@ -466,7 +477,7 @@ public class ContactBook extends ExpandableListActivity{
 				
 				Serializer serializer = new Persister();
 
-				//false na koñcu odpowiada za ignorowanie elementow w pliku XML ktorych
+				//false na koï¿½cu odpowiada za ignorowanie elementow w pliku XML ktorych
 				//nie ma zadeklarowanych w klasie do ktorej wczytuje XMLa. Gdyby GG dorzucilo
 				//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
 				//ktore ma zadeklarowane w klasie z lista kontaktow.
