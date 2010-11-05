@@ -4,7 +4,10 @@ import android.app.TabActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TabHost;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 
@@ -18,11 +21,12 @@ public class Chat extends TabActivity{
 		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.chat);	
-		Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_SHORT).show();
 		
 		prefs = getPreferences(0);
 		editor = prefs.edit();
-		tabHost = (TabHost)findViewById(android.R.id.tabhost);	
+		//tabHost = (TabHost)findViewById(android.R.id.tabhost);	
+		tabHost = getTabHost();
     	
 }
 
@@ -30,7 +34,7 @@ public class Chat extends TabActivity{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_SHORT).show();
         String odz = prefs.getString("text", null);
         if (odz != null)
         {
@@ -82,15 +86,23 @@ public class Chat extends TabActivity{
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		Toast.makeText(getApplicationContext(), "onPause()", Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), "onPause()", Toast.LENGTH_SHORT).show();
 		//preferencje
-		String tabs = "";
-        for (int i =0 ; i<tabHost.getChildCount() ; i++)
+		String tabs = "";		
+        //for (int i =0 ; i<tabHost.getChildCount() ; i++)
+		for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
         {
-        	tabHost.setCurrentTab(i);
-        	tabs += tabHost.getCurrentTabTag()+"~";                
+			//do nazwy konkretnetnej zakladki dokopalem sie podgladajac w debugu
+			//w jakim polu zapisana jest nazwa zakladki.
+			//Wydaje mi sie, ze jak bedziemy miec zdefiniowany layout zakladki,
+			//to nazwe zakladki bedzie mozna uzyska poprzez odwolanie sie do konkretnego ID (R.id...)
+			RelativeLayout layoutTaba = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);
+			TextView textViewWLayoutcieTaba = (TextView)layoutTaba.getChildAt(1);
+        	tabs += textViewWLayoutcieTaba.getText()+"~";
+        	//tabHost.setCurrentTab(i);
+        	//tabs += tabHost.getCurrentTabTag()+"~";                
         }
-        Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_SHORT).show();
         editor.putString("text", tabs);
         editor.commit();
         
@@ -100,7 +112,7 @@ public class Chat extends TabActivity{
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -108,7 +120,7 @@ public class Chat extends TabActivity{
 		// TODO Auto-generated method stub
 		super.onStop();
 		tabHost.clearAllTabs();
-		Toast.makeText(getApplicationContext(), "onStop()", Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), "onStop()", Toast.LENGTH_SHORT).show();
 	}
 
 }
