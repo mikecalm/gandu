@@ -13,10 +13,7 @@ public class Tab extends Activity{
 
 		
 		/* First Tab Content */
-		TextView textView = new TextView(this);
-		textView.setText("Tab");
-		
-		setContentView(textView);
+		setContentView(R.layout.tabcontent);
 
 	}
 }

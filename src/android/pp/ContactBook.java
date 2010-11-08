@@ -8,6 +8,7 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
 import android.content.ComponentName;
@@ -86,7 +87,7 @@ public class ContactBook extends ExpandableListActivity{
 	public boolean onOptionsItemSelected(MenuItem item){
 	switch (item.getItemId())
 	{
-		case R.id.item01:			
+		case R.id.Import01:			
 			//wyslanie do serwisu wiadomosci, ze importowana jest lista kontaktow    		
         	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
     		try
@@ -97,6 +98,9 @@ public class ContactBook extends ExpandableListActivity{
     			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
     		}
 			return true;
+		case R.id.End02:
+			moveTaskToBack(true);
+			break;
 		//Moreitemsgohere(ifany)...
 	}
 	return false;
@@ -152,7 +156,7 @@ public class ContactBook extends ExpandableListActivity{
 	public void prepareContactBook(String xmlList)
     {
     	Serializer serializer = new Persister();
-		//false na koñcu odpowiada za ignorowanie elementow w pliku XML ktorych
+		//false na koï¿½cu odpowiada za ignorowanie elementow w pliku XML ktorych
 		//nie ma zadeklarowanych w klasie do ktorej wczytuje XMLa. Gdyby GG dorzucilo
 		//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
 		//ktore ma zadeklarowane w klasie z lista kontaktow.
