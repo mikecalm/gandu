@@ -9,8 +9,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.apache.http.HttpEntity;
@@ -41,6 +43,7 @@ public class GanduService extends Service {
 	DataOutputStream out;
 	String ggnum;
 	String ggpass;
+	byte[] skompresowanaLista = null;
     /** For showing and hiding our notification. */
     NotificationManager mNM;
     /** Keeps track of all current registered clients. */
@@ -72,8 +75,40 @@ public class GanduService extends Service {
 		  return false;
 	  }
 	  return true;
+}
+   
+   public Boolean setContactbook(String XMLList)
+   {
+	  int type = Integer.reverseBytes(Common.GG_USERLIST_REQUEST80);
+	  byte contactbook_frame_type = Common.GG_USERLIST_PUT;
+	  //byte[] skompresowanaLista = null;
+	  int dlugoscSkompresowana = 0;
+	  //byte [] request ;
+	  if(XMLList == "")
+		  XMLList = " ";
+	  //skompresowanaLista = deflateContactBook(XMLList);
+	  dlugoscSkompresowana = deflateContactBook(XMLList);
+	  byte [] paczkaBajtow = null;
 	  
-	  
+	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	  DataOutputStream dos = new DataOutputStream(baos);
+	  try
+	  {
+		  dos.writeInt(type);
+		  //dos.writeInt(Integer.reverseBytes(1+skompresowanaLista.length));
+		  dos.writeInt(Integer.reverseBytes(1+dlugoscSkompresowana));
+		  dos.write(contactbook_frame_type);
+		  dos.write(skompresowanaLista);
+		  paczkaBajtow = baos.toByteArray();
+		  out.write(paczkaBajtow);
+		  out.flush();
+		  Log.i("GanduService","Wykonalem setContactbook()");
+		  Log.i("GanduService","Skompresowalem na: "+skompresowanaLista.length);
+	  }catch(Exception e)
+	  {
+		  return false;	  	  
+	  }
+	  return true;	  	  
    }
    
    public void saveOnSDCard(String tmp)
@@ -129,6 +164,40 @@ public class GanduService extends Service {
 	   }  
 	  
 	   return str;
+   }
+    
+   public int deflateContactBook(String listaKontaktow)
+   {
+	   // Encode a String into bytes
+	   byte[] input;
+	   byte[] output = null;
+	   int compressedDataLength = 0;
+	   try {
+		   input = listaKontaktow.getBytes("UTF-8");
+		   // Compress the bytes
+		   output = new byte[10000];
+		   Deflater compresser = new Deflater();
+		   compresser.setInput(input);
+		   compresser.finish();
+		   Log.i("GanduService","przed podaniem pustego output do deflate");
+		   compressedDataLength = compresser.deflate(output);
+		   Log.i("GanduService","po podaniu pustego output do deflate");
+		   //wynik = output;
+		   //this.skompresowanaLista = output;
+		   ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		   DataOutputStream dos = new DataOutputStream(baos);
+		   dos.write(output, 0, compressedDataLength);
+		   this.skompresowanaLista = baos.toByteArray();
+		   Log.i("GanduService","deflate dal wynik: "+compressedDataLength);
+		} 
+	   catch (Exception e) 
+	   {
+			// TODO Auto-generated catch block
+			Log.e("Blad deflate!!", e.getMessage());
+		}
+	   
+	   //return output;
+	   return compressedDataLength;
    }
     
     public void wyloguj()
@@ -262,6 +331,16 @@ public class GanduService extends Service {
                 	Log.i("GanduService","Pobieram liste kontaktow");
                 	
                 	break;
+                case Common.CLIENT_SET_CONTACTBOOK:
+                	Bundle odebranyXMLList = msg.getData();
+                	String XMLList = odebranyXMLList.getString("listaGG");
+                	if(setContactbook(XMLList))
+                	{
+                		showNotification("Wysylam liste kontaktow...");
+                	}
+                	Log.i("GanduService","Wyslalem liste kontaktow");
+                	
+                	break;
                 default:
                     super.handleMessage(msg);
             }
@@ -381,8 +460,21 @@ public class GanduService extends Service {
 						byte typListaKont = in.readByte();
 						if(typListaKont == 0x06)
 							Log.i("typ replay import","0x06");
+						else if(typListaKont == 0x00) //GG_USERLIST_PUT_REPLY 0x00/* pocz¹tek eksportu listy */
+						{
+							Log.i("typ replay import","0x00");
+							break;
+						}
+						else if(typListaKont == 0x02) //GG_USERLIST_PUT_MORE_REPLY 0x02/* kontynuacja */
+						{
+							Log.i("typ replay import","0x02");
+							break;
+						}
 						else
+						{
 							Log.i("INNY!! typ replay import",""+typListaKont);
+							break;
+						}
 						
 						byte[] spakowanaSkompresowana = new byte[dlugoscSpakowana];
 						int pobraneBajtyZeStosu=0;

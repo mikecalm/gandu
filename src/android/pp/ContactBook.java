@@ -36,7 +36,7 @@ import android.widget.Toast;
 public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
-	String gglista;
+	String gglista = "";
 	SIMPLEContactBookList contactBookFull;
 	List<List<ViewableContacts>> contactsExpandableList;
 	List<ViewableGroups> groupsExpandableList;
@@ -85,25 +85,39 @@ public class ContactBook extends ExpandableListActivity{
 	//zdarzenia zwiazane z wyborem opcji menu
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
-	switch (item.getItemId())
-	{
-		case R.id.Import01:			
-			//wyslanie do serwisu wiadomosci, ze importowana jest lista kontaktow    		
-        	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
-    		try
-    		{
-    			mService.send(msg2);
-    		}catch(Exception excMsg)
-    		{
-    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
-    		}
-			return true;
-		case R.id.End02:
-			moveTaskToBack(true);
-			break;
-		//Moreitemsgohere(ifany)...
-	}
-	return false;
+		switch (item.getItemId())
+		{
+			case R.id.Import01:			
+				//wyslanie do serwisu wiadomosci, ze importowana jest lista kontaktow    		
+	        	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
+	    		try
+	    		{
+	    			mService.send(msg2);
+	    		}catch(Exception excMsg)
+	    		{
+	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
+	    		}
+				return true;
+			case R.id.End02:			 
+			 	moveTaskToBack(true);
+			 	break;
+			case R.id.Export03:			
+				//wyslanie do serwisu wiadomosci, ze importowana jest lista kontaktow    		
+	        	Message msg3 = Message.obtain(null,Common.CLIENT_SET_CONTACTBOOK, 0, 0);	        
+	    		try
+	    		{
+		    		Bundle wysylany = new Bundle();
+					wysylany.putString("listaGG", gglista);
+					msg3.setData(wysylany);
+	    			mService.send(msg3);
+	    		}catch(Exception excMsg)
+	    		{
+	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
+	    		}
+				return true;
+			//Moreitemsgohere(ifany)...
+		}
+		return false;
 	}
 	
 	//zdarzenia realizowane po wywolaniu metody showDialog(id); 
