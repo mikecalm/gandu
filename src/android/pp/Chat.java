@@ -88,9 +88,11 @@ public class Chat extends TabActivity{
 		super.onPause();
 		Toast.makeText(getApplicationContext(), "onPause()", Toast.LENGTH_SHORT).show();
 		//preferencje
+
 		String tabs = "";		
         //for (int i =0 ; i<tabHost.getChildCount() ; i++)
 		for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
+
         {
 			//do nazwy konkretnetnej zakladki dokopalem sie podgladajac w debugu
 			//w jakim polu zapisana jest nazwa zakladki.

@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,10 +18,14 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.TabHost.TabSpec;
 
 
 public class GanduClient extends Activity {
 
+	//
+	public SharedPreferences.Editor editor;
+	public SharedPreferences prefs;
 	//
 	
 	/** Messenger for communicating with service. */
@@ -52,6 +57,18 @@ public class GanduClient extends Activity {
 		//zbindowanie aktywnosci do serwisu
 		doBindService();
 	}
+
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		prefs = getPreferences(0);
+		editor = prefs.edit();
+		editor.remove("text");
+		editor.commit();
+	}
+
 
 	private OnClickListener connectListener = new OnClickListener() {
 		public void onClick(View v) {
