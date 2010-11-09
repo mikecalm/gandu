@@ -267,11 +267,9 @@ public class GanduService extends Service {
                 	
                 	break;
                 case Common.CLIENT_SEND_MESSAGE:                	
-                	Log.i("GanduService", "CLENT_SEND_MESSAGE wszedlem");
-                	odebrany = msg.getData();
+                   	odebrany = msg.getData();
                 	String text = odebrany.getString("text");
-					ChatMessage sm = new ChatMessage(); //TU SIE WYKRZACZA WĄTEK!!! Why?!
-					Log.i("GanduService", "Stworzylem wiadomosc");
+					ChatMessage sm = new ChatMessage();
 					try {
 						byte[] paczka = sm.setMessage(text);
 						out.write(paczka);
