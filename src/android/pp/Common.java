@@ -8,6 +8,7 @@ public class Common {
     static final int GG_USERLIST_REQUEST80 = 0x002f;
     static final int GG_LOGIN80 = 0x0031;
     static final int GG_LIST_EMPTY = 0x0012;
+    static final int GG_SEND_MSG80 = 0x002d;
     
     /**
      * STATES 
@@ -20,6 +21,8 @@ public class Common {
     static final int GG_USERLIST_REPLY80 = 0x0030;
     static final int GG_LOGIN_OK80 = 0x0035;
     static final int GG_LOGIN_FAILED = 0x0009;
+    static final int GG_RECV_MSG80 = 0x002e;
+
 
     /**
      * CLASS FLAGS
@@ -58,4 +61,6 @@ public class Common {
    
    static final int CLIENT_START_INTENT_CONTACTBOOK = 5;
    static final int CLIENT_SET_CONTACTBOOK = 6;
+   
+   static final int CLIENT_SEND_MESSAGE = 6;
 }

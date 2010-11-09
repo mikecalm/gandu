@@ -27,6 +27,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -295,10 +296,13 @@ public class GanduService extends Service {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+        	Bundle odebrany;
             switch (msg.what) {
                 case Common.CLIENT_REGISTER:
                     mClients.add(msg.replyTo);
+                   
                     Message msg2 = Message.obtain(null,Common.FLAG_ACTIVITY_REGISTER, 0, 0);
+                    
                     for(int i=0; i<mClients.size(); i++)
                     {
                     	try
@@ -314,7 +318,7 @@ public class GanduService extends Service {
                     mClients.remove(msg.replyTo);
                     break;
                 case Common.CLIENT_LOGIN:
-                	Bundle odebrany = msg.getData();
+                	odebrany = msg.getData();
                 	ggnum = odebrany.getString("numerGG");
                 	ggpass = odebrany.getString("hasloGG");
                 	
@@ -341,6 +345,22 @@ public class GanduService extends Service {
                 	Log.i("GanduService","Wyslalem liste kontaktow");
                 	
                 	break;
+                case Common.CLIENT_SEND_MESSAGE:                	
+                	Log.i("GanduService", "CLENT_SEND_MESSAGE wszedlem");
+                	odebrany = msg.getData();
+                	String text = odebrany.getString("text");
+					ChatMessage sm = new ChatMessage(); //TU SIE WYKRZACZA WĄTEK!!! Why?!
+					Log.i("GanduService", "Stworzylem wiadomosc");
+					try {
+						byte[] paczka = sm.setMessage(text);
+						out.write(paczka);
+						Log.i("GanduService", "Wyslalem wiadomosc");
+						out.flush();
+					} catch (Exception e) {
+						Log.e("GanduService", "SendingMessage Failed!");
+					}
+				break;
+                	
                 default:
                     super.handleMessage(msg);
             }
@@ -354,9 +374,9 @@ public class GanduService extends Service {
 
     @Override
     public void onCreate() {
-    	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
     	
-        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+    	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
+    	mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         // Display a notification about us starting.
         showNotification("Witaj w Gandu");
@@ -426,6 +446,7 @@ public class GanduService extends Service {
 				try
 				{
 					int typWiadomosci = Integer.reverseBytes(in.readInt());
+					int pobraneBajty = 0;
 					switch(typWiadomosci){
 					
 					case Common.GG_WELCOME:
@@ -502,11 +523,25 @@ public class GanduService extends Service {
 						Log.i("Odczytalem smieci typu: ", ""+typWiadomosci);
 						Log.i("Odczytalem smieci o dlugosci: ", ""+dlugoscListy);
 						break;
+					case Common.GG_RECV_MSG80:
+						Log.i("GanduService received message!: ", ""
+								+ typWiadomosci);
+						int dlugoscWiadomosci = Integer.reverseBytes(in
+								.readInt());
+						byte[] tresc = new byte[dlugoscWiadomosci];
+						pobraneBajty = 0;
+						while (pobraneBajty != dlugoscWiadomosci)
+							pobraneBajty += in.read(tresc, pobraneBajty,
+									dlugoscWiadomosci - pobraneBajty);
+						Log.i("Odczytalem wiadomosc typu: ", "" + typWiadomosci);
+						Log.i("Odczytalem wiadomosc o dlugosci: ", ""
+								+ dlugoscWiadomosci);
+						break;
 					default:
 							Log.i("GanduService received default: ", ""+typWiadomosci);
 							int dlugoscBadziewia = Integer.reverseBytes(in.readInt());
 							byte[] smieci = new byte[dlugoscBadziewia];
-							int pobraneBajty=0;
+							pobraneBajty=0;
 							while(pobraneBajty != dlugoscBadziewia)
 								pobraneBajty += in.read(smieci, pobraneBajty, dlugoscBadziewia-pobraneBajty);
 							Log.i("Odczytalem smieci typu: ", ""+typWiadomosci);

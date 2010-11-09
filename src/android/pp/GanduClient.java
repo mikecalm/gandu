@@ -97,8 +97,7 @@ public class GanduClient extends Activity {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	Log.i("GanduClient","Received: "+msg.what);
-            switch (msg.what) {
+        	switch (msg.what) {
                 case Common.CLIENT_START_INTENT_CONTACTBOOK:
                 	Log.i("GanduClient","Odebralem"+msg.what);
                 	Intent intent = new Intent(getApplicationContext(),ContactBook.class);

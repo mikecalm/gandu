@@ -153,6 +153,12 @@ public class ContactBook extends ExpandableListActivity{
             long id) {
 		
 		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, 2000).show();
+		
+		SIMPLEContact szukanyKontakt = new SIMPLEContact();
+		szukanyKontakt.AA3ShowName = ((TextView)v.findViewById(R.id.username)).getText().toString();
+		int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, szukanyKontakt, null);
+		String numerGGWybranegoGosciaNaLiscie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AA2GGNumber;
+		
 		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
 		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
 		
@@ -250,10 +256,10 @@ public class ContactBook extends ExpandableListActivity{
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	Log.i("ganduClient","Odebralem"+msg.what);
+        	//Log.i("ContactBook","Odebralem"+msg.what);
             switch (msg.what) {
                 case Common.FLAG_ACTIVITY_REGISTER:
-                	Log.i("ContactBook","Received: "+msg.what);
+                	Log.i("Zarejestrowano ContactBook","Received: "+msg.what);
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
                 	break;
                 case Common.FLAG_CONTACTBOOK:
