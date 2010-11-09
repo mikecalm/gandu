@@ -20,6 +20,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.simpleframework.xml.convert.Converter;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -34,6 +35,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.util.Log;
+import android.util.Xml.Encoding;
 import android.widget.Toast;
 
 public class GanduService extends Service {
@@ -539,7 +541,32 @@ public class GanduService extends Service {
 								+ typWiadomosci);
 						int dlugoscWiadomosci = Integer.reverseBytes(in
 								.readInt());
-						byte[] tresc = new byte[dlugoscWiadomosci];
+						
+						int sender = Integer.reverseBytes(in.readInt());
+						int seq = Integer.reverseBytes(in.readInt());
+						int time = Integer.reverseBytes(in.readInt());
+						int classa = Integer.reverseBytes(in.readInt());
+						int offset_plain = Integer.reverseBytes(in.readInt());
+						int offset_attributes = Integer.reverseBytes(in.readInt());
+						//dlugoscWiadomosci - 24 poniewaz 6 wczesniejszych pol jest
+						//typu int, kazdy po 4 bajty (6*4 = 24)
+						byte[] pozostalaCzescWiadomosci = new byte[dlugoscWiadomosci - 24];
+						in.read(pozostalaCzescWiadomosci, 0, pozostalaCzescWiadomosci.length);
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						DataOutputStream dos = new DataOutputStream(baos);
+						dos.write(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-offset_plain);
+						//String tresc = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "UTF-8");
+						String tresc = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
+						//String trescCP1250 = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
+						//String tresc = new String(trescCP1250.getBytes("UTF-8"));
+						Log.e("Odczytana wiadomosc: ", tresc);
+						Log.e("Od numeru: ", "" + sender);
+						wysylany = new Bundle();
+						wysylany.putString("tresc",tresc);
+						wysylany.putInt("wiadomoscOd",sender);
+						wysylany.putInt("przyszlaO",time);
+						
+						/*byte[] tresc = new byte[dlugoscWiadomosci];
 						pobraneBajty = 0;
 						while (pobraneBajty != dlugoscWiadomosci)
 							pobraneBajty += in.read(tresc, pobraneBajty,
@@ -548,7 +575,7 @@ public class GanduService extends Service {
 						Log.i("Odczytalem wiadomosc o dlugosci: ", ""
 								+ dlugoscWiadomosci);
 						wysylany = new Bundle();
-						wysylany.putByteArray("tresc",tresc);
+						wysylany.putByteArray("tresc",tresc);*/
 						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
 						message_recived.setData(wysylany);
 						for(int i=0; i<mClients.size(); i++)
