@@ -25,6 +25,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class Tab extends Activity{
@@ -43,7 +44,7 @@ public class Tab extends Activity{
 		et = (EditText) findViewById(R.id.entry);
 		tv = (TextView) findViewById(R.id.lblComments);
 		tv.setText("");
-		tv.setTextSize(16);
+		tv.setTextSize(20);
 		btn.setOnClickListener(listener);
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
@@ -55,6 +56,10 @@ public class Tab extends Activity{
 			Message msg = Message.obtain(null,Common.CLIENT_SEND_MESSAGE, 0, 0);
 			Bundle wysylany = new Bundle();
 			wysylany.putString("text", et.getText().toString());
+			String ggnumber = Chat.tabHost.getCurrentTabTag();
+		    wysylany.putInt("ggnumber", Integer.parseInt(getNumber(ggnumber)));
+			
+			//wysylany.putString("ggnumber",getNumber());
 			Calendar c = Calendar.getInstance();
 			tv.setBackgroundColor(R.color.conctactbookup);
 			tv.append(c.getTime().toString() + "\n" + et.getText().toString() + "\n");
@@ -90,6 +95,12 @@ public class Tab extends Activity{
                     super.handleMessage(msg);
             }
         }
+    }
+    
+    public String getNumber(String header)
+    {
+    	String [] tmp = header.split("-");
+    	return tmp[1];
     }
 
 	/**
