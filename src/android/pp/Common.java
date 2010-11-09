@@ -34,6 +34,7 @@ public class Common {
      * IMPORT/EXPORT CONTACTBOOK TYPES
     */
     static final byte GG_USERLIST_GET=  0x02; //import listy
+    static final byte GG_USERLIST_PUT= 0x00; //poczatek eksportu listy
     
     /**
      * Command to the service to register a client, receiving callbacks
@@ -59,6 +60,7 @@ public class Common {
    static final int CLIENT_GET_CONTACTBOOK = 4;
    
    static final int CLIENT_START_INTENT_CONTACTBOOK = 5;
+   static final int CLIENT_SET_CONTACTBOOK = 6;
    
    static final int CLIENT_SEND_MESSAGE = 6;
 }
