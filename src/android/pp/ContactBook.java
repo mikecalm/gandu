@@ -236,10 +236,10 @@ public class ContactBook extends ExpandableListActivity{
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	Log.i("ganduClient","Odebralem"+msg.what);
+        	//Log.i("ContactBook","Odebralem"+msg.what);
             switch (msg.what) {
                 case Common.FLAG_ACTIVITY_REGISTER:
-                	Log.i("ContactBook","Received: "+msg.what);
+                	Log.i("Zarejestrowano ContactBook","Received: "+msg.what);
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
                 	break;
                 case Common.FLAG_CONTACTBOOK:
