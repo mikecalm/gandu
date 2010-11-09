@@ -63,4 +63,5 @@ public class Common {
    static final int CLIENT_SET_CONTACTBOOK = 6;
    
    static final int CLIENT_SEND_MESSAGE = 7;
+   static final int CLIENT_RECV_MESSAGE = 8;
 }
