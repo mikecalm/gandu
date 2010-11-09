@@ -308,9 +308,9 @@ public class GanduService extends Service {
                     	try
                     	{
                     		mClients.get(i).send(msg2);
-                    	}catch(Exception excMsg2)
+                    	}catch(Exception e)
                     	{
-                    		Log.i("Blad", ""+excMsg2.getMessage());
+                    		Log.e("Blad", ""+e.getMessage());
                     	}
                     }
                     break;
@@ -348,9 +348,10 @@ public class GanduService extends Service {
                 case Common.CLIENT_SEND_MESSAGE:                	
                    	odebrany = msg.getData();
                 	String text = odebrany.getString("text");
+                	int ggnumber = odebrany.getInt("ggnumber");
 					ChatMessage sm = new ChatMessage();
 					try {
-						byte[] paczka = sm.setMessage(text);
+						byte[] paczka = sm.setMessage(text,ggnumber);
 						out.write(paczka);
 						Log.i("GanduService", "Wyslalem wiadomosc");
 						out.flush();
@@ -439,6 +440,7 @@ public class GanduService extends Service {
     public class ReplyInterpreter implements Runnable {
 		public void run() {
 			Log.i("ReplyInterpreter", "WSZEDLEM DO WATKU!!!!!");
+			Bundle wysylany;
 			while(connected)
 			{
 				try
@@ -479,7 +481,7 @@ public class GanduService extends Service {
 						byte typListaKont = in.readByte();
 						if(typListaKont == 0x06)
 							Log.i("typ replay import","0x06");
-						else if(typListaKont == 0x00) //GG_USERLIST_PUT_REPLY 0x00/* pocz¹tek eksportu listy */
+						else if(typListaKont == 0x00) //GG_USERLIST_PUT_REPLY 0x00/* poczï¿½tek eksportu listy */
 						{
 							Log.i("typ replay import","0x00");
 							break;
@@ -503,7 +505,7 @@ public class GanduService extends Service {
 						
 						saveOnSDCard(lista);
 						Message msg2 = Message.obtain(null,Common.FLAG_CONTACTBOOK, 0, 0);
-						Bundle wysylany = new Bundle();
+						wysylany = new Bundle();
 						wysylany.putString("listaGG", lista);
 						msg2.setData(wysylany);
 						for(int i=0; i<mClients.size(); i++)
@@ -534,6 +536,21 @@ public class GanduService extends Service {
 						Log.i("Odczytalem wiadomosc typu: ", "" + typWiadomosci);
 						Log.i("Odczytalem wiadomosc o dlugosci: ", ""
 								+ dlugoscWiadomosci);
+						wysylany = new Bundle();
+						wysylany.putByteArray("tresc",tresc);
+						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
+						message_recived.setData(wysylany);
+						for(int i=0; i<mClients.size(); i++)
+	                    {
+	                    	try
+	                    	{
+	                    		mClients.get(i).send(message_recived);
+	                    	}catch(Exception e)
+	                    	{
+	                    		Log.e("GanduService", ""+e.getMessage());
+	                    	}
+	                    }
+						
 						break;
 					default:
 							Log.i("GanduService received default: ", ""+typWiadomosci);
