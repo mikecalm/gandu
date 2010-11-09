@@ -82,13 +82,24 @@ public class GanduService extends Service {
    {
 	  int type = Integer.reverseBytes(Common.GG_USERLIST_REQUEST80);
 	  byte contactbook_frame_type = Common.GG_USERLIST_PUT;
-	  //byte[] skompresowanaLista = null;
 	  int dlugoscSkompresowana = 0;
-	  //byte [] request ;
-	  if(XMLList == "")
-		  XMLList = " ";
-	  //skompresowanaLista = deflateContactBook(XMLList);
-	  dlugoscSkompresowana = deflateContactBook(XMLList);
+	  Log.e("GanduService","Do serwisu trafila lista: "+XMLList);
+	  //wyslanie pustej listy na serwer (nie dziala, ale to chyba jakis bug po stronie GG)
+	  if(XMLList.trim().length() == 0)
+	  {
+		  //XMLList = " ";
+		  //w dokumentacji jest napisane, ze aby wyslac pusta liste na serwer (usunac liste z sewera)
+		  //nalezy wyslac jako liste kontaktow spacje (skompresowana deflate'em)
+		  this.skompresowanaLista = new byte[]{(byte)0x78, (byte)0xda, (byte)0x53, 
+				  (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x21, (byte)0x00, (byte)0x21};
+		  dlugoscSkompresowana = this.skompresowanaLista.length;
+		  Log.e("GanduService","Lista po zamianie przez if: "+XMLList);
+	  }
+	  else
+	  {
+		  //skompresowanaLista = deflateContactBook(XMLList);
+		  dlugoscSkompresowana = deflateContactBook(XMLList);
+	  }
 	  byte [] paczkaBajtow = null;
 	  
 	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
