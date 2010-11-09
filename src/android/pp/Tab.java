@@ -43,7 +43,7 @@ public class Tab extends Activity{
 		et = (EditText) findViewById(R.id.entry);
 		tv = (TextView) findViewById(R.id.lblComments);
 		tv.setText("");
-		tv.setTextSize(13);
+		tv.setTextSize(16);
 		btn.setOnClickListener(listener);
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);

@@ -59,11 +59,11 @@ public class Chat extends TabActivity{
         {
         	Bundle b = this.getIntent().getExtras();
             firstTabSpec = tabHost.newTabSpec(b.getString("username"));        
-
             /** TabSpec setIndicator() is used to set name for the tab. */
             /** TabSpec setContent() is used to set content for a particular tab. */
-            
-            firstTabSpec.setIndicator(b.getString("username")).setContent(new Intent(this,Tab.class));
+            String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
+            firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
+           // firstTabSpec.s
            
             /** Add tabSpec to the TabHost to display. */
         	tabHost.addTab(firstTabSpec); 
