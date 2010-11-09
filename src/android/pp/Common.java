@@ -62,5 +62,5 @@ public class Common {
    static final int CLIENT_START_INTENT_CONTACTBOOK = 5;
    static final int CLIENT_SET_CONTACTBOOK = 6;
    
-   static final int CLIENT_SEND_MESSAGE = 6;
+   static final int CLIENT_SEND_MESSAGE = 7;
 }
