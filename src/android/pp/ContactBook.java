@@ -154,13 +154,16 @@ public class ContactBook extends ExpandableListActivity{
 		
 		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, 2000).show();
 		
+
 		SIMPLEContact szukanyKontakt = new SIMPLEContact();
 		szukanyKontakt.AA3ShowName = ((TextView)v.findViewById(R.id.username)).getText().toString();
 		int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, szukanyKontakt, null);
 		String numerGGWybranegoGosciaNaLiscie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AA2GGNumber;
 		
+
 		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
 		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
+		intent.putExtra("ggnumber", numerGGWybranegoGosciaNaLiscie);
 		
 		try
 		{
