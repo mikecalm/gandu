@@ -23,10 +23,10 @@ import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 
 public class Chat extends TabActivity{
-	public TabHost tabHost;
+	public static TabHost tabHost;
 	public TabSpec firstTabSpec;
 	public SharedPreferences prefs;
-	public  SharedPreferences.Editor editor;
+	public SharedPreferences.Editor editor;
 	
 	/** Messenger for communicating with service. */
     Messenger mService = null;
@@ -58,13 +58,13 @@ public class Chat extends TabActivity{
         if (odz != null)
         {
         	Bundle b = this.getIntent().getExtras();
-            firstTabSpec = tabHost.newTabSpec(b.getString("username"));        
+        	String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
+            firstTabSpec = tabHost.newTabSpec(tabHeader);        
             /** TabSpec setIndicator() is used to set name for the tab. */
             /** TabSpec setContent() is used to set content for a particular tab. */
-            String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
-            firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
-           // firstTabSpec.s
            
+            firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
+         
             /** Add tabSpec to the TabHost to display. */
         	tabHost.addTab(firstTabSpec); 
         	
@@ -85,14 +85,16 @@ public class Chat extends TabActivity{
              * By using TabSpec setIndicator() we can set name to tab. */
 
             /** tid1 is firstTabSpec Id. Its used to access outside. */
-    		
+        	
     		Bundle b = this.getIntent().getExtras();
-            firstTabSpec = tabHost.newTabSpec(b.getString("username"));        
+    		String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
+            firstTabSpec = tabHost.newTabSpec(tabHeader);        
 
             /** TabSpec setIndicator() is used to set name for the tab. */
             /** TabSpec setContent() is used to set content for a particular tab. */
             
-            firstTabSpec.setIndicator(b.getString("username")).setContent(new Intent(this,Tab.class));
+         
+            firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
            
             /** Add tabSpec to the TabHost to display. */
         	tabHost.addTab(firstTabSpec); 
@@ -154,6 +156,17 @@ public class Chat extends TabActivity{
                 case Common.FLAG_ACTIVITY_REGISTER:
                 	Log.i("Zarejestrowano Chat","Received: "+msg.what);
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
+                	break;
+                
+                case Common.CLIENT_RECV_MESSAGE:
+                	Bundle odebrany = msg.getData();
+                	//int num = odebrany.getInt("num");
+                	//int seq = odebrany.getInt("seq");
+                	byte [] tresc = odebrany.getByteArray("tresc");
+                	    	
+                	String tmp = tresc.toString();
+                	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
+                	Log.i("Odebralem wiadomosc od Servicu", tmp);
                 	break;
                 default:
                     super.handleMessage(msg);
