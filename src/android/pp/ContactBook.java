@@ -152,7 +152,8 @@ public class ContactBook extends ExpandableListActivity{
             View v, int groupPosition, int childPosition,
             long id) {
 		
-		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, 2000).show();
+		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
 		
 
 		SIMPLEContact szukanyKontakt = new SIMPLEContact();
