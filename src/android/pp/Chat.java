@@ -63,7 +63,13 @@ public class Chat extends TabActivity{
             /** TabSpec setIndicator() is used to set name for the tab. */
             /** TabSpec setContent() is used to set content for a particular tab. */
            
-            firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
+            //tescik
+            Intent nowyTab = new Intent(this,Tab.class);
+            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
+            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
+            //tescik
+            
+            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
          
             /** Add tabSpec to the TabHost to display. */
         	tabHost.addTab(firstTabSpec); 
@@ -92,9 +98,14 @@ public class Chat extends TabActivity{
 
             /** TabSpec setIndicator() is used to set name for the tab. */
             /** TabSpec setContent() is used to set content for a particular tab. */
+                     
+            //tescik
+            Intent nowyTab = new Intent(this,Tab.class);
+            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
+            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
+            //tescik
             
-         
-            firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
+            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
            
             /** Add tabSpec to the TabHost to display. */
         	tabHost.addTab(firstTabSpec); 
@@ -162,11 +173,16 @@ public class Chat extends TabActivity{
                 	Bundle odebrany = msg.getData();
                 	//int num = odebrany.getInt("num");
                 	//int seq = odebrany.getInt("seq");
-                	byte [] tresc = odebrany.getByteArray("tresc");
+                	//byte [] tresc = odebrany.getByteArray("tresc");
+                	String tresc = odebrany.getString("tresc");
+                	String wiadomoscOd = odebrany.getString("wiadomoscOd");
+                	int przyszlaO = odebrany.getInt("przyszlaO");
                 	    	
-                	String tmp = tresc.toString();
+                	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
-                	Log.i("Odebralem wiadomosc od Servicu", tmp);
+                	Log.i("[Chat]Odebralem wiadomosc od Serwisu", tresc);
+                	Log.i("[Chat]Od numeru", wiadomoscOd);
+                	Log.i("[Chat]O godzinie", ""+przyszlaO);
                 	break;
                 default:
                     super.handleMessage(msg);

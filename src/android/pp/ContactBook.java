@@ -160,6 +160,10 @@ public class ContactBook extends ExpandableListActivity{
 		szukanyKontakt.AA3ShowName = ((TextView)v.findViewById(R.id.username)).getText().toString();
 		int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, szukanyKontakt, null);
 		String numerGGWybranegoGosciaNaLiscie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AA2GGNumber;
+		Log.i("[Metoda1]kontakt z numerem: ", numerGGWybranegoGosciaNaLiscie);
+		//alternatywna metoda pobrania numeru kliknietego goscia
+		ViewableContacts pobrany = this.contactsExpandableList.get(groupPosition).get(childPosition);
+		Log.i("[Metoda2]kontakt z numerem: ", ""+pobrany.GGNumber);		
 		
 
 		Intent intent = new Intent(this.getApplicationContext(), Chat.class);

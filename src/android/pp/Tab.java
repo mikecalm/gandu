@@ -34,6 +34,7 @@ public class Tab extends Activity{
     boolean mIsBound;
     EditText et;
     TextView tv;
+    String ggnumber = "";
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -50,6 +51,29 @@ public class Tab extends Activity{
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
 		
+		Bundle b = this.getIntent().getExtras();
+		if(b != null)
+		{
+			if(b.containsKey("ggnumber"))
+			{
+				this.ggnumber = b.getString("ggnumber");
+	    		Log.i("[Tab]onReasume, przyjalem ggnumber: ",this.ggnumber);
+			}
+		}
+		
+	}
+	public void onResume(){
+		super.onResume();
+		/*Bundle b = this.getIntent().getExtras();
+		if(!b.isEmpty())
+		{
+			if(b.containsKey("ggnumber"))
+			{
+				this.ggnumber = b.getString("ggnumber");
+	    		Log.i("[Tab]onReasume, przyjalem ggnumber: ",this.ggnumber);
+			}
+		}
+		int cos = 123;*/
 	}
 	OnClickListener listener = new OnClickListener() {
 		public void onClick(View v) {
@@ -90,6 +114,24 @@ public class Tab extends Activity{
                 case Common.FLAG_ACTIVITY_REGISTER:
                 	Log.i("Zarejestrowano Tab","Received: "+msg.what);
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
+                	break;
+                case Common.CLIENT_RECV_MESSAGE:
+                	Bundle odebrany = msg.getData();
+                	//int num = odebrany.getInt("num");
+                	//int seq = odebrany.getInt("seq");
+                	//byte [] tresc = odebrany.getByteArray("tresc");                	
+                	String wiadomoscOd = odebrany.getString("wiadomoscOd");
+                	if(!wiadomoscOd.equalsIgnoreCase(Tab.this.ggnumber))
+                		break;
+                	String tresc = odebrany.getString("tresc");
+                	int przyszlaO = odebrany.getInt("przyszlaO");
+                	    	
+                	//String tmp = tresc.toString();
+                	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
+                	Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
+                	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
+                	Log.i("[Tab]Od numeru", ""+wiadomoscOd);
+                	Log.i("[Tab]O godzinie", ""+przyszlaO);
                 	break;
                 default:
                     super.handleMessage(msg);
