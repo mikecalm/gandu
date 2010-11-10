@@ -19,6 +19,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -44,6 +45,7 @@ public class Tab extends Activity{
 		Button btn = (Button) findViewById(R.id.ok);
 		et = (EditText) findViewById(R.id.entry);
 		tv = (TextView) findViewById(R.id.lblComments);
+		//tv.setMovementMethod(ScrollingMovementMethod.getInstance());
 		tv.setText("");
 		tv.setTextSize(20);
 		btn.setOnClickListener(listener);
