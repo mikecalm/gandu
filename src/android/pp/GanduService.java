@@ -551,19 +551,16 @@ public class GanduService extends Service {
 						//dlugoscWiadomosci - 24 poniewaz 6 wczesniejszych pol jest
 						//typu int, kazdy po 4 bajty (6*4 = 24)
 						byte[] pozostalaCzescWiadomosci = new byte[dlugoscWiadomosci - 24];
-						in.read(pozostalaCzescWiadomosci, 0, pozostalaCzescWiadomosci.length);
-						ByteArrayOutputStream baos = new ByteArrayOutputStream();
-						DataOutputStream dos = new DataOutputStream(baos);
-						dos.write(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-offset_plain);
-						//String tresc = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "UTF-8");
-						String tresc = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
-						//String trescCP1250 = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
-						//String tresc = new String(trescCP1250.getBytes("UTF-8"));
-						Log.e("Odczytana wiadomosc: ", tresc);
-						Log.e("Od numeru: ", "" + sender);
+						pobraneBajty=0;
+						while(pobraneBajty != (dlugoscWiadomosci - 24))
+							pobraneBajty += in.read(pozostalaCzescWiadomosci, pobraneBajty, (dlugoscWiadomosci - 24)-pobraneBajty);
+						String trescCP1250 = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
+						String tresc = new String(trescCP1250.getBytes("CP1250"),"UTF-8");
+						Log.e("[GanduService]Odczytana wiadomosc: ", tresc);
+						Log.e("[GanduService]Od numeru: ", "" + sender);
 						wysylany = new Bundle();
 						wysylany.putString("tresc",tresc);
-						wysylany.putInt("wiadomoscOd",sender);
+						wysylany.putString("wiadomoscOd",""+sender);
 						wysylany.putInt("przyszlaO",time);
 						
 						/*byte[] tresc = new byte[dlugoscWiadomosci];
