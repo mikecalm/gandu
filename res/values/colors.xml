@@ -3,4 +3,6 @@
 	<color name="black">#000000</color>
 	<color name="background">#ffffff</color>
 <color name="conctactbookup">#EEEEEE</color>
+<color name="conctactbookdown">#AAAAAA</color>
+
 </resources>

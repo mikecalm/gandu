@@ -84,9 +84,10 @@ public class Tab extends Activity{
 		    wysylany.putInt("ggnumber", Integer.parseInt(getNumber(ggnumber)));
 			
 			//wysylany.putString("ggnumber",getNumber());
-			Calendar c = Calendar.getInstance();
-			tv.setBackgroundColor(R.color.conctactbookup);
-			tv.append(c.getTime().toString() + "\n" + et.getText().toString() + "\n");
+			//Calendar c = Calendar.getInstance();
+			//tv.setBackgroundColor(R.color.conctactbookup);
+			//tv.append(c.getTime().toString() + "\n" + et.getText().toString() + "\n");
+			tv.append(new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(System.currentTimeMillis()) + "\n" + et.getText().toString() + "\n");			
 			//wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
 			et.setText("");
 			msg.setData(wysylany);
@@ -124,14 +125,15 @@ public class Tab extends Activity{
                 	if(!wiadomoscOd.equalsIgnoreCase(Tab.this.ggnumber))
                 		break;
                 	String tresc = odebrany.getString("tresc");
-                	int przyszlaO = odebrany.getInt("przyszlaO");
+                	String przyszlaO = odebrany.getString("przyszlaO");
                 	    	
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
+                	//Tab.this.tv.setBackgroundColor(R.color.conctactbookdown);
                 	Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
-                	Log.i("[Tab]Od numeru", ""+wiadomoscOd);
-                	Log.i("[Tab]O godzinie", ""+przyszlaO);
+                	Log.i("[Tab]Od numeru", wiadomoscOd);
+                	Log.i("[Tab]O godzinie", przyszlaO);
                 	break;
                 default:
                     super.handleMessage(msg);

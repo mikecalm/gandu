@@ -561,7 +561,8 @@ public class GanduService extends Service {
 						wysylany = new Bundle();
 						wysylany.putString("tresc",tresc);
 						wysylany.putString("wiadomoscOd",""+sender);
-						wysylany.putInt("przyszlaO",time);
+						String czasNadejscia = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new java.util.Date (time*1000L));
+						wysylany.putString("przyszlaO",czasNadejscia);
 						
 						/*byte[] tresc = new byte[dlugoscWiadomosci];
 						pobraneBajty = 0;
