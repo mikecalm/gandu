@@ -176,13 +176,13 @@ public class Chat extends TabActivity{
                 	//byte [] tresc = odebrany.getByteArray("tresc");
                 	String tresc = odebrany.getString("tresc");
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
-                	int przyszlaO = odebrany.getInt("przyszlaO");
+                	String przyszlaO = odebrany.getString("przyszlaO");
                 	    	
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
                 	Log.i("[Chat]Odebralem wiadomosc od Serwisu", tresc);
                 	Log.i("[Chat]Od numeru", wiadomoscOd);
-                	Log.i("[Chat]O godzinie", ""+przyszlaO);
+                	Log.i("[Chat]O godzinie", przyszlaO);
                 	break;
                 default:
                     super.handleMessage(msg);
