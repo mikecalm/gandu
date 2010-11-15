@@ -1,11 +1,5 @@
 package android.pp;
 
-import java.security.Timestamp;
-import java.sql.Date;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,16 +11,12 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.text.format.DateFormat;
-import android.text.format.DateUtils;
-import android.text.method.ScrollingMovementMethod;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class Tab extends Activity{
@@ -47,7 +37,7 @@ public class Tab extends Activity{
 		tv = (TextView) findViewById(R.id.lblComments);
 		//tv.setMovementMethod(ScrollingMovementMethod.getInstance());
 		tv.setText("");
-		tv.setTextSize(20);
+		tv.setTextSize(18);
 		btn.setOnClickListener(listener);
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
@@ -89,6 +79,7 @@ public class Tab extends Activity{
 			//Calendar c = Calendar.getInstance();
 			//tv.setBackgroundColor(R.color.conctactbookup);
 			//tv.append(c.getTime().toString() + "\n" + et.getText().toString() + "\n");
+		    tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b><hr>"+"\n"));
 			tv.append(new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(System.currentTimeMillis()) + "\n" + et.getText().toString() + "\n");			
 			//wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
 			et.setText("");
@@ -132,7 +123,9 @@ public class Tab extends Activity{
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
                 	//Tab.this.tv.setBackgroundColor(R.color.conctactbookdown);
-                	Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
+                	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"<\\FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
+                	tv.append(tresc+"\n");
+                	//Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
                 	Log.i("[Tab]Od numeru", wiadomoscOd);
                 	Log.i("[Tab]O godzinie", przyszlaO);

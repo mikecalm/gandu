@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.zip.Deflater;
@@ -20,7 +19,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.simpleframework.xml.convert.Converter;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -28,14 +26,12 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.util.Log;
-import android.util.Xml.Encoding;
 import android.widget.Toast;
 
 public class GanduService extends Service {
@@ -247,8 +243,6 @@ public class GanduService extends Service {
 			socket = new Socket(ipWyizolowany, portWyizolowany);
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
-			//Socket socket = new Socket(ipWyizolowany, portWyizolowany);
-			//Socket socket = new Socket(ipWyizolowany, 443);
 			connected = true;
 			//uruchom watek odbierajacy komunikaty z serwera GG
 			Thread cThread = new Thread(new ReplyInterpreter());
@@ -265,14 +259,9 @@ public class GanduService extends Service {
     {
     	try
     	{
-	    	//GG_STATUS_AVAIL_DESCR	0x0004	Dostepny (z opisem)
-			int numergg = Integer.parseInt(numerGG);
+	    	int numergg = Integer.parseInt(numerGG);
 	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, "http://code.google.com/p/gandu/");
 	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
-	    	//DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-	    	//out = new DataOutputStream(socket.getOutputStream());
-	    	//wyslanie paczki logowania 
-	      	//do serwera
 	    	out.write(paczkalogowania);
 	    	out.flush();
 			Toast.makeText(GanduService.this, "Zalogowany", Toast.LENGTH_SHORT).show();
@@ -452,7 +441,7 @@ public class GanduService extends Service {
     //watek odbierajacy wiadomosci od serwera GG
     public class ReplyInterpreter implements Runnable {
 		public void run() {
-			Log.i("ReplyInterpreter", "WSZEDLEM DO WATKU!!!!!");
+			Log.i("ReplyInterpreter", "Watek wystartowal");
 			Bundle wysylany;
 			while(connected)
 			{
@@ -463,6 +452,7 @@ public class GanduService extends Service {
 					switch(typWiadomosci){
 					
 					case Common.GG_WELCOME:
+						
 						Log.i("GanduService received: ", ""+typWiadomosci);
 						int dlugoscDanych = Integer.reverseBytes(in.readInt());
 						int ziarno = Integer.reverseBytes(in.readInt());
@@ -533,8 +523,6 @@ public class GanduService extends Service {
 	                    }
 						
 						Log.i("Lista kontaktow", lista);
-						Log.i("Odczytalem smieci typu: ", ""+typWiadomosci);
-						Log.i("Odczytalem smieci o dlugosci: ", ""+dlugoscListy);
 						break;
 					case Common.GG_RECV_MSG80:
 						Log.i("GanduService received message!: ", ""
@@ -595,8 +583,8 @@ public class GanduService extends Service {
 							pobraneBajty=0;
 							while(pobraneBajty != dlugoscBadziewia)
 								pobraneBajty += in.read(smieci, pobraneBajty, dlugoscBadziewia-pobraneBajty);
-							Log.i("Odczytalem smieci typu: ", ""+typWiadomosci);
-							Log.i("Odczytalem smieci o dlugosci: ", ""+dlugoscBadziewia);
+							Log.i("Odczytalem cos typu: ", ""+typWiadomosci);
+							Log.i("Odczytalem cos o dlugosci: ", ""+dlugoscBadziewia);
 					}
 				}
 				catch(Exception excThread)
@@ -605,8 +593,8 @@ public class GanduService extends Service {
 					connected = false;
 				}
 			}
-			Log.i("GanduService", "WYSZEDLEM Z WATKU!!!!!");
-			Log.i("GanduServicew", "wartosc connected = "+connected);
+			Log.i("ReplyInterpreter", "Watek zakonczony");
+			Log.i("GanduService", "wartosc connected = "+connected);
 		}
     }
 }
