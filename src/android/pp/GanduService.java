@@ -543,7 +543,8 @@ public class GanduService extends Service {
 						while(pobraneBajty != (dlugoscWiadomosci - 24))
 							pobraneBajty += in.read(pozostalaCzescWiadomosci, pobraneBajty, (dlugoscWiadomosci - 24)-pobraneBajty);
 						String trescCP1250 = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
-						String tresc = new String(trescCP1250.getBytes("CP1250"),"UTF-8");
+						//String tresc = new String(trescCP1250.getBytes("CP1250"),"UTF-8");
+						String tresc =trescCP1250;
 						Log.e("[GanduService]Odczytana wiadomosc: ", tresc);
 						Log.e("[GanduService]Od numeru: ", "" + sender);
 						wysylany = new Bundle();
