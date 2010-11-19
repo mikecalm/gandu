@@ -14,7 +14,12 @@ public class Common {
     /**
      * STATES 
      */
-    static final int GG_STATUS_AVAIL_DESCR = 0x0004;
+    static final int GG_STATUS_AVAIL = 0x0002;
+    static final int GG_STATUS_AVAIL_DESCR = 0x0004;    
+    static final int GG_STATUS_NOT_AVAIL = 0x0001;
+    static final int GG_STATUS_NOT_AVAIL_DESCR = 0x0015;
+    static final int GG_STATUS_INVISIBLE = 0x0014;
+    static final int GG_STATUS_INVISIBLE_DESCR = 0x0016;
     /**
      * REPLIES FROM SERVER GG
     */
