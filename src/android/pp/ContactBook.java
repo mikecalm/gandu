@@ -2,6 +2,7 @@ package android.pp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.simpleframework.xml.Serializer;
@@ -16,6 +17,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -40,7 +43,11 @@ public class ContactBook extends ExpandableListActivity{
 	SIMPLEContactBookList contactBookFull;
 	List<List<ViewableContacts>> contactsExpandableList;
 	List<ViewableGroups> groupsExpandableList;
+	public SharedPreferences prefs;
+	public SharedPreferences.Editor editor;
 	private static final int DIALOG_STATUS = 1;
+	EditText statusDescription;
+	ImageButton statusButton;
 	
 	AlertDialog alertDialog;
 
@@ -62,9 +69,14 @@ public class ContactBook extends ExpandableListActivity{
         //mAdapter = new MyExpandableListAdapter(getApplicationContext());
 		mAdapter = new MyExpandableListAdapter(getApplicationContext());
         setListAdapter(mAdapter);
+        
+        //prefs = getPreferences(0);
+        prefs = getSharedPreferences("otwarteZakladki", 0);
+		editor = prefs.edit();
 		
 		/* Wyswietl liste statusow */
-		ImageButton statusButton = (ImageButton) findViewById(R.id.ImageButton01);
+		statusDescription = (EditText) findViewById(R.id.EditText01);
+		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
         statusButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 showDialog(DIALOG_STATUS);
@@ -98,7 +110,10 @@ public class ContactBook extends ExpandableListActivity{
 	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
 	    		}
 				return true;
-			case R.id.End02:			 
+			case R.id.End02:			
+				String odz = prefs.getString("text", null);
+				editor.remove("text");
+	    		editor.commit();
 			 	moveTaskToBack(true);
 			 	break;
 			case R.id.Export03:			
@@ -125,20 +140,71 @@ public class ContactBook extends ExpandableListActivity{
     protected Dialog onCreateDialog(int id) {
         switch (id) {
         case DIALOG_STATUS:
-            //return new AlertDialog.Builder(ContactBook.this)
-        	return alertDialog = new AlertDialog.Builder(ContactBook.this)
-                .setTitle("Status")
-                .setItems(new String[]{"Dostepny","Niewidoczny","Niedostepny"}, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+        	ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("Name", "Dostepny");
+            map.put("ResID", R.drawable.available);
+            list.add(map);
 
+            map = new HashMap<String, Object>();
+            map.put("Name", "Niewidoczny");
+            map.put("ResID", R.drawable.offline);
+            list.add(map);
+            
+            map = new HashMap<String, Object>();
+            map.put("Name", "Niedostepny");
+            map.put("ResID", R.drawable.notavailable);
+            list.add(map);
+            
+            /*StatusListAdapter adapter = new StatusListAdapter(ContactBook.this, list,
+                    R.layout.status_row, new String[]{},
+                    new int[] { R.id.statusName, R.id.statusImage });*/
+            StatusListAdapter adapter = new StatusListAdapter(ContactBook.this, list,
+                    0, new String[]{},
+                    new int[] {});
+            
+            return alertDialog = new AlertDialog.Builder(ContactBook.this)
+            	.setTitle("Status")
+            	.setAdapter(adapter, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+            
                         /* User clicked so do some stuff */
                         String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
+                        Message msg2 = Message.obtain(null,Common.CLIENT_CHANGE_STATUS, 0, 0);
+                        Bundle wysylany = new Bundle();
+            			wysylany.putString("status", items[which]);
+            			if(statusDescription.getText() != null)
+            				wysylany.putString("opisStatusu", statusDescription.getText().toString());
+            			else
+            				wysylany.putString("opisStatusu", "");
+            			msg2.setData(wysylany);
+        	    		try
+        	    		{
+        	    			mService.send(msg2);
+        	    		}catch(Exception excMsg)
+        	    		{
+        	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
+        	    		}
                         /*new AlertDialog.Builder(ContactBook.this)
                                 .setMessage("Status: " + items[which])
                                 .show();*/
                     }
-                })
-                .create();
+                }).create();
+        	//ListAdapter la = new Simple
+            //return new AlertDialog.Builder(ContactBook.this)
+        	//return alertDialog = new AlertDialog.Builder(ContactBook.this)
+            //    .setTitle("Status")
+            //    .setItems(new String[]{"Dostepny","Niewidoczny","Niedostepny"}, new DialogInterface.OnClickListener() {
+            //        public void onClick(DialogInterface dialog, int which) {
+            //
+            //            /* User clicked so do some stuff */
+            //            String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
+            //            /*new AlertDialog.Builder(ContactBook.this)
+            //                    .setMessage("Status: " + items[which])
+            //                    .show();*/
+            //        }
+            //    })
+            //    .create();
             //w tym przypadku nie jest potrzebny break na koncu, bo w case jest zwracany obiekt
         	//break;
         }

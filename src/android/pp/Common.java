@@ -9,6 +9,7 @@ public class Common {
     static final int GG_LOGIN80 = 0x0031;
     static final int GG_LIST_EMPTY = 0x0012;
     static final int GG_SEND_MSG80 = 0x002d;
+    static final int GG_NEW_STATUS80 = 0x0038;
     
     /**
      * STATES 
@@ -64,4 +65,6 @@ public class Common {
    
    static final int CLIENT_SEND_MESSAGE = 7;
    static final int CLIENT_RECV_MESSAGE = 8;
+   
+   static final int CLIENT_CHANGE_STATUS = 9;
 }

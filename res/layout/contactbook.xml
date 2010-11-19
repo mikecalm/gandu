@@ -19,7 +19,7 @@ android:layout_height="fill_parent"
 		<EditText 
 		android:id="@+id/EditText01" 
 		android:layout_height="wrap_content" 
-		android:hint="Podaj opis..." android:layout_gravity="left|center_vertical" android:layout_width="wrap_content" android:layout_weight="0.96">
+		android:hint="Podaj opis..." android:layout_gravity="left|center_vertical" android:layout_width="wrap_content" android:layout_weight="0.96" android:singleLine="true">
 		</EditText>
 		<ImageButton 
 		android:id="@+id/ImageButton01" 

@@ -360,6 +360,20 @@ public class GanduService extends Service {
 					} catch (Exception e) {
 						Log.e("GanduService", "SendingMessage Failed!");
 					}
+					break;
+                case Common.CLIENT_CHANGE_STATUS:                	
+                   	odebrany = msg.getData();
+                	String status = odebrany.getString("status");
+                	String opisStatusu = odebrany.getString("opisStatusu");
+                	StatusChangeMessage scm = new StatusChangeMessage();
+					try {
+						byte[] paczka = scm.setStatus(status,opisStatusu);
+						out.write(paczka);
+						Log.i("GanduService", "Ustawiam status");
+						out.flush();
+					} catch (Exception e) {
+						Log.e("GanduService", "Status setting Failed!");
+					}
 				break;
                 	
                 default:
