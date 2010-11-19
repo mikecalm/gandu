@@ -42,7 +42,8 @@ public class Chat extends TabActivity{
 		
 		Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_SHORT).show();
 		
-		prefs = getPreferences(0);
+		//prefs = getPreferences(0);
+		prefs = getSharedPreferences("otwarteZakladki", 0);
 		editor = prefs.edit();
 		//tabHost = (TabHost)findViewById(android.R.id.tabhost);	
 		tabHost = getTabHost();
