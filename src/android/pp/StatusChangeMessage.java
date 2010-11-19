@@ -43,21 +43,21 @@ public class StatusChangeMessage {
 			{
 				Log.i("StatusChangeMessage","description_size>0: "+this.description.length);
 				if(stat.equals("Niewidoczny"))
-					this.status = Integer.reverseBytes(0x0016);
+					this.status = Integer.reverseBytes(Common.GG_STATUS_INVISIBLE_DESCR);
 				else if(stat.equals("Niedostepny"))
-					this.status = Integer.reverseBytes(0x0015);
+					this.status = Integer.reverseBytes(Common.GG_STATUS_NOT_AVAIL_DESCR);
 				else if(stat.equals("Dostepny"))
-					this.status = Integer.reverseBytes(0x0004);
+					this.status = Integer.reverseBytes(Common.GG_STATUS_AVAIL_DESCR);
 			}
 			else
 			{
 				Log.i("StatusChangeMessage","description_size nie >0: "+this.description.length);
 				if(stat.equals("Niewidoczny"))
-					this.status = Integer.reverseBytes(0x0014);
+					this.status = Integer.reverseBytes(Common.GG_STATUS_INVISIBLE);
 				else if(stat.equals("Niedostepny"))
-					this.status = Integer.reverseBytes(0x0001);
+					this.status = Integer.reverseBytes(Common.GG_STATUS_NOT_AVAIL);
 				else if(stat.equals("Dostepny"))
-					this.status = Integer.reverseBytes(0x0002);
+					this.status = Integer.reverseBytes(Common.GG_STATUS_AVAIL);
 			}
 			
 			byte[] resztaPaczki;

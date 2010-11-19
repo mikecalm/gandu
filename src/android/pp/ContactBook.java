@@ -25,16 +25,19 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TextView.OnEditorActionListener;
 
 public class ContactBook extends ExpandableListActivity{
 
@@ -48,6 +51,7 @@ public class ContactBook extends ExpandableListActivity{
 	private static final int DIALOG_STATUS = 1;
 	EditText statusDescription;
 	ImageButton statusButton;
+	int ustawionyStatus = 0;
 	
 	AlertDialog alertDialog;
 
@@ -77,6 +81,33 @@ public class ContactBook extends ExpandableListActivity{
 		/* Wyswietl liste statusow */
 		statusDescription = (EditText) findViewById(R.id.EditText01);
 		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
+		
+		statusDescription.setOnEditorActionListener(new OnEditorActionListener() {			
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				// TODO Auto-generated method stub
+				if(actionId == EditorInfo.IME_ACTION_DONE)
+				{
+					Message msg2 = Message.obtain(null,Common.CLIENT_CHANGE_STATUS, 0, 0);
+					String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
+                    Bundle wysylany = new Bundle();
+        			wysylany.putString("status", items[ustawionyStatus]);
+        			if(statusDescription.getText() != null)
+        				wysylany.putString("opisStatusu", statusDescription.getText().toString());
+        			else
+        				wysylany.putString("opisStatusu", "");
+        			msg2.setData(wysylany);
+    	    		try
+    	    		{
+    	    			mService.send(msg2);
+    	    		}catch(Exception exc)
+    	    		{
+    	    			Log.e("ContactBook","Blad przypisania akcji DONE edittextowi z opisem");
+    	    		}
+				}
+				return false;
+			}
+		});
         statusButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 showDialog(DIALOG_STATUS);
@@ -181,6 +212,18 @@ public class ContactBook extends ExpandableListActivity{
         	    		try
         	    		{
         	    			mService.send(msg2);
+        	    			ustawionyStatus = which;
+        	    			switch(which){
+        	    				case 0:
+        	    					statusButton.setImageResource(R.drawable.available);
+        	    					break;
+        	    				case 1:
+        	    					statusButton.setImageResource(R.drawable.offline);
+        	    					break;
+        	    				case 2:
+        	    					statusButton.setImageResource(R.drawable.notavailable);
+        	    					break;
+        	    			}
         	    		}catch(Exception excMsg)
         	    		{
         	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
