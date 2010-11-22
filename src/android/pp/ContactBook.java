@@ -1,5 +1,8 @@
 package android.pp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,11 +22,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.text.Editable;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -52,6 +57,7 @@ public class ContactBook extends ExpandableListActivity{
 	EditText statusDescription;
 	ImageButton statusButton;
 	int ustawionyStatus = 0;
+	static final private int NEW_CONTACT_ACTIVITY_RESULT = 0;
 	
 	AlertDialog alertDialog;
 
@@ -82,7 +88,7 @@ public class ContactBook extends ExpandableListActivity{
 		statusDescription = (EditText) findViewById(R.id.EditText01);
 		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
 		
-		statusDescription.setOnEditorActionListener(new OnEditorActionListener() {			
+		statusDescription.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				// TODO Auto-generated method stub
@@ -116,6 +122,130 @@ public class ContactBook extends ExpandableListActivity{
             }
         });		
 	}
+	
+	 /**
+     * This method is called when the sending activity has finished, with the
+     * result it supplied.
+     * 
+     * @param requestCode The original request code as given to
+     *                    startActivity().
+     * @param resultCode From sending activity as per setResult().
+     * @param data From sending activity as per setResult().
+     */
+    @Override
+	protected void onActivityResult(int requestCode, int resultCode,
+		Intent data) {
+        // You can use the requestCode to select between multiple child
+        // activities you may have started.  Here there is only one thing
+        // we launch.
+        if (requestCode == NEW_CONTACT_ACTIVITY_RESULT) {
+
+            // This is a standard resultCode that is sent back if the
+            // activity doesn't supply an explicit result.  It will also
+            // be returned if the activity failed to launch.
+            if (resultCode == RESULT_CANCELED) {
+                Log.i("NewContactResult", "RESULT_CANCELED");
+
+            // Our protocol with the sending activity is that it will send
+            // text in 'data' as its result.
+            } else {
+            	Log.i("NewContactResult", Integer.toString(resultCode));
+                if (data != null) {
+                    //text.append(data.getAction());
+                	String new_numerGG = data.getStringExtra("numerGG");
+                	String new_nazwaKontaktu = data.getStringExtra("nazwaKontaktu");
+                	String new_email = data.getStringExtra("email");
+                	String new_komorkowy = data.getStringExtra("komorkowy");
+                	String new_stacjonarny = data.getStringExtra("stacjonarny");
+                	String new_stronaWWW = data.getStringExtra("stronaWWW");
+                	
+                	SIMPLEContact nowy = new SIMPLEContact();
+                	if(!new_nazwaKontaktu.equals(""))
+                	{
+                		nowy.AA3ShowName = new_nazwaKontaktu; 
+	                	//START Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
+	                	if(!new_numerGG.equals(""))
+	                	{
+	                		nowy.AA1Guid = new_numerGG;
+	                		nowy.AA2GGNumber = new_numerGG; 
+	                	}
+	                	else if(!new_email.equals(""))
+	                		nowy.AA1Guid = new_email;
+	                	else if(!new_komorkowy.equals(""))
+	                		nowy.AA1Guid = new_komorkowy;
+	                	else
+	                		nowy.AA1Guid = new_stacjonarny;
+	                	//KONIEC Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
+                	}
+                	else
+                	{                		
+                		//START Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
+	                	if(!new_numerGG.equals(""))
+	                	{
+	                		nowy.AA1Guid = new_numerGG;
+	                		nowy.AA2GGNumber = new_numerGG; 
+	                		nowy.AA3ShowName = new_numerGG;
+	                	}
+	                	else if(!new_email.equals(""))
+	                	{
+	                		nowy.AA1Guid = new_email;
+	                		nowy.AA3ShowName = new_email;
+	                	}
+	                	else if(!new_komorkowy.equals(""))
+	                	{
+	                		nowy.AA1Guid = new_komorkowy;
+	                		nowy.AA3ShowName = new_komorkowy;
+	                	}
+	                	else
+	                	{
+	                		nowy.AA1Guid = new_stacjonarny;
+	                		nowy.AA3ShowName = new_stacjonarny;
+	                	}
+	                	//KONIEC Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
+                	}
+                	
+                	if(!new_email.equals(""))
+                		nowy.AA6Email = new_email;
+                	if(!new_komorkowy.equals(""))
+                		nowy.AA4MobilePhone = new_komorkowy;
+                	if(!new_stacjonarny.equals(""))
+                		nowy.AA5HomePhone = new_stacjonarny;
+                	if(!new_stronaWWW.equals(""))
+                		nowy.AA7WwwAddress = new_stronaWWW;
+    				SIMPLEContactGroups scg = new SIMPLEContactGroups();
+    				ArrayList<String> grupy = new ArrayList<String>();
+    				//grupy.add(this.contactBookFull.A1Groupsy.Groups.get(0).A1Id);
+    				grupy.add("00000000-0000-0000-0000-000000000000");
+    				scg.Groups = grupy;
+    				//nowy.AB5Groups = new 
+    				nowy.AB5Groups = scg;
+    				//START jesli lista kontaktow jest pusta, 
+    				//to najpierw nalezy utworzyc pusta liste
+    				//kontaktow z grupa glowna "Moje kontakty" o ID "00000000-0000-0000-0000-000000000000"
+    				if(this.contactBookFull == null)
+    					this.contactBookFull = new SIMPLEContactBookList();
+    				if(this.contactBookFull.A1Groupsy == null)
+    					this.contactBookFull.A1Groupsy = new SIMPLEGroups();
+    				if(this.contactBookFull.A1Groupsy.Groups == null)
+    				{
+    					this.contactBookFull.A1Groupsy.Groups = new ArrayList<SIMPLEGroup>();
+    					SIMPLEGroup mojeKontakty = new SIMPLEGroup();
+    					mojeKontakty.A1Id = "00000000-0000-0000-0000-000000000000";
+    					mojeKontakty.A2Name = "Moje kontakty";
+    					mojeKontakty.A3IsExpanded = true;
+    					mojeKontakty.A4IsRemovable = false;
+    					this.contactBookFull.A1Groupsy.Groups.add(mojeKontakty);
+    				}
+    				if(this.contactBookFull.A2Contactsy == null)
+    					this.contactBookFull.A2Contactsy = new SIMPLEContacts();
+    				if(this.contactBookFull.A2Contactsy.Contacts == null)
+    					this.contactBookFull.A2Contactsy.Contacts = new ArrayList<SIMPLEContact>();    				
+    				//KONIEC jesli lista kontaktow jest pusta
+    				addContactToContactBook(nowy);
+                }
+            }
+        }
+    }
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
@@ -161,6 +291,22 @@ public class ContactBook extends ExpandableListActivity{
 	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
 	    		}
 				return true;
+			case R.id.AddContact04:
+				Intent intent = new Intent(this.getApplicationContext(), AddNewContact.class);
+				startActivityForResult(intent,NEW_CONTACT_ACTIVITY_RESULT);
+				//startActivity(intent);
+				/*SIMPLEContact nowy = new SIMPLEContact();
+				nowy.AA1Guid = "guid";
+				nowy.AA3ShowName = "NowyShowName";
+				nowy.AA2GGNumber = "123456";
+				SIMPLEContactGroups scg = new SIMPLEContactGroups();
+				ArrayList<String> grupy = new ArrayList<String>();
+				grupy.add(this.contactBookFull.A1Groupsy.Groups.get(0).A1Id);
+				scg.Groups = grupy;
+				//nowy.AB5Groups = new 
+				nowy.AB5Groups = scg;
+				addContactToContactBook(nowy);*/
+			 	break;
 			//Moreitemsgohere(ifany)...
 		}
 		return false;
@@ -253,7 +399,7 @@ public class ContactBook extends ExpandableListActivity{
         }
         
         return null;
-	}
+	}	
 	
 	//akcja na klikniecie danego kontaktu na liscie
 	@Override
@@ -305,6 +451,44 @@ public class ContactBook extends ExpandableListActivity{
 			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 		} catch (Exception excSimp) {
 			Log.e("SIMPLE Error",excSimp.getMessage());
+		}
+    }
+	
+	public void addContactToContactBook(SIMPLEContact addedContact)
+    {
+    	Serializer serializer = new Persister();
+		//false na ko�cu odpowiada za ignorowanie elementow w pliku XML ktorych
+		//nie ma zadeklarowanych w klasie do ktorej wczytuje XMLa. Gdyby GG dorzucilo
+		//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
+		//ktore ma zadeklarowane w klasie z lista kontaktow.
+		try {
+			//wyszukuje najpierw indeks pod ktorym nalezy dodac nowy kontakt na liste,
+			//zeby po dodaniu lista kontaktow dalej byla posortowana
+			int wynikBinarySearch = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, addedContact, null);
+			int miejsceWstawieniaKontaktu = 0;
+			if(wynikBinarySearch >= 0)
+			{
+				Log.i("Adding contact","dodawany kontakt juz jest na liscie kontaktow");
+				Toast.makeText(this, "Zmien nazwe kontaktu.\n"+
+						"Kontakt o podanej nazwie juz istnieje", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			else
+				miejsceWstawieniaKontaktu = -(wynikBinarySearch+1);
+			this.contactBookFull.A2Contactsy.Contacts.add(miejsceWstawieniaKontaktu,addedContact);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			serializer.write(this.contactBookFull, baos);
+			this.gglista = baos.toString("UTF-8");
+        	saveOnInternalMemory(this.gglista);
+			//sortContactListSIMPLE(this.contactBookFull);
+			this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
+			this.groupsExpandableList = new ArrayList<ViewableGroups>();
+			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
+			mAdapter.setAdapterData(this.groupsExpandableList, this.contactsExpandableList);
+        	for(int parent=0; parent<this.groupsExpandableList.size(); parent++)
+				getExpandableListView().expandGroup(parent);
+		} catch (Exception excAdd) {
+			Log.e("Dodawanie kontaktu Error",excAdd.getMessage());
 		}
     }
 	
@@ -478,5 +662,23 @@ public class ContactBook extends ExpandableListActivity{
             mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
-    }   
+    }
+    
+    public void saveOnInternalMemory(String tmp)
+    {
+	   //String extStorageDirectory = Environment.getDataDirectory().toString() ;
+	   //File file = new File(extStorageDirectory, "contactBook"+"GGNumber"+".xml");
+	   
+	   try {
+			//FileOutputStream fos = new FileOutputStream(file);
+		   FileOutputStream fos = openFileOutput("Kontakty_"+"GGNumber"+".xml", Context.MODE_PRIVATE);
+			byte [] buffer = tmp.getBytes("UTF-8");
+			fos.write(buffer);
+			fos.flush();
+			fos.close(); 		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 }
