@@ -4,5 +4,6 @@
 
 <item android:title="Import" android:id="@+id/Import01"></item>
 <item android:title="Export" android:id="@+id/Export03"></item>
+<item android:title="Dodaj kontakt" android:id="@+id/AddContact04"></item>
 <item android:title="Wyloguj i zakończ" android:id="@+id/End02"></item>
 </menu>

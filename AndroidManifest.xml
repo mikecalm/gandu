@@ -17,6 +17,9 @@
 	</activity>
 	<activity android:name=".Tab">
 	</activity>
+	<activity android:name=".AddNewContact" 
+	android:theme="@android:style/Theme.Dialog">
+	</activity>
 
     
     
