@@ -47,6 +47,7 @@ import android.widget.TextView.OnEditorActionListener;
 public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
+	boolean connectedToGGServer;
 	String gglista = "";
 	SIMPLEContactBookList contactBookFull;
 	List<List<ViewableContacts>> contactsExpandableList;
@@ -204,6 +205,20 @@ public class ContactBook extends ExpandableListActivity{
 	                	//KONIEC Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
                 	}
                 	
+                	//sprawdzenie, czy nie ma na liscie kontaktu o podanej nazwie
+                	//GG nie dopuszcza istnienia kontaktow na liscie o takiej samej nazwie
+                	if(this.contactBookFull != null)
+                		if(this.contactBookFull.A2Contactsy != null)
+                			if(this.contactBookFull.A2Contactsy.Contacts != null)
+                				//if(this.contactBookFull.A2Contactsy.Contacts.contains(nowy))
+                				if(Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, nowy, null) >= 0)
+                				{
+                					Toast.makeText(getApplicationContext(), "Zmien nazwe kontaktu\n"+
+                							nowy.AA3ShowName+" jest juz na liscie kontaktow", Toast.LENGTH_LONG).show();
+                					return;
+                				}
+                					
+                	
                 	if(!new_email.equals(""))
                 		nowy.AA6Email = new_email;
                 	if(!new_komorkowy.equals(""))
@@ -212,6 +227,10 @@ public class ContactBook extends ExpandableListActivity{
                 		nowy.AA5HomePhone = new_stacjonarny;
                 	if(!new_stronaWWW.equals(""))
                 		nowy.AA7WwwAddress = new_stronaWWW;
+                	nowy.AC1FlagNormal = true;
+                	nowy.AB7Avatars = new SIMPLEAvatars();
+                	nowy.AB7Avatars.Avatars = new ArrayList<String>();
+                	nowy.AB7Avatars.Avatars.add("");
     				SIMPLEContactGroups scg = new SIMPLEContactGroups();
     				ArrayList<String> grupy = new ArrayList<String>();
     				//grupy.add(this.contactBookFull.A1Groupsy.Groups.get(0).A1Id);
@@ -242,6 +261,27 @@ public class ContactBook extends ExpandableListActivity{
     					this.contactBookFull.A2Contactsy.Contacts = new ArrayList<SIMPLEContact>();    				
     				//KONIEC jesli lista kontaktow jest pusta
     				addContactToContactBook(nowy);
+    				//Jesli jestesmy polaczeni z serwerem, to
+    				//po dodaniu kontaktu nalezy wyslac do serwera GG pakiet
+    				//GG_ADD_NOTIFY
+    				//z informacja o nowo dodanym kontakcie, aby serwer
+    				//informowal nas o dostepnosci kontaktu
+    				//wyslanie do serwisu wiadomosci, ze eksportowana jest lista kontaktow
+    				if(!new_numerGG.equals(""))
+    				{
+	    	        	Message msg3 = Message.obtain(null,Common.CLIENT_ADD_NEW_CONTACT, 0, 0);	        
+	    	    		try
+	    	    		{
+	    		    		Bundle wysylany = new Bundle();
+	    					wysylany.putString("numerGG", new_numerGG);
+	    					msg3.setData(wysylany);
+	    	    			mService.send(msg3);
+	    	    		}catch(Exception excMsg)
+	    	    		{
+	    	    			Log.e("ContactBook","Blad wyslania info do serwisu o nowo dodanym kontakcie:\n"+
+	    	    					excMsg.getMessage());
+	    	    		}
+    				}
                 }
             }
         }
@@ -278,7 +318,7 @@ public class ContactBook extends ExpandableListActivity{
 			 	moveTaskToBack(true);
 			 	break;
 			case R.id.Export03:			
-				//wyslanie do serwisu wiadomosci, ze importowana jest lista kontaktow    		
+				//wyslanie do serwisu wiadomosci, ze eksportowana jest lista kontaktow    		
 	        	Message msg3 = Message.obtain(null,Common.CLIENT_SET_CONTACTBOOK, 0, 0);	        
 	    		try
 	    		{

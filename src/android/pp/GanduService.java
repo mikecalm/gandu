@@ -375,6 +375,26 @@ public class GanduService extends Service {
 						Log.e("GanduService", "Status setting Failed!");
 					}
 				break;
+                case Common.CLIENT_ADD_NEW_CONTACT:
+                	odebrany = msg.getData();
+                	String numerGG = odebrany.getString("numerGG");
+                	try
+                	{
+						int numerGGint = Integer.parseInt(numerGG);
+						byte [] paczkaBajtow = null;
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						DataOutputStream dos = new DataOutputStream(baos);
+						dos.writeInt(Integer.reverseBytes(Common.GG_ADD_NOTIFY));
+						dos.writeInt(Integer.reverseBytes(5));		
+						dos.writeInt(Integer.reverseBytes(numerGGint));
+						dos.write(Common.GG_USER_NORMAL);
+						paczkaBajtow = baos.toByteArray();
+						out.write(paczkaBajtow);
+						out.flush();
+                	} catch (Exception e) {
+						Log.e("GanduService", "Sending new contact info Failed!");
+					}
+                	break;
                 	
                 default:
                     super.handleMessage(msg);
