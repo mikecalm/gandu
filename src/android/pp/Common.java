@@ -10,6 +10,7 @@ public class Common {
     static final int GG_LIST_EMPTY = 0x0012;
     static final int GG_SEND_MSG80 = 0x002d;
     static final int GG_NEW_STATUS80 = 0x0038;
+    static final int GG_ADD_NOTIFY = 0x000d;
     
     /**
      * STATES 
@@ -28,7 +29,12 @@ public class Common {
     static final int GG_LOGIN_OK80 = 0x0035;
     static final int GG_LOGIN_FAILED = 0x0009;
     static final int GG_RECV_MSG80 = 0x002e;
-
+    /**
+     * CONTACT TYPES
+     */
+    static final byte GG_USER_OFFLINE = 0x01;	//U¿ytkownik, dla którego bêdziemy niedostêpni, ale mamy go w liœcie kontaktów
+    static final byte GG_USER_NORMAL = 0x03;		//Zwyk³y u¿ytkownik dodany do listy kontaktów
+    static final byte GG_USER_BLOCKED = 0x04;	//U¿ytkownik, którego wiadomoœci nie chcemy otrzymywaæ
 
     /**
      * CLASS FLAGS
@@ -39,8 +45,8 @@ public class Common {
     /**
      * IMPORT/EXPORT CONTACTBOOK TYPES
     */
-    static final byte GG_USERLIST_GET=  0x02; //import listy
-    static final byte GG_USERLIST_PUT= 0x00; //poczatek eksportu listy
+    static final byte GG_USERLIST_GET=  0x02; 	//import listy
+    static final byte GG_USERLIST_PUT= 0x00; 	//poczatek eksportu listy
     
     /**
      * Command to the service to register a client, receiving callbacks
@@ -72,4 +78,6 @@ public class Common {
    static final int CLIENT_RECV_MESSAGE = 8;
    
    static final int CLIENT_CHANGE_STATUS = 9;
+   
+   static final int CLIENT_ADD_NEW_CONTACT = 10;
 }
