@@ -11,6 +11,7 @@ public class Common {
     static final int GG_SEND_MSG80 = 0x002d;
     static final int GG_NEW_STATUS80 = 0x0038;
     static final int GG_ADD_NOTIFY = 0x000d;
+    static final int GG_REMOVE_NOTIFY = 0x000e;
     
     /**
      * STATES 
@@ -80,4 +81,5 @@ public class Common {
    static final int CLIENT_CHANGE_STATUS = 9;
    
    static final int CLIENT_ADD_NEW_CONTACT = 10;
+   static final int CLIENT_REMOVE_CONTACT = 11;
 }

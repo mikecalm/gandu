@@ -49,7 +49,7 @@ public class Tab extends Activity{
 			if(b.containsKey("ggnumber"))
 			{
 				this.ggnumber = b.getString("ggnumber");
-	    		Log.i("[Tab]onReasume, przyjalem ggnumber: ",this.ggnumber);
+	    		Log.i("[Tab]onCreate, przyjalem ggnumber: ",this.ggnumber);
 			}
 		}
 		

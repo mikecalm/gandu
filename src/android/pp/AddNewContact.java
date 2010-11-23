@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.opengl.Visibility;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager.LayoutParams;
@@ -25,6 +26,7 @@ public class AddNewContact extends Activity {
 	EditText komorkowyE;
 	EditText stacjonarnyE;
 	EditText stronaWWWE;
+	String grupaID = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,16 @@ public class AddNewContact extends Activity {
 	    getWindow().setLayout(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
 	    setTitle("Nowy kontakt");
 	    
+	    Bundle b = this.getIntent().getExtras();
+		if(b != null)
+		{
+			if(b.containsKey("grupaID"))
+			{
+				this.grupaID = b.getString("grupaID");
+	    		Log.i("[AddNewContact]onCreate, przyjalem grupaID: ",this.grupaID);
+			}
+		}
+	    
 	    numerGGE = (EditText)findViewById(R.id.NewGGNumber);
 	    nazwaKontaktuE = (EditText)findViewById(R.id.NewShowName);
 	    emailE = (EditText)findViewById(R.id.NewEmail);
@@ -45,9 +57,8 @@ public class AddNewContact extends Activity {
 	    dodajButton = (Button)findViewById(R.id.NewDodajButton);
 	    dodajButton.setOnClickListener(addClicked);
 	    wiecejLayout = (LinearLayout)findViewById(R.id.NewWiecejLayout);	    
-	    pokazWiecej = (ToggleButton)findViewById(R.id.NewMoreToggle);
-	    pokazWiecej.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			
+	    pokazWiecej = (ToggleButton)findViewById(R.id.NewMoreToggle);	    
+	    pokazWiecej.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				if(isChecked)
@@ -79,11 +90,14 @@ public class AddNewContact extends Activity {
         	{
         		Toast.makeText(getApplicationContext(), "Musisz podac numer GG, e-mail lub numer telefonu", Toast.LENGTH_LONG).show();
         		return;
-        	}        	
-        	if(!numerGG.matches("[0-9]+"))
+        	}
+        	if(!numerGG.equals(""))
         	{
-        		Toast.makeText(getApplicationContext(), "Nieprawidlowy format numeru GG", Toast.LENGTH_LONG).show();
-        		return;        	
+	        	if(!numerGG.matches("[0-9]+"))
+	        	{
+	        		Toast.makeText(getApplicationContext(), "Nieprawidlowy format numeru GG", Toast.LENGTH_LONG).show();
+	        		return;        	
+	        	}
         	}
         	Intent odpowiedz = new Intent();
         	odpowiedz.putExtra("numerGG", numerGG);
@@ -92,6 +106,8 @@ public class AddNewContact extends Activity {
         	odpowiedz.putExtra("komorkowy", komorkowy);
         	odpowiedz.putExtra("stacjonarny", stacjonarny);
         	odpowiedz.putExtra("stronaWWW", stronaWWW);
+        	if(grupaID != null)
+        		odpowiedz.putExtra("grupaID", grupaID);
         	setResult(RESULT_OK, odpowiedz);
             finish();
         }

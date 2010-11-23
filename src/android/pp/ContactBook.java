@@ -177,6 +177,8 @@ public class ContactBook extends ExpandableListActivity{
                 	String new_komorkowy = data.getStringExtra("komorkowy");
                 	String new_stacjonarny = data.getStringExtra("stacjonarny");
                 	String new_stronaWWW = data.getStringExtra("stronaWWW");
+                	//String new_grupaName = data.getStringExtra("grupaName");
+                	String new_groupID = data.getStringExtra("grupaID");
                 	
                 	SIMPLEContact nowy = new SIMPLEContact();
                 	if(!new_nazwaKontaktu.equals(""))
@@ -186,7 +188,6 @@ public class ContactBook extends ExpandableListActivity{
 	                	if(!new_numerGG.equals(""))
 	                	{
 	                		nowy.AA1Guid = new_numerGG;
-	                		nowy.AA2GGNumber = new_numerGG; 
 	                	}
 	                	else if(!new_email.equals(""))
 	                		nowy.AA1Guid = new_email;
@@ -201,8 +202,7 @@ public class ContactBook extends ExpandableListActivity{
                 		//START Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
 	                	if(!new_numerGG.equals(""))
 	                	{
-	                		nowy.AA1Guid = new_numerGG;
-	                		nowy.AA2GGNumber = new_numerGG; 
+	                		nowy.AA1Guid = new_numerGG; 
 	                		nowy.AA3ShowName = new_numerGG;
 	                	}
 	                	else if(!new_email.equals(""))
@@ -236,7 +236,10 @@ public class ContactBook extends ExpandableListActivity{
                 					return;
                 				}
                 					
-                	
+                	if(!new_numerGG.equals(""))
+                		nowy.AA2GGNumber = new_numerGG;
+                	else
+                		nowy.AA2GGNumber = "";
                 	if(!new_email.equals(""))
                 		nowy.AA6Email = new_email;
                 	if(!new_komorkowy.equals(""))
@@ -245,6 +248,9 @@ public class ContactBook extends ExpandableListActivity{
                 		nowy.AA5HomePhone = new_stacjonarny;
                 	if(!new_stronaWWW.equals(""))
                 		nowy.AA7WwwAddress = new_stronaWWW;
+                	if(new_groupID != null)
+                		if(new_groupID.equals("00000000-0000-0000-0000-000000000001"))
+                			nowy.AC3FlagIgnored = true;
                 	nowy.AC1FlagNormal = true;
                 	nowy.AB7Avatars = new SIMPLEAvatars();
                 	nowy.AB7Avatars.Avatars = new ArrayList<String>();
@@ -252,39 +258,58 @@ public class ContactBook extends ExpandableListActivity{
     				SIMPLEContactGroups scg = new SIMPLEContactGroups();
     				ArrayList<String> grupy = new ArrayList<String>();
     				//grupy.add(this.contactBookFull.A1Groupsy.Groups.get(0).A1Id);
-    				grupy.add("00000000-0000-0000-0000-000000000000");
+    				if(new_groupID == null)
+    					grupy.add("00000000-0000-0000-0000-000000000000");
+    				else
+    					grupy.add(new_groupID);
+    				/*{
+    					String groupID = "";
+    					for(int ig=0; ig<this.groupsExpandableList.size(); ig++)
+    						if(this.groupsExpandableList.get(ig).name.equals(new_grupaName))
+    						{
+    							groupID = this.groupsExpandableList.get(ig).groupid;
+    							break;
+    						}
+    					grupy.add(groupID);
+    				}*/
     				scg.Groups = grupy;
     				//nowy.AB5Groups = new 
     				nowy.AB5Groups = scg;
-    				//START jesli lista kontaktow jest pusta, 
-    				//to najpierw nalezy utworzyc pusta liste
-    				//kontaktow z grupa glowna "Moje kontakty" o ID "00000000-0000-0000-0000-000000000000"
-    				if(this.contactBookFull == null)
-    					this.contactBookFull = new SIMPLEContactBookList();
-    				if(this.contactBookFull.A1Groupsy == null)
-    					this.contactBookFull.A1Groupsy = new SIMPLEGroups();
-    				if(this.contactBookFull.A1Groupsy.Groups == null)
+    				//jesli zostal przekazany new_grupaName, tzn ze dodawanie
+    				//nowego kontaktu zostalo wywolane z menu kontekstowego grupy
+    				//czyli lista na pewno nie jest pusta
+    				//if(new_grupaName == null)
+    				if(new_groupID == null)    				
     				{
-    					this.contactBookFull.A1Groupsy.Groups = new ArrayList<SIMPLEGroup>();
-    					SIMPLEGroup mojeKontakty = new SIMPLEGroup();
-    					mojeKontakty.A1Id = "00000000-0000-0000-0000-000000000000";
-    					mojeKontakty.A2Name = "Moje kontakty";
-    					mojeKontakty.A3IsExpanded = true;
-    					mojeKontakty.A4IsRemovable = false;
-    					this.contactBookFull.A1Groupsy.Groups.add(mojeKontakty);
+	    				//START jesli lista kontaktow jest pusta, 
+	    				//to najpierw nalezy utworzyc pusta liste
+	    				//kontaktow z grupa glowna "Moje kontakty" o ID "00000000-0000-0000-0000-000000000000"
+	    				if(this.contactBookFull == null)
+	    					this.contactBookFull = new SIMPLEContactBookList();
+	    				if(this.contactBookFull.A1Groupsy == null)
+	    					this.contactBookFull.A1Groupsy = new SIMPLEGroups();
+	    				if(this.contactBookFull.A1Groupsy.Groups == null)
+	    				{
+	    					this.contactBookFull.A1Groupsy.Groups = new ArrayList<SIMPLEGroup>();
+	    					SIMPLEGroup mojeKontakty = new SIMPLEGroup();
+	    					mojeKontakty.A1Id = "00000000-0000-0000-0000-000000000000";
+	    					mojeKontakty.A2Name = "Moje kontakty";
+	    					mojeKontakty.A3IsExpanded = true;
+	    					mojeKontakty.A4IsRemovable = false;
+	    					this.contactBookFull.A1Groupsy.Groups.add(mojeKontakty);
+	    				}
+	    				if(this.contactBookFull.A2Contactsy == null)
+	    					this.contactBookFull.A2Contactsy = new SIMPLEContacts();
+	    				if(this.contactBookFull.A2Contactsy.Contacts == null)
+	    					this.contactBookFull.A2Contactsy.Contacts = new ArrayList<SIMPLEContact>();    				
+	    				//KONIEC jesli lista kontaktow jest pusta
     				}
-    				if(this.contactBookFull.A2Contactsy == null)
-    					this.contactBookFull.A2Contactsy = new SIMPLEContacts();
-    				if(this.contactBookFull.A2Contactsy.Contacts == null)
-    					this.contactBookFull.A2Contactsy.Contacts = new ArrayList<SIMPLEContact>();    				
-    				//KONIEC jesli lista kontaktow jest pusta
     				addContactToContactBook(nowy);
     				//Jesli jestesmy polaczeni z serwerem, to
     				//po dodaniu kontaktu nalezy wyslac do serwera GG pakiet
     				//GG_ADD_NOTIFY
     				//z informacja o nowo dodanym kontakcie, aby serwer
     				//informowal nas o dostepnosci kontaktu
-    				//wyslanie do serwisu wiadomosci, ze eksportowana jest lista kontaktow
     				if(!new_numerGG.equals(""))
     				{
 	    	        	Message msg3 = Message.obtain(null,Common.CLIENT_ADD_NEW_CONTACT, 0, 0);	        
@@ -292,6 +317,13 @@ public class ContactBook extends ExpandableListActivity{
 	    	    		{
 	    		    		Bundle wysylany = new Bundle();
 	    					wysylany.putString("numerGG", new_numerGG);
+	    					//jesli nowy kontakt dodawany jest do grupy ignorowanych
+	    					//to trzeba wyslac do serwisu wiadomosc o tym, ze kontakt
+	    					//jest ignorowany. Serwer GG nie bedzie przysylal nam wiadomosci
+	    					//od ignorowanego kontaktu
+	    					if(new_groupID != null)
+	                    		if(new_groupID.equals("00000000-0000-0000-0000-000000000001"))
+	                    			wysylany.putBoolean("ingorowany", true);
 	    					msg3.setData(wysylany);
 	    	    			mService.send(msg3);
 	    	    		}catch(Exception excMsg)
@@ -320,7 +352,7 @@ public class ContactBook extends ExpandableListActivity{
     				.get(group)
     				.get(child);
 	    		menu.setHeaderTitle(pobrany.showName);
-	    		String[] menuItems = {"jeden","dwa"};
+	    		String[] menuItems = {"Edytuj","Usun","Ignoruj"};
 	    		for (int i = 0; i<menuItems.length; i++) {
 	    			menu.add(Menu.NONE, i, i, menuItems[i]);
 	    		}
@@ -331,7 +363,7 @@ public class ContactBook extends ExpandableListActivity{
     			ViewableGroups pobrany = this.groupsExpandableList
 				.get(group);
 	    		menu.setHeaderTitle(pobrany.name);
-	    		String[] menuItems = {"trzy","cztery"};
+	    		String[] menuItems = {"Dodaj kontakt","cztery"};
 	    		for (int i = 0; i<menuItems.length; i++) {
 	    			menu.add(Menu.NONE, i, i, menuItems[i]);
 	    		}
@@ -352,14 +384,146 @@ public class ContactBook extends ExpandableListActivity{
 			ViewableContacts pobrany = this.contactsExpandableList
 				.get(group)
 				.get(child);
-			Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.showName), Toast.LENGTH_SHORT).show();
+			//Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.showName), Toast.LENGTH_SHORT).show();
+			switch(item.getItemId())
+			{
+				//akcja edytuj
+				case 0:
+					break;
+				//akcja usun
+				case 1:
+					String nazwaUsuwanego = pobrany.showName;
+					String usuwanaGrupaID = this.groupsExpandableList.get(group).groupid;
+					Boolean usuwanyKontaktJestTezWInnejGrupie = false;
+					SIMPLEContact sc = new SIMPLEContact();
+					sc.AA3ShowName = nazwaUsuwanego;
+					int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, 
+							sc, null);
+					//jesli usuwany kontakt nalezy tylko do jednej grupy, to zostanie w calosci usuniety ze struktury
+					//this.contactBookFull.A2Contactsy.Contacts
+					if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AB5Groups.Groups.size() == 1)
+						this.contactBookFull.A2Contactsy.Contacts.remove(indeksSzukanegoKontaktu);
+					//w przeciwnym razie z danych kontaktu zostanie usunieta grupa z ktorej jest usuwany 
+					else
+					{
+						usuwanyKontaktJestTezWInnejGrupie = true;
+						//jesli kontakt usuwany jest z grupy ignorowani,
+						//to nalezy ustawic mu odpowiednie flagi
+						if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001"))
+						{
+							this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AC3FlagIgnored = false;
+							this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AC1FlagNormal = true;
+						}
+						int indeksSzukanejGrupyWKontakcie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu)
+																	.AB5Groups.Groups.indexOf(usuwanaGrupaID);
+						this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AB5Groups.Groups.remove(
+								indeksSzukanejGrupyWKontakcie);
+					}
+					//usuniecie kotantu z adaptera expandableListView
+					this.contactsExpandableList.get(group).remove(child);
+					//zapis listy kontaktow do pliku w pam. wewnetrznej
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					try {
+						new Persister().write(this.contactBookFull, baos);
+						this.gglista = baos.toString("UTF-8");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		        	saveOnInternalMemory(this.gglista);
+		        	mAdapter.notifyDataSetChanged();
+					//mAdapter.notifyDataSetChanged();
+					//jesli usuwany kontakt ma wpisany numer GG
+					//to trzeba wyslac do serwera informacje o
+					//usunieciu kontaktu z listy, zeby nie przysylal
+					//nam informacji o dostepnosci kontaktu
+					if(pobrany.GGNumber != "")
+						//jesli kontakt usuwany jest z grupy ignorowani ale jest tez w innej grupie,
+						//to informujemy serwis, zeby powiadomij serwer,
+						//ze ten kontakt nie jest juz ignorowany
+						if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001") && usuwanyKontaktJestTezWInnejGrupie)
+						{							
+							Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
+		    	    		try
+		    	    		{
+		    		    		Bundle wysylany = new Bundle();
+		    					wysylany.putString("numerGG", pobrany.GGNumber);
+		                    	wysylany.putBoolean("ingorowany", true);
+		                    	wysylany.putBoolean("kontaktIstnieje", true);
+		    					msg3.setData(wysylany);
+		    	    			mService.send(msg3);
+		    	    		}catch(Exception excMsg)
+		    	    		{
+		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i istniejacym) kontakcie:\n"+
+		    	    					excMsg.getMessage());
+		    	    		}
+						}
+						//jesli kontakt usuwany jest z grupy ignorowani i nie ma go w innej grupie,
+						//to informujemy serwis, zeby powiadomij serwer,
+						//ze ten kontakt nie jest juz ignorowany i nie mamy tego kontaktu na liscie
+						//(zeby nie przysylal wiadomosci o dostepnosci kontaktu)
+						else if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001"))
+						{
+							Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
+		    	    		try
+		    	    		{
+		    		    		Bundle wysylany = new Bundle();
+		    					wysylany.putString("numerGG", pobrany.GGNumber);
+		                    	wysylany.putBoolean("ingorowany", true);
+		                    	wysylany.putBoolean("kontaktIstnieje", false);
+		    					msg3.setData(wysylany);
+		    	    			mService.send(msg3);
+		    	    		}catch(Exception excMsg)
+		    	    		{
+		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i nieistniejacym) kontakcie:\n"+
+		    	    					excMsg.getMessage());
+		    	    		}
+						}
+						//w tej sytuacji nie wysylamy do serwisu zadnej informacji,
+						//bo dalej chcemy otrzymywac wiadomosci o dostepnosci kontaktu
+						else if(usuwanyKontaktJestTezWInnejGrupie)
+							;
+						//w tej sytuacji informujemy serwis, zeby powiadomij serwer,
+						//ze nie mamy juz tego kontaktu na liscie
+						//(zeby nie przysylal wiadomosci o dostepnosci kontaktu)
+						else
+						{
+							Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
+		    	    		try
+		    	    		{
+		    		    		Bundle wysylany = new Bundle();
+		    					wysylany.putString("numerGG", pobrany.GGNumber);
+		                    	wysylany.putBoolean("ingorowany", false);
+		                    	wysylany.putBoolean("kontaktIstnieje", false);
+		    					msg3.setData(wysylany);
+		    	    			mService.send(msg3);
+		    	    		}catch(Exception excMsg)
+		    	    		{
+		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(nieignorowanym i nieistniejacy) kontakcie:\n"+
+		    	    					excMsg.getMessage());
+		    	    		}
+						}
+					break;
+				//akcja ignoruj
+				case 2:
+					break;
+			}
 		}
 		//akcja dla grupy
 		else
 		{
 			ViewableGroups pobrany = this.groupsExpandableList
 			.get(group);
-			Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.name), Toast.LENGTH_SHORT).show();
+			//Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.name), Toast.LENGTH_SHORT).show();
+			switch(item.getItemId())
+			{
+				//dodaj kontakt (do wybranej grupy)
+				case 0:
+					Intent intent = new Intent(this.getApplicationContext(), AddNewContact.class);
+					intent.putExtra("grupaID", pobrany.groupid);
+					startActivityForResult(intent,NEW_CONTACT_ACTIVITY_RESULT);
+					break;
+			}					
 		}
 		//TextView text = (TextView)findViewById(R.id.footer);
 		//text.setText(String.format("Selected %s for item %s", menuItemName, listItemName));
@@ -526,8 +690,8 @@ public class ContactBook extends ExpandableListActivity{
             View v, int groupPosition, int childPosition,
             long id) {
 		
-		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
-		Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
 		
 
 		SIMPLEContact szukanyKontakt = new SIMPLEContact();
@@ -647,11 +811,13 @@ public class ContactBook extends ExpandableListActivity{
 				ViewableContacts dodawany = new ViewableContacts();
 				//kontakt GG musi miec podany conajmniej showName oraz
 				//GGNumber lub MobilePhone lub HomePhone lub Email
+				dodawany.GGNumber = "";
 				if(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber != null)
 				{
 					try
 					{
-						dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
+						//dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
+						dodawany.GGNumber = gcl.A2Contactsy.Contacts.get(i).AA2GGNumber;
 					}catch(Exception ExcAdd1)
 					{
 						Log.e("ExcAdd1", ExcAdd1.getMessage());
