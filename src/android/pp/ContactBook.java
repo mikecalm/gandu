@@ -30,18 +30,23 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.TextView.OnEditorActionListener;
 
 public class ContactBook extends ExpandableListActivity{
@@ -80,6 +85,19 @@ public class ContactBook extends ExpandableListActivity{
         //mAdapter = new MyExpandableListAdapter(getApplicationContext());
 		mAdapter = new MyExpandableListAdapter(getApplicationContext());
         setListAdapter(mAdapter);
+        
+        registerForContextMenu(this.getExpandableListView());
+        
+        /*getExpandableListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+			
+			@Override
+			public void onCreateContextMenu(ContextMenu menu, View v,
+					ContextMenuInfo menuInfo) {
+				// TODO Auto-generated method stub
+				menu.setHeaderTitle("Test");
+				v.showContextMenu();
+			}
+		});*/
         
         //prefs = getPreferences(0);
         prefs = getSharedPreferences("otwarteZakladki", 0);
@@ -285,6 +303,67 @@ public class ContactBook extends ExpandableListActivity{
                 }
             }
         }
+    }
+    
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
+    {
+    	if(v.getId()==this.getExpandableListView().getId())
+    	{
+    		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo)menuInfo;
+    		int group = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+    		int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
+    		//long click na kontakt
+    		if(child != -1)
+    		{
+    			ViewableContacts pobrany = this.contactsExpandableList
+    				.get(group)
+    				.get(child);
+	    		menu.setHeaderTitle(pobrany.showName);
+	    		String[] menuItems = {"jeden","dwa"};
+	    		for (int i = 0; i<menuItems.length; i++) {
+	    			menu.add(Menu.NONE, i, i, menuItems[i]);
+	    		}
+    		}
+    		//long click na grupe
+    		else
+    		{
+    			ViewableGroups pobrany = this.groupsExpandableList
+				.get(group);
+	    		menu.setHeaderTitle(pobrany.name);
+	    		String[] menuItems = {"trzy","cztery"};
+	    		for (int i = 0; i<menuItems.length; i++) {
+	    			menu.add(Menu.NONE, i, i, menuItems[i]);
+	    		}
+    		}
+    	}
+    }
+    
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+    	ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo)item.getMenuInfo();
+		String menuItemName = item.getTitle().toString();
+		int group = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+		int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
+		//String listItemName = Countries[info.position];
+		//akcja dla kontaktu
+		if(child != -1)
+		{
+			ViewableContacts pobrany = this.contactsExpandableList
+				.get(group)
+				.get(child);
+			Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.showName), Toast.LENGTH_SHORT).show();
+		}
+		//akcja dla grupy
+		else
+		{
+			ViewableGroups pobrany = this.groupsExpandableList
+			.get(group);
+			Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.name), Toast.LENGTH_SHORT).show();
+		}
+		//TextView text = (TextView)findViewById(R.id.footer);
+		//text.setText(String.format("Selected %s for item %s", menuItemName, listItemName));
+		return true;
     }
 	
 	@Override
