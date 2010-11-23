@@ -3,7 +3,7 @@ package android.pp;
 public class ViewableContacts {
 	
 	public String showName;
-	public int GGNumber;
+	public String GGNumber;
 	public String MobilePhone;
 	public String HomePhone;
 	public String Email;

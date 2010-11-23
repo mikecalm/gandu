@@ -378,6 +378,7 @@ public class GanduService extends Service {
                 case Common.CLIENT_ADD_NEW_CONTACT:
                 	odebrany = msg.getData();
                 	String numerGG = odebrany.getString("numerGG");
+                	Boolean ignorowany = odebrany.getBoolean("ingorowany");
                 	try
                 	{
 						int numerGGint = Integer.parseInt(numerGG);
@@ -387,7 +388,10 @@ public class GanduService extends Service {
 						dos.writeInt(Integer.reverseBytes(Common.GG_ADD_NOTIFY));
 						dos.writeInt(Integer.reverseBytes(5));		
 						dos.writeInt(Integer.reverseBytes(numerGGint));
-						dos.write(Common.GG_USER_NORMAL);
+						if(ignorowany)
+							dos.write(Common.GG_USER_BLOCKED);
+						else
+							dos.write(Common.GG_USER_NORMAL);
 						paczkaBajtow = baos.toByteArray();
 						out.write(paczkaBajtow);
 						out.flush();
@@ -395,7 +399,51 @@ public class GanduService extends Service {
 						Log.e("GanduService", "Sending new contact info Failed!");
 					}
                 	break;
-                	
+                case Common.CLIENT_REMOVE_CONTACT:
+                	odebrany = msg.getData();
+                	String numerGGUsuwany = odebrany.getString("numerGG");
+                	Boolean ignorowanyUsuwany = odebrany.getBoolean("ingorowany");
+                	Boolean kontaktIstnieje = odebrany.getBoolean("kontaktIstnieje");
+                	try
+                	{
+						int numerGGint = Integer.parseInt(numerGGUsuwany);
+						byte [] paczkaBajtow = null;
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						DataOutputStream dos = new DataOutputStream(baos);
+						dos.writeInt(Integer.reverseBytes(Common.GG_REMOVE_NOTIFY));
+						dos.writeInt(Integer.reverseBytes(5));		
+						dos.writeInt(Integer.reverseBytes(numerGGint));
+						//jesli kontakt zostal usuniety z ignorowani
+						//to ten typ kontaktu zostanie usuniety z serwera
+						if(ignorowanyUsuwany)
+							dos.write(Common.GG_USER_BLOCKED);
+						//jesli zwykly kontakt zostal usuniety
+						//i nie ma go w zadnej innej grupie
+						//to ten kontakt zostanie usuniety z serwera
+						else
+							dos.write(Common.GG_USER_NORMAL);
+						paczkaBajtow = baos.toByteArray();
+						out.write(paczkaBajtow);
+						out.flush();
+						//jesli zostal usuniety ignorowany kontakt
+						//ale jest tez w innej grupie
+						//to zostanie dodany normalny typ kontaktu na serwerze
+						if(kontaktIstnieje)
+						{
+							baos = new ByteArrayOutputStream();
+							dos = new DataOutputStream(baos);
+							dos.writeInt(Integer.reverseBytes(Common.GG_ADD_NOTIFY));
+							dos.writeInt(Integer.reverseBytes(5));
+							dos.writeInt(Integer.reverseBytes(numerGGint));
+							dos.write(Common.GG_USER_NORMAL);
+							paczkaBajtow = baos.toByteArray();
+							out.write(paczkaBajtow);
+							out.flush();
+						}
+                	} catch (Exception e) {
+						Log.e("GanduService", "Sending new contact info Failed!");
+					}
+                	break;
                 default:
                     super.handleMessage(msg);
             }
