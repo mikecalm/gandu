@@ -107,6 +107,8 @@ public class ContactBook extends ExpandableListActivity{
 		statusDescription = (EditText) findViewById(R.id.EditText01);
 		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
 		
+		//dodanie akcji na wcisniecie przycisku "Done" po wpisaniu tekstu
+		//w pole opisu
 		statusDescription.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -135,6 +137,7 @@ public class ContactBook extends ExpandableListActivity{
 		});
         statusButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
+            	//wygenerowanie akcja na zdarzenie wybrania przycisku zmiany statusu
                 showDialog(DIALOG_STATUS);
             	//int wybrany = alertDialog.getListView().getCheckedItemPosition();
             	//Toast.makeText(getApplicationContext(), "wybrano", wybrany).show();
@@ -167,7 +170,10 @@ public class ContactBook extends ExpandableListActivity{
 
             // Our protocol with the sending activity is that it will send
             // text in 'data' as its result.
-            } else {
+            }
+            //RESULT_OK
+            else 
+            {
             	Log.i("NewContactResult", Integer.toString(resultCode));
                 if (data != null) {
                     //text.append(data.getAction());
@@ -179,6 +185,11 @@ public class ContactBook extends ExpandableListActivity{
                 	String new_stronaWWW = data.getStringExtra("stronaWWW");
                 	//String new_grupaName = data.getStringExtra("grupaName");
                 	String new_groupID = data.getStringExtra("grupaID");
+                	//START Jesli wyedytowano kontakt
+                	Boolean edit_edited = data.getBooleanExtra("edited",false);
+                	String edit_oldNumerGG = data.getStringExtra("poprzedniNumer");
+                	String edit_oldNazwaKontaktu = data.getStringExtra("poprzedniaNazwaKontaktu");
+                	//KONIEC Jesli wyedytowano kontakt
                 	
                 	SIMPLEContact nowy = new SIMPLEContact();
                 	if(!new_nazwaKontaktu.equals(""))
@@ -222,7 +233,19 @@ public class ContactBook extends ExpandableListActivity{
 	                	}
 	                	//KONIEC Nowy kontakt musial miec ustawiony albo numergg albo email albo telefon(kom./stac.)
                 	}
-                	
+                	SIMPLEContact kopiaKontaktu = null;
+                	int indeksKontaktu = 0;
+                	//jesli wyedytowana kontakt, to stworz kopie pierwotnego i zapisz jego indeks
+                	//ktory mial na liscie this.contactBookFull.A2Contactsy.Contacts
+                	if(edit_edited)
+                	{
+                		kopiaKontaktu = new SIMPLEContact();
+                		SIMPLEContact wyszukiwanyKontakt = new SIMPLEContact();
+                		wyszukiwanyKontakt.AA3ShowName = edit_oldNazwaKontaktu;
+                		indeksKontaktu = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, wyszukiwanyKontakt, null);
+                		kopiaKontaktu = this.contactBookFull.A2Contactsy.Contacts.get(indeksKontaktu);
+                		this.contactBookFull.A2Contactsy.Contacts.remove(indeksKontaktu);
+                	}
                 	//sprawdzenie, czy nie ma na liscie kontaktu o podanej nazwie
                 	//GG nie dopuszcza istnienia kontaktow na liscie o takiej samej nazwie
                 	if(this.contactBookFull != null)
@@ -231,11 +254,20 @@ public class ContactBook extends ExpandableListActivity{
                 				//if(this.contactBookFull.A2Contactsy.Contacts.contains(nowy))
                 				if(Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, nowy, null) >= 0)
                 				{
+                					//jesli po wyedytowaniu i tymczasowym usunieciu pierwotnego kontaktu
+                					//z listy, znaleziono kontakt o nowo podanej (wyedytowanej) nazwie
+                					//to przywroc na liste pierwotny kontakt
+                					if(edit_edited)
+                                	{
+                						this.contactBookFull.A2Contactsy.Contacts.add(indeksKontaktu, kopiaKontaktu);
+                                	}
                 					Toast.makeText(getApplicationContext(), "Zmien nazwe kontaktu\n"+
                 							nowy.AA3ShowName+" jest juz na liscie kontaktow", Toast.LENGTH_LONG).show();
                 					return;
                 				}
-                					
+                	
+                	//tu juz mozna porzucic pierwotny obiekt kontaktu
+                	kopiaKontaktu = null;
                 	if(!new_numerGG.equals(""))
                 		nowy.AA2GGNumber = new_numerGG;
                 	else
@@ -312,6 +344,10 @@ public class ContactBook extends ExpandableListActivity{
     				//informowal nas o dostepnosci kontaktu
     				if(!new_numerGG.equals(""))
     				{
+    					//jesli kontakt po wyedytowaniu ma ten sam numer GG co przed edycja,
+    					//to nie trzeba wysylac do serwera GG informacji o nowym kontakcie
+    					if(edit_oldNumerGG != null && edit_oldNumerGG == new_numerGG)
+    						return;
 	    	        	Message msg3 = Message.obtain(null,Common.CLIENT_ADD_NEW_CONTACT, 0, 0);	        
 	    	    		try
 	    	    		{
@@ -352,7 +388,17 @@ public class ContactBook extends ExpandableListActivity{
     				.get(group)
     				.get(child);
 	    		menu.setHeaderTitle(pobrany.showName);
+	    		SIMPLEContact szukanyPrzytrzymany = new SIMPLEContact();
+	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;
 	    		String[] menuItems = {"Edytuj","Usun","Ignoruj"};
+	    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
+	    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
+	    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
+	    		{
+	    			//jesli jest, to zamiast opcji ignoruj, bedzie opcja "Nie ignoruj"
+	    			if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored == true)
+	    				menuItems[2] = "Nie ignoruj";
+	    		}
 	    		for (int i = 0; i<menuItems.length; i++) {
 	    			menu.add(Menu.NONE, i, i, menuItems[i]);
 	    		}
@@ -384,11 +430,41 @@ public class ContactBook extends ExpandableListActivity{
 			ViewableContacts pobrany = this.contactsExpandableList
 				.get(group)
 				.get(child);
+			ViewableGroups pobranyG = this.groupsExpandableList
+			.get(group);
 			//Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.showName), Toast.LENGTH_SHORT).show();
 			switch(item.getItemId())
 			{
 				//akcja edytuj
 				case 0:
+					Intent intent = new Intent(this.getApplicationContext(), AddNewContact.class);
+					intent.putExtra("grupaID", pobranyG.groupid);
+					intent.putExtra("edited", true);
+					if(pobrany.GGNumber != null)
+						if(!pobrany.GGNumber.equals(""))
+							intent.putExtra("poprzedniNumer", pobrany.GGNumber);
+					if(pobrany.showName != null)
+						if(!pobrany.showName.equals(""))
+							intent.putExtra("poprzedniaNazwaKontaktu", pobrany.showName);
+					if(pobrany.Email != null)
+						if(!pobrany.Email.equals(""))
+							intent.putExtra("poprzedniaEmail", pobrany.Email);
+					if(pobrany.MobilePhone != null)
+						if(!pobrany.MobilePhone.equals(""))
+							intent.putExtra("poprzedniaKomorka", pobrany.MobilePhone);
+					if(pobrany.HomePhone != null)
+						if(!pobrany.HomePhone.equals(""))
+							intent.putExtra("poprzedniaStacjonarny", pobrany.HomePhone);
+					String oldWWW = null;
+					SIMPLEContact poszuk = new SIMPLEContact();
+					poszuk.AA3ShowName = pobrany.showName;
+					int indeksNaLiscieSimple = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, poszuk, null);
+					SIMPLEContact kopiakontaktSimple = this.contactBookFull.A2Contactsy.Contacts.get(indeksNaLiscieSimple);
+					oldWWW = kopiakontaktSimple.AA7WwwAddress;
+					if(oldWWW != null)
+						if(!oldWWW.equals(""))
+							intent.putExtra("poprzedniaStrona", oldWWW);
+					startActivityForResult(intent,NEW_CONTACT_ACTIVITY_RESULT);
 					break;
 				//akcja usun
 				case 1:
@@ -438,6 +514,7 @@ public class ContactBook extends ExpandableListActivity{
 					//usunieciu kontaktu z listy, zeby nie przysylal
 					//nam informacji o dostepnosci kontaktu
 					if(pobrany.GGNumber != "")
+					{
 						//jesli kontakt usuwany jest z grupy ignorowani ale jest tez w innej grupie,
 						//to informujemy serwis, zeby powiadomij serwer,
 						//ze ten kontakt nie jest juz ignorowany
@@ -503,9 +580,108 @@ public class ContactBook extends ExpandableListActivity{
 		    	    					excMsg.getMessage());
 		    	    		}
 						}
+					}
 					break;
-				//akcja ignoruj
+				//akcja ignoruj/nie ignoruj
 				case 2:
+					//jesli wybrano ignoruj
+					if(menuItemName.equalsIgnoreCase("ignoruj"))
+					{
+						SIMPLEContact wyszukiwanyKontakt = new SIMPLEContact();
+		        		wyszukiwanyKontakt.AA3ShowName = pobrany.showName;
+		        		int indeksKontaktu = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, wyszukiwanyKontakt, null);
+		        		SIMPLEContact kopiaKontaktu = this.contactBookFull.A2Contactsy.Contacts.get(indeksKontaktu);
+		        		kopiaKontaktu.AC3FlagIgnored = true;
+		        		kopiaKontaktu.AB5Groups.Groups.add("00000000-0000-0000-0000-000000000001");
+		        		ViewableGroups szukanaIgnorowani = new ViewableGroups();
+		        		szukanaIgnorowani.groupid = "00000000-0000-0000-0000-000000000001";
+		        		int indeksGrupyIgnorowani = Collections.binarySearch(this.groupsExpandableList, szukanaIgnorowani, null);
+		        		//wyznaczenie indeksu pod jakim powinien zostac dodany kontakt w grupie Ignorowani
+		        		int indeksKontaktuWIgnorowanych = Collections.binarySearch(this.contactsExpandableList.get(indeksGrupyIgnorowani), pobrany, null);
+		        		indeksKontaktuWIgnorowanych = -(indeksKontaktuWIgnorowanych+1);
+		        		this.contactsExpandableList.get(indeksGrupyIgnorowani).add(indeksKontaktuWIgnorowanych, pobrany);
+		        		//zapis listy kontaktow do pliku w pam. wewnetrznej
+						ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+						try {
+							new Persister().write(this.contactBookFull, baos2);
+							this.gglista = baos2.toString("UTF-8");
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							Log.e("ContactBook blad ignorowania",e.getMessage());
+						}
+			        	saveOnInternalMemory(this.gglista);
+		        		this.mAdapter.notifyDataSetChanged();
+		        		//wyslanie do serwisu informacji, zeby powiadomij serwer GG o ignorowaniu kontaktu
+		        		Message msg3 = Message.obtain(null,Common.CLIENT_IGNORE_CONTACT, 0, 0);	        
+	    	    		try
+	    	    		{
+	    		    		Bundle wysylany = new Bundle();
+	    					wysylany.putString("numerGG", pobrany.GGNumber);
+	    					msg3.setData(wysylany);
+	    	    			mService.send(msg3);
+	    	    		}catch(Exception excMsg)
+	    	    		{
+	    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i istniejacym) kontakcie:\n"+
+	    	    					excMsg.getMessage());
+	    	    		}
+					}
+					//jesli wybrano nie ignoruj
+					else
+					{
+						SIMPLEContact wyszukiwanyKontakt = new SIMPLEContact();
+		        		wyszukiwanyKontakt.AA3ShowName = pobrany.showName;
+		        		int indeksKontaktu = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, wyszukiwanyKontakt, null);
+		        		SIMPLEContact kopiaKontaktu = this.contactBookFull.A2Contactsy.Contacts.get(indeksKontaktu);
+		        		kopiaKontaktu.AC3FlagIgnored = null;
+		        		kopiaKontaktu.AC1FlagNormal = true;		        		
+		        		kopiaKontaktu.AB5Groups.Groups.remove("00000000-0000-0000-0000-000000000001");
+		        		//jesli nie chcemy wiecej ignorowac kontaktu, ale nie bylo go w zadnej innej
+		        		//grupie poza ignorowanymi, to doda go do standardowej grupy "Moje kontakty"
+		        		if(kopiaKontaktu.AB5Groups.Groups.size() < 1)
+		        		{
+		        			kopiaKontaktu.AB5Groups.Groups.add("00000000-0000-0000-0000-000000000000");
+			        		ViewableGroups szukanaMojeKontakty = new ViewableGroups();
+			        		szukanaMojeKontakty.groupid = "00000000-0000-0000-0000-000000000000";
+			        		int indeksGrupyMojeKontakty = Collections.binarySearch(this.groupsExpandableList, szukanaMojeKontakty, null);
+			        		//wyznaczenie indeksu pod jakim powinien zostac dodany kontakt w grupie Moje kontakty
+			        		int indeksKontaktuWMojeKontakty = Collections.binarySearch(this.contactsExpandableList.get(indeksGrupyMojeKontakty), pobrany, null);
+			        		indeksKontaktuWMojeKontakty = -(indeksKontaktuWMojeKontakty+1);
+			        		this.contactsExpandableList.get(indeksGrupyMojeKontakty).add(indeksKontaktuWMojeKontakty, pobrany);
+		        		}
+		        		//usuniecie kontaktu z grupy Ignorowani
+		        		ViewableGroups szukanaIgnorowani = new ViewableGroups();
+		        		szukanaIgnorowani.groupid = "00000000-0000-0000-0000-000000000001";
+		        		int indeksGrupyIgnorowani = Collections.binarySearch(this.groupsExpandableList, szukanaIgnorowani, null);
+		        		ViewableContacts kontaktWIgnorowanych = new ViewableContacts();
+		        		kontaktWIgnorowanych.showName = pobrany.showName;
+		        		int indeksKontaktuWIgnorowanych = Collections.binarySearch(this.contactsExpandableList.get(indeksGrupyIgnorowani), kontaktWIgnorowanych, null);
+		        		this.contactsExpandableList.get(indeksGrupyIgnorowani).remove(indeksKontaktuWIgnorowanych);
+		        		
+		        		//zapis listy kontaktow do pliku w pam. wewnetrznej
+						ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+						try {
+							new Persister().write(this.contactBookFull, baos2);
+							this.gglista = baos2.toString("UTF-8");
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							Log.e("ContactBook blad ignorowania",e.getMessage());
+						}
+			        	saveOnInternalMemory(this.gglista);
+		        		this.mAdapter.notifyDataSetChanged();
+		        		//wyslanie do serwisu informacji, zeby powiadomij serwer GG o ignorowaniu kontaktu
+		        		Message msg3 = Message.obtain(null,Common.CLIENT_UNIGNORE_CONTACT, 0, 0);	        
+	    	    		try
+	    	    		{
+	    		    		Bundle wysylany = new Bundle();
+	    					wysylany.putString("numerGG", pobrany.GGNumber);
+	    					msg3.setData(wysylany);
+	    	    			mService.send(msg3);
+	    	    		}catch(Exception excMsg)
+	    	    		{
+	    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i istniejacym) kontakcie:\n"+
+	    	    					excMsg.getMessage());
+	    	    		}
+					}
 					break;
 			}
 		}
@@ -599,6 +775,7 @@ public class ContactBook extends ExpandableListActivity{
 	@Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
+        //metoda uruchamiana po wybraniu przycisku zmiany statusu
         case DIALOG_STATUS:
         	ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
             HashMap<String, Object> map = new HashMap<String, Object>();
