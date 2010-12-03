@@ -82,4 +82,6 @@ public class Common {
    
    static final int CLIENT_ADD_NEW_CONTACT = 10;
    static final int CLIENT_REMOVE_CONTACT = 11;
+   static final int CLIENT_IGNORE_CONTACT = 12;
+   static final int CLIENT_UNIGNORE_CONTACT = 13;
 }
