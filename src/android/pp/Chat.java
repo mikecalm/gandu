@@ -40,7 +40,7 @@ public class Chat extends TabActivity{
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
 		
-		Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_SHORT).show();
 		
 		//prefs = getPreferences(0);
 		prefs = getSharedPreferences("otwarteZakladki", 0);
@@ -54,7 +54,7 @@ public class Chat extends TabActivity{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_SHORT).show();
         String odz = prefs.getString("text", null);
         String numerGGZKtoregoOtworzonoOknoZRozmowa = "";
     	
@@ -111,6 +111,14 @@ public class Chat extends TabActivity{
         	editor.remove("text");
     		editor.commit();
         }
+        //ustawienie kazdej karty po koleji jako aktualnie uzywanej
+        //spowoduje wywolanie metody onCreate kazdej z otwartych zakladek.
+        //Bez tego, aby wywolac metode onCreate kazdej z zakladek nalezaloby
+        //manualnie do niej przejsc
+        for (int i = (tabHost.getTabWidget().getChildCount()-1) ; i>=0 ; i--)
+        {
+        	tabHost.setCurrentTab(i);
+        }
         
 	}
 	
@@ -118,7 +126,7 @@ public class Chat extends TabActivity{
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		Toast.makeText(getApplicationContext(), "onPause()", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onPause()", Toast.LENGTH_SHORT).show();
 		//preferencje
 
 		String tabs = "";		
@@ -147,7 +155,7 @@ public class Chat extends TabActivity{
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -155,7 +163,7 @@ public class Chat extends TabActivity{
 		// TODO Auto-generated method stub
 		super.onStop();
 		tabHost.clearAllTabs();
-		Toast.makeText(getApplicationContext(), "onStop()", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onStop()", Toast.LENGTH_SHORT).show();
 	}
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
