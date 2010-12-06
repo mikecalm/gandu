@@ -74,14 +74,14 @@ public class Tab extends Activity{
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		Toast.makeText(getApplicationContext(), "onPause() "+ggnumber, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onPause() "+ggnumber, Toast.LENGTH_SHORT).show();
 	}
 	
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		Toast.makeText(getApplicationContext(), "onDestroy()"+ggnumber, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onDestroy()"+ggnumber, Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class Tab extends Activity{
         }
 		super.onStop();
 		//doUnbindService();
-		Toast.makeText(getApplicationContext(), "onStop()"+ggnumber, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(getApplicationContext(), "onStop()"+ggnumber, Toast.LENGTH_SHORT).show();
 	}
 	
 	OnClickListener listener = new OnClickListener() {
