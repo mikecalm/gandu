@@ -56,62 +56,61 @@ public class Chat extends TabActivity{
 		super.onResume();
 		Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_SHORT).show();
         String odz = prefs.getString("text", null);
-        if (odz != null)
+        String numerGGZKtoregoOtworzonoOknoZRozmowa = "";
+    	
+        Bundle b = this.getIntent().getExtras();
+        if(b != null)
         {
-        	Bundle b = this.getIntent().getExtras();
-        	String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
-            firstTabSpec = tabHost.newTabSpec(tabHeader);        
-            /** TabSpec setIndicator() is used to set name for the tab. */
-            /** TabSpec setContent() is used to set content for a particular tab. */
-           
-            //tescik
-            Intent nowyTab = new Intent(this,Tab.class);
-            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
-            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
-            //tescik
-            
-            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
-         
-            /** Add tabSpec to the TabHost to display. */
-        	tabHost.addTab(firstTabSpec); 
-        	
+	    	if(!b.isEmpty())
+	    	{
+	    		numerGGZKtoregoOtworzonoOknoZRozmowa = b.getString("ggnumber");
+	    		String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
+	            firstTabSpec = tabHost.newTabSpec(tabHeader);        
+	            /** TabSpec setIndicator() is used to set name for the tab. */
+	            /** TabSpec setContent() is used to set content for a particular tab. */
+	           
+	            //tescik
+	            Intent nowyTab = new Intent(this,Tab.class);
+	            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
+	            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
+	            //tescik
+	            
+	            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
+	         
+	            /** Add tabSpec to the TabHost to display. */
+	        	tabHost.addTab(firstTabSpec);
+	            //usuniecie ggnumber z intentu, zeby przy zmianie orientacji
+	            //nie dodawal po raz kolejny ostatnio otwartej zakladki
+	            this.getIntent().removeExtra("ggnumber");     
+	            this.getIntent().removeExtra("username");
+	        	//this.getIntent().getExtras().clear();
+	    	}
+        }
+
+        if (odz != null)
+        {	
         	String [] tab = odz.split("~");
         	for (String s: tab)
         	{
-        		firstTabSpec = tabHost.newTabSpec(s);
-            	firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
-            	tabHost.addTab(firstTabSpec);
+	            String[] tabText = s.split("-");
+	            String ggNum = tabText[tabText.length-1];
+	            //jesli aktualnie otwarta zakladka byla juz poprzednio otwarta,
+	            //to nie dodawaj jej ponownie	            
+	            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !ggNum.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
+	            {
+	        		firstTabSpec = tabHost.newTabSpec(s);
+	        		//tescik
+		            Intent nowyTab = new Intent(this,Tab.class);
+		            nowyTab.putExtra("ggnumber", ggNum);
+		            firstTabSpec.setIndicator(s).setContent(nowyTab);
+		            //tescik
+	            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+	            	tabHost.addTab(firstTabSpec);
+	            }
         	}
         	editor.remove("text");
     		editor.commit();
-        }  
-        if (odz == null)
-        {
-        	/** TabSpec used to create a new tab.
-             * By using TabSpec only we can able to setContent to the tab.
-             * By using TabSpec setIndicator() we can set name to tab. */
-
-            /** tid1 is firstTabSpec Id. Its used to access outside. */
-        	
-    		Bundle b = this.getIntent().getExtras();
-    		String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
-            firstTabSpec = tabHost.newTabSpec(tabHeader);        
-
-            /** TabSpec setIndicator() is used to set name for the tab. */
-            /** TabSpec setContent() is used to set content for a particular tab. */
-                     
-            //tescik
-            Intent nowyTab = new Intent(this,Tab.class);
-            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
-            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
-            //tescik
-            
-            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
-           
-            /** Add tabSpec to the TabHost to display. */
-        	tabHost.addTab(firstTabSpec); 
         }
-             
         
 	}
 	
@@ -125,14 +124,14 @@ public class Chat extends TabActivity{
 		String tabs = "";		
         //for (int i =0 ; i<tabHost.getChildCount() ; i++)
 		for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
-
         {
 			//do nazwy konkretnetnej zakladki dokopalem sie podgladajac w debugu
 			//w jakim polu zapisana jest nazwa zakladki.
 			//Wydaje mi sie, ze jak bedziemy miec zdefiniowany layout zakladki,
 			//to nazwe zakladki bedzie mozna uzyska poprzez odwolanie sie do konkretnego ID (R.id...)
-			RelativeLayout layoutTaba = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);
-			TextView textViewWLayoutcieTaba = (TextView)layoutTaba.getChildAt(1);
+			//RelativeLayout layoutTaba = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);			
+			//TextView textViewWLayoutcieTaba = (TextView)layoutTaba.getChildAt(1);
+			TextView textViewWLayoutcieTaba = (TextView)tabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
         	tabs += textViewWLayoutcieTaba.getText()+"~";
         	//tabHost.setCurrentTab(i);
         	//tabs += tabHost.getCurrentTabTag()+"~";                
@@ -140,7 +139,8 @@ public class Chat extends TabActivity{
         Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_SHORT).show();
         editor.putString("text", tabs);
         editor.commit();
-        
+        //tabHost.setCurrentTab(0);
+        //tabHost.clearAllTabs();
 	}
 
 	@Override
@@ -178,6 +178,8 @@ public class Chat extends TabActivity{
                 	String tresc = odebrany.getString("tresc");
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
                 	String przyszlaO = odebrany.getString("przyszlaO");
+                	
+                	
                 	    	
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));

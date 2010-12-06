@@ -28,11 +28,13 @@ public class ChatMessage {
 				//this.html_message =msg.getBytes("UTF-8"); 
 				this.html_message= (msg +"\0").getBytes();
 				//msg = "\0";
-				String textCP1250 = new String(text.getBytes("UTF-8"),"CP1250");
-				msg = textCP1250+"\0";
+				//String textCP1250 = new String(text.getBytes("UTF-8"),"CP1250");
+				//String textCP1250 = text;
+				msg = text+"\0";
 				this.offset_plain = Integer.reverseBytes(this.html_message.length+20);
 				this.offset_attributes = Integer.reverseBytes(this.offset_plain+msg.length());
-				this.plain_message = msg.getBytes("UTF-8");
+				//this.plain_message = msg.getBytes("UTF-8");
+				this.plain_message = msg.getBytes("CP1250");
 				//String attr = "00000206";
 				this.attributes = Integer.reverseBytes(0x00000206);
 				
