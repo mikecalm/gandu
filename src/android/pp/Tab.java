@@ -18,6 +18,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Tab extends Activity{
 	/** Messenger for communicating with service. */
@@ -42,6 +43,7 @@ public class Tab extends Activity{
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
+		mIsBound = true;
 		
 		Bundle b = this.getIntent().getExtras();
 		if(b != null)
@@ -67,6 +69,50 @@ public class Tab extends Activity{
 		}
 		int cos = 123;*/
 	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Toast.makeText(getApplicationContext(), "onPause() "+ggnumber, Toast.LENGTH_SHORT).show();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		Toast.makeText(getApplicationContext(), "onDestroy()"+ggnumber, Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub		
+		if (mIsBound) {
+            // If we have received the service, and hence registered with
+            // it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null,
+                    		Common.CLIENT_UNREGISTER);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                  
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+            }
+
+            // Detach our existing connection.
+            //unbindService(mConnection);
+            //mIsBound = false;
+            //mCallbackText.setText("Unbinding.");
+        }
+		super.onStop();
+		//doUnbindService();
+		Toast.makeText(getApplicationContext(), "onStop()"+ggnumber, Toast.LENGTH_SHORT).show();
+	}
+	
 	OnClickListener listener = new OnClickListener() {
 		public void onClick(View v) {
 			Message msg = Message.obtain(null,Common.CLIENT_SEND_MESSAGE, 0, 0);
