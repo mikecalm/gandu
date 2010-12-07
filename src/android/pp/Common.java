@@ -12,6 +12,8 @@ public class Common {
     static final int GG_NEW_STATUS80 = 0x0038;
     static final int GG_ADD_NOTIFY = 0x000d;
     static final int GG_REMOVE_NOTIFY = 0x000e;
+    static final int GG_NOTIFY_FIRST = 0x000f;
+    static final int GG_NOTIFY_LAST = 0x0010;
     
     /**
      * STATES 
@@ -30,12 +32,13 @@ public class Common {
     static final int GG_LOGIN_OK80 = 0x0035;
     static final int GG_LOGIN_FAILED = 0x0009;
     static final int GG_RECV_MSG80 = 0x002e;
+    static final int GG_NOTIFY_REPLY80 = 0x0037;
     /**
      * CONTACT TYPES
      */
-    static final byte GG_USER_OFFLINE = 0x01;	//U¿ytkownik, dla którego bêdziemy niedostêpni, ale mamy go w liœcie kontaktów
-    static final byte GG_USER_NORMAL = 0x03;		//Zwyk³y u¿ytkownik dodany do listy kontaktów
-    static final byte GG_USER_BLOCKED = 0x04;	//U¿ytkownik, którego wiadomoœci nie chcemy otrzymywaæ
+    static final byte GG_USER_OFFLINE = 0x01;	//Uï¿½ytkownik, dla ktï¿½rego bï¿½dziemy niedostï¿½pni, ale mamy go w liï¿½cie kontaktï¿½w
+    static final byte GG_USER_NORMAL = 0x03;		//Zwykï¿½y uï¿½ytkownik dodany do listy kontaktï¿½w
+    static final byte GG_USER_BLOCKED = 0x04;	//Uï¿½ytkownik, ktï¿½rego wiadomoï¿½ci nie chcemy otrzymywaï¿½
 
     /**
      * CLASS FLAGS
@@ -84,4 +87,5 @@ public class Common {
    static final int CLIENT_REMOVE_CONTACT = 11;
    static final int CLIENT_IGNORE_CONTACT = 12;
    static final int CLIENT_UNIGNORE_CONTACT = 13;
+   static final int CLIENT_GET_STATUSES = 14;
 }

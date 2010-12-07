@@ -64,6 +64,7 @@ public class ContactBook extends ExpandableListActivity{
 	ImageButton statusButton;
 	int ustawionyStatus = 0;
 	static final private int NEW_CONTACT_ACTIVITY_RESULT = 0;
+	public GetStatuses gs = new GetStatuses();
 	
 	AlertDialog alertDialog;
 
@@ -986,6 +987,7 @@ public class ContactBook extends ExpandableListActivity{
 				szukana.groupid = grupaDoKtorejDodacKontakt;
 				int indeksTab_kontaktyExp = Collections.binarySearch(grupyExp, szukana, null);
 				ViewableContacts dodawany = new ViewableContacts();
+				
 				//kontakt GG musi miec podany conajmniej showName oraz
 				//GGNumber lub MobilePhone lub HomePhone lub Email
 				dodawany.GGNumber = "";
@@ -995,6 +997,7 @@ public class ContactBook extends ExpandableListActivity{
 					{
 						//dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
 						dodawany.GGNumber = gcl.A2Contactsy.Contacts.get(i).AA2GGNumber;
+						gs.StatusesPairs.add(new GetStatusesStruct(Integer.reverseBytes(Integer.parseInt(dodawany.GGNumber)), (byte)0x01));
 					}catch(Exception ExcAdd1)
 					{
 						Log.e("ExcAdd1", ExcAdd1.getMessage());
@@ -1009,7 +1012,17 @@ public class ContactBook extends ExpandableListActivity{
 				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;
 				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);
 			}
-		}			
+		}
+		Message m =  Message.obtain(null,Common.CLIENT_GET_STATUSES, 0, 0);
+		Bundle wysylany = new Bundle();
+		wysylany.putByteArray("bytePackage", gs.preparePackage());
+		m.setData(wysylany);
+		Log.i("ContactBook","Wyslalem do serwisu");
+		try {
+			mService.send(m);
+		} catch (Exception e) {
+			Log.e("ContactBook","wysylanie"+e.getMessage());
+		}
     }
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu

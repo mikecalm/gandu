@@ -361,14 +361,29 @@ public class GanduService extends Service {
 						Log.e("GanduService", "SendingMessage Failed!");
 					}
 					break;
+					
+                case Common.CLIENT_GET_STATUSES:
+                	Log.i("GanduService","Recived from Client");
+                	odebrany = msg.getData();
+                	byte[] paczka = odebrany.getByteArray("bytePackage");                	
+                	try{
+                		out.write(paczka);
+                		Log.i("GanduService", "Wyslalem wiadomosc");
+                		out.flush();
+                	}
+                	catch(Exception e) {
+                		Log.e("GanduService","Error with GetStatuses");
+                	}
+                	break;
+                	
                 case Common.CLIENT_CHANGE_STATUS:                	
                    	odebrany = msg.getData();
                 	String status = odebrany.getString("status");
                 	String opisStatusu = odebrany.getString("opisStatusu");
                 	StatusChangeMessage scm = new StatusChangeMessage();
 					try {
-						byte[] paczka = scm.setStatus(status,opisStatusu);
-						out.write(paczka);
+						byte[] pack = scm.setStatus(status,opisStatusu);
+						out.write(pack);
 						Log.i("GanduService", "Ustawiam status");
 						out.flush();
 					} catch (Exception e) {
@@ -721,6 +736,17 @@ public class GanduService extends Service {
 	                    }
 						
 						break;
+					case Common.GG_NOTIFY_REPLY80:
+						Log.i("GanduService received: ", ""+typWiadomosci);
+						int dlugosc = Integer.reverseBytes(in.readInt());
+						byte[] smiec = new byte[dlugosc];
+						pobraneBajty=0;
+						while(pobraneBajty != dlugosc)
+							pobraneBajty += in.read(smiec, pobraneBajty, dlugosc-pobraneBajty);
+						Log.i("Odczytalem GG_NOTIFY_REPLY80 typu: ", ""+typWiadomosci);
+						Log.i("Odczytalem GG_NOTIFY_REPLY80 o dlugosci: ", ""+dlugosc);
+						break;
+						
 					default:
 							Log.i("GanduService received default: ", ""+typWiadomosci);
 							int dlugoscBadziewia = Integer.reverseBytes(in.readInt());

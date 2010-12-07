@@ -169,7 +169,7 @@ public class Tab extends Activity{
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
                 	//Tab.this.tv.setBackgroundColor(R.color.conctactbookdown);
-                	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"<\\FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
+                	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
                 	tv.append(tresc+"\n");
                 	//Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
