@@ -739,12 +739,47 @@ public class GanduService extends Service {
 					case Common.GG_NOTIFY_REPLY80:
 						Log.i("GanduService received: ", ""+typWiadomosci);
 						int dlugosc = Integer.reverseBytes(in.readInt());
+						Log.i("Odczytalem GG_NOTIFY_REPLY80 o dlugosci: ", ""+dlugosc);
 						byte[] smiec = new byte[dlugosc];
 						pobraneBajty=0;
-						while(pobraneBajty != dlugosc)
-							pobraneBajty += in.read(smiec, pobraneBajty, dlugosc-pobraneBajty);
-						Log.i("Odczytalem GG_NOTIFY_REPLY80 typu: ", ""+typWiadomosci);
-						Log.i("Odczytalem GG_NOTIFY_REPLY80 o dlugosci: ", ""+dlugosc);
+						while(pobraneBajty != dlugosc){
+							Log.i("GanduService","Jestem w petli: "+in.available());
+							int uin = Integer.reverseBytes(in.readInt()); 
+							Log.i("GanduService",""+uin);
+							int status = Integer.reverseBytes(in.readInt()); 
+							Log.i("GanduService",""+status);
+							int features = Integer.reverseBytes(in.readInt()); 
+							Log.i("GanduService",""+features);
+							int remote_ip = Integer.reverseBytes(in.readInt()); 
+							Log.i("GanduService",""+remote_ip);
+							short remote_port = Short.reverseBytes(in.readShort()); 
+							Log.i("GanduService",""+remote_port);
+							byte image_size = in.readByte(); 
+							Log.i("GanduService",""+image_size);
+							byte unknown1 = in.readByte(); 
+							Log.i("GanduService",""+unknown1);
+							int flags = Integer.reverseBytes(in.readInt());
+							Log.i("GanduService",""+flags);
+							int description_size = Integer.reverseBytes(in.readInt()); 
+							Log.i("GanduService",""+description_size);
+							byte [] bufor = new byte [description_size];
+							String description = null;
+							pobraneBajty += 28;
+							int tmp=0;
+							if (description_size > 0)
+							{
+								Log.i("GanduService",""+pobraneBajty+" "+description_size + " "+ in.available());
+								while (tmp!=description_size)
+								tmp+=in.read(bufor, tmp , description_size-tmp); 
+								pobraneBajty+=bufor.length;
+								description = new String(bufor,"CP1250");
+								Log.i("GanduService",""+description+" PobraneBajty: "+pobraneBajty);
+								
+							}
+							
+						}
+							//pobraneBajty += in.read(smiec, pobraneBajty, dlugosc-pobraneBajty);
+						
 						break;
 						
 					default:

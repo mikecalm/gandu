@@ -16,7 +16,7 @@ public class GetStatuses {
 		byte[] wynik;
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(baos);
-		int size = StatusesPairs.size();
+		int size = StatusesPairs.size(); //TO DO if > 400 new packet
 		try
 		{
 			while(--size>0)
