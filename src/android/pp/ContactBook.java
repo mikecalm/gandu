@@ -886,6 +886,20 @@ public class ContactBook extends ExpandableListActivity{
 		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
 		intent.putExtra("ggnumber", numerGGWybranegoGosciaNaLiscie);
 		
+		ArrayList<String> numerIndex = new ArrayList<String>();
+		ArrayList<String> numerShowName = new ArrayList<String>();
+		//HashMap<String, String> numerShowName = new HashMap<String, String>();
+		for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
+		{
+			//numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName+"-"+contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+			numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
+			numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+			//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
+		}
+		intent.putStringArrayListExtra("ShowNameGGNumber", numerShowName);
+		intent.putStringArrayListExtra("indexGGNumber", numerIndex);
+		//intent.putExtra("ShowNameGGNumber", numerShowName);
+		
 		try
 		{
 			startActivity(intent);

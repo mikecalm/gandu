@@ -1,10 +1,13 @@
 package android.pp;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -27,6 +30,8 @@ public class Tab extends Activity{
     EditText et;
     TextView tv;
     String ggnumber = "";
+    
+    ArchiveSQLite archiveSQL;
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -54,6 +59,50 @@ public class Tab extends Activity{
 	    		Log.i("[Tab]onCreate, przyjalem ggnumber: ",this.ggnumber);
 			}
 		}
+		
+		archiveSQL = new ArchiveSQLite(this.getApplicationContext());
+				
+    	Log.i("[Tab"+ggnumber+"]START SQL","Odczyt nieprzeczytanych wiadomosci.");
+    	Cursor wynikSQLLast = archiveSQL.readLastMessagesFrom(Integer.parseInt(ggnumber),3600);
+		ArrayList<String> ostatnie = archiveSQL.showLastMessages(wynikSQLLast,Integer.parseInt(ggnumber));
+		for(int i=0; i<ostatnie.size(); i++)
+		{
+			if(ostatnie.get(i).startsWith("X"))
+			{
+				//wyciecie X oznaczajacego wiadomosc wyslana do kontaktu
+				String wiadomoscIData = ostatnie.get(i).substring(1);
+				int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+				Long dataEpoch = Long.parseLong(data);
+				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
+				tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				tv.append(wiadomosc + "\n");
+			}
+			else
+			{
+				String wiadomoscIData = ostatnie.get(i);
+				int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+				Long dataEpoch = Long.parseLong(data);
+				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
+				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				tv.append(wiadomosc + "\n");
+			}
+		}
+    	
+		Cursor wynikSQL = archiveSQL.readUnreadMessagesFrom(Integer.parseInt(ggnumber));
+		ArrayList<String> nieprzeczytane = archiveSQL.showUnreadMessages(wynikSQL,Integer.parseInt(ggnumber));
+		for(int i=0; i<nieprzeczytane.size(); i++)
+		{
+			String wiadomoscIData = nieprzeczytane.get(i);
+			int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+			String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+			Long dataEpoch = Long.parseLong(data);
+			String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
+			tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+			tv.append(wiadomosc + "\n");
+		}
+		Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt nieprzeczytanych wiadomosci.");
 		
 	}
 	public void onResume(){

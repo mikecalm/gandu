@@ -44,8 +44,8 @@ public class GanduClient extends Activity {
 		setContentView(R.layout.main);
 
 		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
-		ggNumberEdit.setText("23543809");
-		//ggNumberEdit.setText("31082603");
+		//ggNumberEdit.setText("23543809");
+		ggNumberEdit.setText("31082603");
 		
 		ggPasswordEdit = (EditText) findViewById(R.id.EditText02);
 		ggPasswordEdit.setText("password");
