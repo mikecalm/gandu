@@ -343,8 +343,34 @@ public class Chat extends TabActivity{
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
                 	String przyszlaO = odebrany.getString("przyszlaO");
 
-                	if(!hiddenTabs.contains(wiadomoscOd) && openedTabs.contains(wiadomoscOd))
+                	//if(!hiddenTabs.contains(wiadomoscOd) && openedTabs.contains(wiadomoscOd))
+                	
+                	//jesli wiadomosc zostala przyslana przez osobe, ktorej
+                	//zakladka zostala wczesniej zamknieta, to wiadomosc bedzie oczekiwac
+                	//w bazie na odczytanie (bedzie miec ustawiona flage unread do momentu ponownego
+                	//uruchomienia okna z rozmowami)
+                	if(!hiddenTabs.contains(wiadomoscOd))
                 	{
+                		//jesli wiadomosc zostala przyslana przez osobe, ktorej
+                		//zaklada nie zostala wczesniej otwarta, to zostanie dodana
+                		//nowo zakladka, a flaga unread wiadomosci zostanie odznaczona (wartosc -1)
+                		if(!openedTabs.contains(wiadomoscOd))
+                		{
+                			String showNameGG = numerShowName.get(numerIndex.indexOf(wiadomoscOd));
+                			String header = showNameGG+"-"+wiadomoscOd;
+                			firstTabSpec = tabHost.newTabSpec(header);
+    		        		//tescik
+    			            Intent nowyTab = new Intent(getApplicationContext(),Tab.class);
+    			            nowyTab.putExtra("ggnumber", wiadomoscOd);
+    			            firstTabSpec.setIndicator(header).setContent(nowyTab);
+    			            //tescik
+    			            openedTabs.add(wiadomoscOd);
+    		            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+    		            	tabHost.addTab(firstTabSpec);
+    		            	int aktualnaZakladka = tabHost.getCurrentTab();
+    		            	tabHost.setCurrentTabByTag(header);
+    		            	tabHost.setCurrentTab(aktualnaZakladka);
+                		}
 	                	Long idSQL = odebrany.getLong("idSQL");
 	                	Log.i("[Chat]START SQL","oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
 						int liczbaZmienionychWierszy = archiveSQL.setMessageAsRead(idSQL);
@@ -451,9 +477,6 @@ public class Chat extends TabActivity{
             mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
-    }
-	
-    
-
+    }	    
 }
 
