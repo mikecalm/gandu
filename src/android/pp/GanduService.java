@@ -25,6 +25,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -49,6 +50,7 @@ public class GanduService extends Service {
     ArrayList<Messenger> mClients = new ArrayList<Messenger>();
     /** Holds last value set by a client. */
     int mValue = 0;
+    ArchiveSQLite archiveSQL;
     
   
    public Boolean getContactbook()
@@ -353,7 +355,14 @@ public class GanduService extends Service {
                 	int ggnumber = odebrany.getInt("ggnumber");
 					ChatMessage sm = new ChatMessage();
 					try {
-						byte[] paczka = sm.setMessage(text,ggnumber);
+						int currentTime = (int)(System.currentTimeMillis() / 1000L);
+						//byte[] paczka = sm.setMessage(text,ggnumber);
+						byte[] paczka = sm.setMessage(text,ggnumber,currentTime);
+						
+						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
+						long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, "");
+						Log.i("[GanduService]START SQL","["+idWiadomosci+"]dodanie wysylanej wiadomosci do bazy");
+						
 						out.write(paczka);
 						Log.i("GanduService", "Wyslalem wiadomosc");
 						out.flush();
@@ -540,6 +549,8 @@ public class GanduService extends Service {
 
         // Display a notification about us starting.
         showNotification("Witaj w Gandu");
+        
+        archiveSQL = new ArchiveSQLite(this.getApplicationContext());
     }
 
     @Override
@@ -711,6 +722,13 @@ public class GanduService extends Service {
 						wysylany.putString("wiadomoscOd",""+sender);
 						String czasNadejscia = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new java.util.Date (time*1000L));
 						wysylany.putString("przyszlaO",czasNadejscia);
+						
+						Log.i("START SQL","dodanie i odczytanie wiadomosci z bazy");
+						long idWiadomosci = archiveSQL.addMessage(sender, Integer.parseInt(ggnum), time, tresc, 1, "");
+						wysylany.putLong("idSQL", idWiadomosci);
+						//Cursor wynikSQL = archiveSQL.readMessage(idWiadomosci);
+						//archiveSQL.showMessage(wynikSQL);
+						Log.i("KONIEC SQL","dodanie i odczytanie wiadomosci z bazy");
 						
 						/*byte[] tresc = new byte[dlugoscWiadomosci];
 						pobraneBajty = 0;
