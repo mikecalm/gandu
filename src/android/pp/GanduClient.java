@@ -56,18 +56,43 @@ public class GanduClient extends Activity {
 		//uruchomienie serwisu Gandu
 		startService(new Intent("android.pp.GanduS"));
 		//zbindowanie aktywnosci do serwisu
-		doBindService();
+		//doBindService();
+		Intent intent = new Intent(getApplicationContext(), GanduService.class);
+		getApplicationContext().bindService(intent,mConnection,1);
+		mIsBound = true;
 	}
 
 	
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
+		if (mIsBound) {
+            // If we have received the service, and hence registered with
+            // it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null,
+                    		Common.CLIENT_UNREGISTER);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                  
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+            }
+        }
 		super.onDestroy();
 		prefs = getPreferences(0);
 		editor = prefs.edit();
 		editor.remove("text");
 		editor.commit();
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub		
+		super.onStop();
 	}
 
 
