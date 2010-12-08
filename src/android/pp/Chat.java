@@ -1,11 +1,16 @@
 package android.pp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
 import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -31,7 +36,12 @@ public class Chat extends TabActivity{
 	/** Messenger for communicating with service. */
     Messenger mService = null;
     boolean mIsBound;
+    
+    //HashMap<String, String> numerShowName;
+    ArrayList<String> numerShowName;
+    ArrayList<String> numerIndex;
 	
+    ArchiveSQLite archiveSQL;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		
@@ -39,6 +49,7 @@ public class Chat extends TabActivity{
 		setContentView(R.layout.chat);	
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
+		mIsBound = true;
 		
 		//Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_SHORT).show();
 		
@@ -47,6 +58,11 @@ public class Chat extends TabActivity{
 		editor = prefs.edit();
 		//tabHost = (TabHost)findViewById(android.R.id.tabhost);	
 		tabHost = getTabHost();
+		
+		archiveSQL = new ArchiveSQLite(this.getApplicationContext());		
+		//numerShowName = new HashMap<String, String>();
+		numerShowName = new ArrayList<String>();
+		numerIndex = new ArrayList<String>();
     	
 }
 
@@ -57,33 +73,50 @@ public class Chat extends TabActivity{
 		//Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_SHORT).show();
         String odz = prefs.getString("text", null);
         String numerGGZKtoregoOtworzonoOknoZRozmowa = "";
+        
+        Cursor unreadGGNumbers = archiveSQL.readUnreadGGNumbers();
+        ArrayList<String> ggNumbers = archiveSQL.showUnreadGGNumbers(unreadGGNumbers);
     	
         Bundle b = this.getIntent().getExtras();
         if(b != null)
         {
 	    	if(!b.isEmpty())
 	    	{
-	    		numerGGZKtoregoOtworzonoOknoZRozmowa = b.getString("ggnumber");
-	    		String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
-	            firstTabSpec = tabHost.newTabSpec(tabHeader);        
-	            /** TabSpec setIndicator() is used to set name for the tab. */
-	            /** TabSpec setContent() is used to set content for a particular tab. */
-	           
-	            //tescik
-	            Intent nowyTab = new Intent(this,Tab.class);
-	            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
-	            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
-	            //tescik
-	            
-	            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
-	         
-	            /** Add tabSpec to the TabHost to display. */
-	        	tabHost.addTab(firstTabSpec);
-	            //usuniecie ggnumber z intentu, zeby przy zmianie orientacji
-	            //nie dodawal po raz kolejny ostatnio otwartej zakladki
-	            this.getIntent().removeExtra("ggnumber");     
-	            this.getIntent().removeExtra("username");
-	        	//this.getIntent().getExtras().clear();
+	    		if(b.containsKey("ShowNameGGNumber") && b.containsKey("indexGGNumber"))
+	    		{
+	    			//numerShowName = (HashMap<String, String>)b.getParcelable("ShowNameGGNumber");
+	    			numerShowName = b.getStringArrayList("ShowNameGGNumber");
+	    			numerIndex = b.getStringArrayList("indexGGNumber");
+	    			this.getIntent().removeExtra("ShowNameGGNumber");     
+		            this.getIntent().removeExtra("indexGGNumber");
+	    		}
+	    		if(b.containsKey("ggnumber") && b.containsKey("username"))
+	    		{
+		    		numerGGZKtoregoOtworzonoOknoZRozmowa = b.getString("ggnumber");
+		    		
+		    		ggNumbers.remove(numerGGZKtoregoOtworzonoOknoZRozmowa);
+		    		
+		    		String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
+		            firstTabSpec = tabHost.newTabSpec(tabHeader);        
+		            /** TabSpec setIndicator() is used to set name for the tab. */
+		            /** TabSpec setContent() is used to set content for a particular tab. */
+		           
+		            //tescik
+		            Intent nowyTab = new Intent(this,Tab.class);
+		            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
+		            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
+		            //tescik
+		            
+		            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
+		         
+		            /** Add tabSpec to the TabHost to display. */
+		        	tabHost.addTab(firstTabSpec);
+		            //usuniecie ggnumber z intentu, zeby przy zmianie orientacji
+		            //nie dodawal po raz kolejny ostatnio otwartej zakladki
+		            this.getIntent().removeExtra("ggnumber");     
+		            this.getIntent().removeExtra("username");
+		        	//this.getIntent().getExtras().clear();
+	    		}
 	    	}
         }
 
@@ -98,6 +131,9 @@ public class Chat extends TabActivity{
 	            //to nie dodawaj jej ponownie	            
 	            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !ggNum.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
 	            {
+	            	
+	            	ggNumbers.remove(ggNum);
+	            	
 	        		firstTabSpec = tabHost.newTabSpec(s);
 	        		//tescik
 		            Intent nowyTab = new Intent(this,Tab.class);
@@ -111,6 +147,34 @@ public class Chat extends TabActivity{
         	editor.remove("text");
     		editor.commit();
         }
+        
+        //uruchomienie zakladek kontaktow, ktorych nieprzeczytane wiadomosci sa w bazie
+        for(int i=0; i<ggNumbers.size(); i++)
+        {
+        	String numerGGKontaktu = ggNumbers.get(i);
+        	//String header = numerShowName.get(numerGGKontaktu)+"-"+numerGGKontaktu;
+        	String showNameGG = "";
+        	showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
+        	/*for(int j=0; j<numerShowName.size(); j++)
+        	{
+        		if(numerShowName.get(j).endsWith("-"+numerGGKontaktu))
+        		{
+        			//showNameGG = numerShowName.get(j).substring(0, (numerGGKontaktu.length()+1));
+        			showNameGG = numerShowName.get(j).substring(0, numerShowName.get(j).lastIndexOf("-"));
+        			break;
+        		}
+        	}*/
+        	String header = showNameGG+"-"+numerGGKontaktu;
+        	firstTabSpec = tabHost.newTabSpec(header);
+    		//tescik
+            Intent nowyTab = new Intent(this,Tab.class);
+            nowyTab.putExtra("ggnumber", numerGGKontaktu);
+            firstTabSpec.setIndicator(header).setContent(nowyTab);
+            //tescik
+        	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+        	tabHost.addTab(firstTabSpec);
+        }
+        	
         //ustawienie kazdej karty po koleji jako aktualnie uzywanej
         //spowoduje wywolanie metody onCreate kazdej z otwartych zakladek.
         //Bez tego, aby wywolac metode onCreate kazdej z zakladek nalezaloby
@@ -161,6 +225,27 @@ public class Chat extends TabActivity{
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
+		if (mIsBound) {
+            // If we have received the service, and hence registered with
+            // it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null,
+                    		Common.CLIENT_UNREGISTER);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                  
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+            }
+
+            // Detach our existing connection.
+            //unbindService(mConnection);
+            //mIsBound = false;
+            //mCallbackText.setText("Unbinding.");
+        }
 		super.onStop();
 		tabHost.clearAllTabs();
 		//Toast.makeText(getApplicationContext(), "onStop()", Toast.LENGTH_SHORT).show();
@@ -186,8 +271,13 @@ public class Chat extends TabActivity{
                 	String tresc = odebrany.getString("tresc");
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
                 	String przyszlaO = odebrany.getString("przyszlaO");
-                	
-                	
+
+                	Long idSQL = odebrany.getLong("idSQL");
+                	Log.i("[Chat]START SQL","oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
+					int liczbaZmienionychWierszy = archiveSQL.setMessageAsRead(idSQL);
+					Cursor wynikSQL = archiveSQL.readMessage(idSQL);
+					archiveSQL.showMessage(wynikSQL);
+					Log.i("[Chat]KONIEC SQL","L. zmienionych: "+liczbaZmienionychWierszy+". Oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
                 	    	
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));

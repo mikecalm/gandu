@@ -15,12 +15,14 @@ public class ChatMessage {
 		byte plain_message[] = null;	/* treść czystym tekstem (zakończona \0) */
 		int attributes = 0;				/* atrybuty wiadomości */
 		
-		public byte [] setMessage(String text, int ggnumber){
+		//public byte [] setMessage(String text, int ggnumber){
+		public byte [] setMessage(String text, int ggnumber, int _seq){
 			byte[] wynik = null;
 			try
 			{
 				this.recipient_sender=Integer.reverseBytes(ggnumber);
-				this.seq = Integer.reverseBytes((int) (System.currentTimeMillis() / 1000L));
+				//this.seq = Integer.reverseBytes((int) (System.currentTimeMillis() / 1000L));
+				this.seq = Integer.reverseBytes(_seq);
 				this.message_class = 0x08;
 				//this.offset_plain = 0x6b;
 				//this.offset_attributes = 0x70;
