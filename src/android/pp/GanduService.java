@@ -638,7 +638,17 @@ public class GanduService extends Service {
 						Log.i("GanduService received: ", ""+typWiadomosci);
 						wyslijWiadomoscOPustejLiscieKontaktow();
 						Message msg = Message.obtain(null, Common.CLIENT_START_INTENT_CONTACTBOOK, 0 ,0 );
-						mClients.get(0).send(msg);
+						//mClients.get(0).send(msg);
+						for(int i=0; i<mClients.size(); i++)
+	                    {
+	                    	try
+	                    	{
+	                    		mClients.get(i).send(msg);
+	                    	}catch(Exception e)
+	                    	{
+	                    		Log.e("GanduService", ""+e.getMessage());
+	                    	}
+	                    }
 						Log.i("GanduService","Sent to Client "+msg.what);
 						break;
 						

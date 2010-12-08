@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,11 +21,18 @@ import android.os.RemoteException;
 import android.pp.ContactBook.IncomingHandler;
 import android.provider.Contacts.Intents;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.RemoteViews.ActionException;
+import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabHost.TabSpec;
 
 public class Chat extends TabActivity{
@@ -42,6 +50,8 @@ public class Chat extends TabActivity{
     ArrayList<String> numerIndex;
 	
     ArchiveSQLite archiveSQL;
+    public ArrayList<String> hiddenTabs;
+    public ArrayList<String> openedTabs;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		
@@ -53,16 +63,29 @@ public class Chat extends TabActivity{
 		
 		//Toast.makeText(getApplicationContext(), "onCreate()", Toast.LENGTH_SHORT).show();
 		
+		
 		//prefs = getPreferences(0);
 		prefs = getSharedPreferences("otwarteZakladki", 0);
 		editor = prefs.edit();
 		//tabHost = (TabHost)findViewById(android.R.id.tabhost);	
 		tabHost = getTabHost();
+		/*tabHost.setOnTabChangedListener(new OnTabChangeListener(){
+			@Override
+			public void onTabChanged(String tabId) {
+				//tabHost.getcu
+			    int indeksZakladki = tabHost.getCurrentTab();
+			    ImageView ImageViewWLayoutcieTaba = (ImageView)tabHost.getTabWidget().getChildAt(indeksZakladki).findViewById(android.R.id.icon);
+			    ImageViewWLayoutcieTaba.setImageDrawable(getResources().getDrawable(R.drawable.available));
+			    //tabHost.getTabWidget().getChildAt(indeksZakladki).setBackgroundResource(R.drawable.available);
+			    //ImageViewWLayoutcieTaba.
+			}});*/
 		
 		archiveSQL = new ArchiveSQLite(this.getApplicationContext());		
 		//numerShowName = new HashMap<String, String>();
 		numerShowName = new ArrayList<String>();
 		numerIndex = new ArrayList<String>();
+		hiddenTabs = new ArrayList<String>();
+		openedTabs = new ArrayList<String>();
     	
 }
 
@@ -90,6 +113,7 @@ public class Chat extends TabActivity{
 	    			this.getIntent().removeExtra("ShowNameGGNumber");     
 		            this.getIntent().removeExtra("indexGGNumber");
 	    		}
+	    		//dodanie zakladki kontaktu, ktory zostal wybrany z listy kontaktow
 	    		if(b.containsKey("ggnumber") && b.containsKey("username"))
 	    		{
 		    		numerGGZKtoregoOtworzonoOknoZRozmowa = b.getString("ggnumber");
@@ -106,6 +130,7 @@ public class Chat extends TabActivity{
 		            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
 		            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
 		            //tescik
+		            openedTabs.add(b.getString("ggnumber"));
 		            
 		            //firstTabSpec.setIndicator(tabHeader).setContent(new Intent(this,Tab.class));
 		         
@@ -121,34 +146,39 @@ public class Chat extends TabActivity{
         }
 
         if (odz != null)
-        {	
-        	String [] tab = odz.split("~");
-        	for (String s: tab)
+        {
+        	if (!odz.equals(""))
         	{
-	            String[] tabText = s.split("-");
-	            String ggNum = tabText[tabText.length-1];
-	            //jesli aktualnie otwarta zakladka byla juz poprzednio otwarta,
-	            //to nie dodawaj jej ponownie	            
-	            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !ggNum.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
-	            {
-	            	
-	            	ggNumbers.remove(ggNum);
-	            	
-	        		firstTabSpec = tabHost.newTabSpec(s);
-	        		//tescik
-		            Intent nowyTab = new Intent(this,Tab.class);
-		            nowyTab.putExtra("ggnumber", ggNum);
-		            firstTabSpec.setIndicator(s).setContent(nowyTab);
-		            //tescik
-	            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
-	            	tabHost.addTab(firstTabSpec);
-	            }
+        		//dodanie zakladek kontaktow, z ktorymi wczesniej prowadzilismy rozmowe
+	        	String [] tab = odz.split("~");
+	        	for (String s: tab)
+	        	{
+		            String[] tabText = s.split("-");
+		            String ggNum = tabText[tabText.length-1];
+		            //jesli aktualnie otwarta zakladka byla juz poprzednio otwarta,
+		            //to nie dodawaj jej ponownie	            
+		            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !ggNum.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
+		            {
+		            	
+		            	ggNumbers.remove(ggNum);
+		            	
+		        		firstTabSpec = tabHost.newTabSpec(s);
+		        		//tescik
+			            Intent nowyTab = new Intent(this,Tab.class);
+			            nowyTab.putExtra("ggnumber", ggNum);
+			            firstTabSpec.setIndicator(s).setContent(nowyTab);
+			            //tescik
+			            openedTabs.add(ggNum);
+		            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+		            	tabHost.addTab(firstTabSpec);
+		            }
+	        	}
+	        	editor.remove("text");
+	    		editor.commit();
         	}
-        	editor.remove("text");
-    		editor.commit();
         }
         
-        //uruchomienie zakladek kontaktow, ktorych nieprzeczytane wiadomosci sa w bazie
+        //dodanie zakladek kontaktow, ktorych nieprzeczytane wiadomosci sa w bazie
         for(int i=0; i<ggNumbers.size(); i++)
         {
         	String numerGGKontaktu = ggNumbers.get(i);
@@ -170,7 +200,9 @@ public class Chat extends TabActivity{
             Intent nowyTab = new Intent(this,Tab.class);
             nowyTab.putExtra("ggnumber", numerGGKontaktu);
             firstTabSpec.setIndicator(header).setContent(nowyTab);
+            //firstTabSpec.setIndicator(header, getResources().getDrawable(R.drawable.available)).setContent(nowyTab);
             //tescik
+            openedTabs.add(numerGGKontaktu);
         	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
         	tabHost.addTab(firstTabSpec);
         }
@@ -204,7 +236,10 @@ public class Chat extends TabActivity{
 			//RelativeLayout layoutTaba = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);			
 			//TextView textViewWLayoutcieTaba = (TextView)layoutTaba.getChildAt(1);
 			TextView textViewWLayoutcieTaba = (TextView)tabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
-        	tabs += textViewWLayoutcieTaba.getText()+"~";
+        	//tabs += textViewWLayoutcieTaba.getText()+"~";
+			String headerText = textViewWLayoutcieTaba.getText().toString();
+			if(!headerText.equals(""))
+				tabs += headerText+"~";
         	//tabHost.setCurrentTab(i);
         	//tabs += tabHost.getCurrentTabTag()+"~";                
         }
@@ -217,13 +252,6 @@ public class Chat extends TabActivity{
 
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		//Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
-	}
-
-	@Override
-	protected void onStop() {
 		// TODO Auto-generated method stub
 		if (mIsBound) {
             // If we have received the service, and hence registered with
@@ -246,10 +274,53 @@ public class Chat extends TabActivity{
             //mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
-		super.onStop();
+		super.onDestroy();
 		tabHost.clearAllTabs();
+		//Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
 		//Toast.makeText(getApplicationContext(), "onStop()", Toast.LENGTH_SHORT).show();
 	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu){
+		super.onCreateOptionsMenu(menu);
+		MenuInflater inflater=getMenuInflater();
+		inflater.inflate(R.menu.chatmenu, menu);
+		return true;
+	}
+	
+	/*//zdarzenia zwiazane z wyborem opcji menu
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+		switch (item.getItemId())
+		{
+			case R.id.ZamknijOkno01:			
+				Log.i("[Chat]OptionsMenu", "Zamknij");
+				//tabHost.getCurrentTabView().dispatchKeyEvent(new KeyEvent(0, KeyEvent.getMaxKeyCode()+1));
+				if(tabHost.getTabWidget().getChildCount() > 1)
+				{
+					int indeksZamykanej = tabHost.getCurrentTab();
+					tabHost.getCurrentTabView().setVisibility(View.GONE);
+					if(indeksZamykanej != 0)
+						tabHost.setCurrentTab(0);
+					else
+						tabHost.setCurrentTab(1);
+				}
+				else
+					finish();
+				//Tab zamykana = (Tab)tabHost.getCurrentTabView().getContext();
+				//zamykana.finish();
+				//tabHost.getCurrentTab()
+				break;
+		}
+		return false;
+	}*/
+	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
      * Handler of incoming messages from service.
@@ -272,12 +343,15 @@ public class Chat extends TabActivity{
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
                 	String przyszlaO = odebrany.getString("przyszlaO");
 
-                	Long idSQL = odebrany.getLong("idSQL");
-                	Log.i("[Chat]START SQL","oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
-					int liczbaZmienionychWierszy = archiveSQL.setMessageAsRead(idSQL);
-					Cursor wynikSQL = archiveSQL.readMessage(idSQL);
-					archiveSQL.showMessage(wynikSQL);
-					Log.i("[Chat]KONIEC SQL","L. zmienionych: "+liczbaZmienionychWierszy+". Oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
+                	if(!hiddenTabs.contains(wiadomoscOd) && openedTabs.contains(wiadomoscOd))
+                	{
+	                	Long idSQL = odebrany.getLong("idSQL");
+	                	Log.i("[Chat]START SQL","oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
+						int liczbaZmienionychWierszy = archiveSQL.setMessageAsRead(idSQL);
+						Cursor wynikSQL = archiveSQL.readMessage(idSQL);
+						archiveSQL.showMessage(wynikSQL);
+						Log.i("[Chat]KONIEC SQL","L. zmienionych: "+liczbaZmienionychWierszy+". Oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
+                	}
                 	    	
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));

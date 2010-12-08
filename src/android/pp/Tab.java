@@ -3,6 +3,7 @@ package android.pp;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -16,10 +17,14 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +54,8 @@ public class Tab extends Activity{
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
 		mIsBound = true;
+		//btn.setOnKeyListener(keyListener);
+		//getParent().
 		
 		Bundle b = this.getIntent().getExtras();
 		if(b != null)
@@ -129,13 +136,6 @@ public class Tab extends Activity{
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-		super.onDestroy();
-		//Toast.makeText(getApplicationContext(), "onDestroy()"+ggnumber, Toast.LENGTH_SHORT).show();
-	}
-
-	@Override
-	protected void onStop() {
-		// TODO Auto-generated method stub		
 		if (mIsBound) {
             // If we have received the service, and hence registered with
             // it, then now is the time to unregister.
@@ -157,6 +157,13 @@ public class Tab extends Activity{
             //mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
+		super.onDestroy();
+		//Toast.makeText(getApplicationContext(), "onDestroy()"+ggnumber, Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub		
 		super.onStop();
 		//doUnbindService();
 		//Toast.makeText(getApplicationContext(), "onStop()"+ggnumber, Toast.LENGTH_SHORT).show();
@@ -190,6 +197,72 @@ public class Tab extends Activity{
 			}
 		}
 	};
+	
+	//zdarzenia zwiazane z wyborem opcji menu
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+		//TabActivity tabActiv = (TabActivity) getParent();
+		Chat tabActiv = (Chat) getParent();
+		TabHost tabHost = ((TabActivity) getParent()).getTabHost();
+		switch (item.getItemId())
+		{
+			case R.id.ZamknijOkno01:			
+				Log.i("[Tab]OptionsMenu", "Zamknij");
+				//if(tabHost.getTabWidget().getChildCount() > 1)
+				//{
+					int indeksZamykanej = tabHost.getCurrentTab();
+					tabActiv.hiddenTabs.add(ggnumber);
+					tabHost.getCurrentTabView().setVisibility(View.GONE);					
+					TextView asd = (TextView)tabHost.getTabWidget().getChildAt(tabHost.getCurrentTab()).findViewById(android.R.id.title);
+					asd.setText("");
+					//finish();
+					onStop();
+					int liczbaZakladek = tabHost.getTabWidget().getChildCount();
+					int iteratorPetli =0;
+					for (iteratorPetli=0; iteratorPetli<liczbaZakladek ; iteratorPetli++)
+			        {
+						TextView textViewWLayoutcieTaba = (TextView)tabHost.getTabWidget().getChildAt(iteratorPetli).findViewById(android.R.id.title);
+			        	//tabs += textViewWLayoutcieTaba.getText()+"~";
+						String headerText = textViewWLayoutcieTaba.getText().toString();
+						if(!headerText.equals(""))
+						{
+							int poi = 123;
+							break;
+						}
+			        }
+					if(iteratorPetli == liczbaZakladek)
+						tabActiv.finish();
+						//finish();
+					else
+					{
+						if(indeksZamykanej != 0)
+							tabHost.setCurrentTab(0);
+						else
+							tabHost.setCurrentTab(1);
+					}
+				//}
+				//else
+				//	finish();		
+				break;
+		}
+		return false;
+	}
+	
+	/*OnKeyListener keyListener = new OnKeyListener() {
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			// TODO Auto-generated method stub
+			if(keyCode == (KeyEvent.getMaxKeyCode()+1))
+			{
+				//Tab.this.
+				Log.i("[Tab]keyListener", "wybrano zamknij karte");
+				finish();
+			}
+			return false;
+		}
+		// TODO Auto-generated method stub
+		
+	};*/
 	
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu

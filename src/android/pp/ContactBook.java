@@ -80,7 +80,10 @@ public class ContactBook extends ExpandableListActivity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contactbook);
 		//zbindowanie aktywnosci do serwisu
-		doBindService();
+		//doBindService();
+		Intent intent = new Intent(getApplicationContext(), GanduService.class);
+		getApplicationContext().bindService(intent,mConnection,1);
+		mIsBound = true;
 		
         //Ustawienie adaptera z danymi listy kontaktow
         //mAdapter = new MyExpandableListAdapter(getApplicationContext());
@@ -144,6 +147,34 @@ public class ContactBook extends ExpandableListActivity{
             	//Toast.makeText(getApplicationContext(), "wybrano", wybrany).show();
             }
         });		
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		if (mIsBound) {
+            // If we have received the service, and hence registered with
+            // it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null,
+                    		Common.CLIENT_UNREGISTER);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                  
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+            }
+        }
+		super.onDestroy();
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub		
+		super.onStop();
 	}
 	
 	 /**
