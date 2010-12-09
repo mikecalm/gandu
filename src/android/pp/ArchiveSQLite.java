@@ -1,6 +1,7 @@
 package android.pp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -56,7 +57,7 @@ public class ArchiveSQLite {
 	}
 	
 	public long addMessage(int _sender, int _recipient, int _messagetimestamp, String _message, 
-			int _unread, String _conferenceMembers)
+			int _unread, ArrayList<String> _conferenceMembers)
 	{
 		//jesli proba dodania rekordu sie powiedzie, to metoda zwroci
 		//id nowo dodanej wiadomosci w bazie.
@@ -71,10 +72,21 @@ public class ArchiveSQLite {
 			dodawaneWartosci.put(messagetimestamp, _messagetimestamp);
 			dodawaneWartosci.put(message, _message);
 			dodawaneWartosci.put(unread, _unread);
-			if(_conferenceMembers.equals(""))
+			if(_conferenceMembers == null)
 				dodawaneWartosci.putNull(conferenceMembers);
 			else
-				dodawaneWartosci.put(conferenceMembers, _conferenceMembers);
+			{
+				_conferenceMembers.add(""+_sender);
+				_conferenceMembers.add(""+_recipient);
+				Collections.sort(_conferenceMembers);
+				String uczestnicyKonferencjiPosortowani = "";
+				for(int i=0; i<_conferenceMembers.size(); i++)
+					uczestnicyKonferencjiPosortowani += _conferenceMembers.get(i)+";";
+				//wyciecie srednika z konca ciagu
+				uczestnicyKonferencjiPosortowani = uczestnicyKonferencjiPosortowani.substring(0, uczestnicyKonferencjiPosortowani.length()-1);
+				Log.i("[ArchiveSQLite]Uczestnicy konferencji", uczestnicyKonferencjiPosortowani);
+				dodawaneWartosci.put(conferenceMembers, uczestnicyKonferencjiPosortowani);
+			}
 			rezultat = db.insertOrThrow(DATABASE_TABLE, null, dodawaneWartosci);
 			//db.close();
 		}

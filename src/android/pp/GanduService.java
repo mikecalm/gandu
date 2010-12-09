@@ -7,10 +7,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -338,6 +343,21 @@ public class GanduService extends Service {
                 	}
                 	Log.i("GanduService","Pobieram liste kontaktow");
                 	
+                	//START test wyslania wiadomosci konferencyjnej z gandu2 do gandu3 i do mnie
+                	/*int currentTime1 = (int)(System.currentTimeMillis() / 1000L);
+                	ChatMessage cm = new ChatMessage();
+                	byte[] paczki = cm.setConferenceMessages("12345",new int[]{2522922,31841466}, currentTime1);
+					try 
+					{
+						out.write(paczki);
+						Log.i("[GanduService]Konferencja", "Wyslalem wiadomosci");
+						out.flush();
+					} 
+					catch (IOException e) 
+					{
+						Log.e("[GanduService]Konferencja","Blad wysylania konferencji");
+					}*/
+					//KONIEC test wyslania wiadomosci konferencyjnej z gandu2 do gandu i do mnie
                 	break;
                 case Common.CLIENT_SET_CONTACTBOOK:
                 	Bundle odebranyXMLList = msg.getData();
@@ -360,7 +380,8 @@ public class GanduService extends Service {
 						byte[] paczka = sm.setMessage(text,ggnumber,currentTime);
 						
 						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
-						long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, "");
+						//long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, "");
+						long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, null);
 						Log.i("[GanduService]START SQL","["+idWiadomosci+"]dodanie wysylanej wiadomosci do bazy");
 						
 						out.write(paczka);
@@ -595,8 +616,12 @@ public class GanduService extends Service {
     			System.currentTimeMillis());
 
         // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, GanduClient.class), 0);
+    	Intent intent = new Intent(this, GanduClient.class);
+    	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        //PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+          //      new Intent(this, GanduClient.class), 0);
+    	PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+    			intent, 0);
 
         // Set the info for the views that show in the notification panel.
         //notification.setLatestEventInfo(this, getText(R.string.remote_service_label),
@@ -716,12 +741,53 @@ public class GanduService extends Service {
 						int classa = Integer.reverseBytes(in.readInt());
 						int offset_plain = Integer.reverseBytes(in.readInt());
 						int offset_attributes = Integer.reverseBytes(in.readInt());
-						//dlugoscWiadomosci - 24 poniewaz 6 wczesniejszych pol jest
+						//dlugoscWiadomosci -(odjac) 24 poniewaz 6 wczesniejszych pol jest
 						//typu int, kazdy po 4 bajty (6*4 = 24)
-						byte[] pozostalaCzescWiadomosci = new byte[dlugoscWiadomosci - 24];
+						byte[] pozostalaCzescWiadomosci = new byte[dlugoscWiadomosci - 24];						
 						pobraneBajty=0;
 						while(pobraneBajty != (dlugoscWiadomosci - 24))
 							pobraneBajty += in.read(pozostalaCzescWiadomosci, pobraneBajty, (dlugoscWiadomosci - 24)-pobraneBajty);
+						
+						//wydzielenie tablicy bajtow atrybutow
+						Log.i("[GanduService]Atrybuty", "Przed wydzieleniem atrybutow");
+						byte[] atrybuty = new byte[dlugoscWiadomosci-offset_attributes];						
+						ByteArrayOutputStream atrybutyTemp = new ByteArrayOutputStream();
+						DataOutputStream dosTemp = new DataOutputStream(atrybutyTemp);
+						dosTemp.write(pozostalaCzescWiadomosci, offset_attributes-24, dlugoscWiadomosci-offset_attributes);
+						//dosTemp.close();
+						atrybuty = atrybutyTemp.toByteArray();
+						dosTemp.close();
+						atrybutyTemp.close();
+						Log.i("[GanduService]Atrybuty", "Po wydzieleniem atrybutow");
+						//START przeczesanie atrybutow
+						ArrayList<String> konferenci = new ArrayList<String>();
+						ByteArrayInputStream odczyAtryb = new ByteArrayInputStream(atrybuty);
+						DataInputStream dosOdczytAtryb = new DataInputStream(odczyAtryb);			
+						switch(dosOdczytAtryb.readByte())
+						{
+							//sprawdzenie, czy to wiadomosc konferencyjna
+							case 0x01:
+								Log.i("[GanduService]Atrybuty", "wiadomosc konferencyjna!!");
+								//odczytanie liczby pozostalych uczestnikow konferencji(poza nadawca)
+								int liczbaPozosyalychUczest = Integer.reverseBytes(dosOdczytAtryb.readInt());
+								//konferenci = new int[liczbaPozosyalychUczest];
+								//pobranie numerow pozostalych uczestnikow
+								for(int pozostali=0; pozostali<liczbaPozosyalychUczest; pozostali++)
+								{
+									//konferenci[pozostali] = Integer.reverseBytes(dosOdczytAtryb.readInt());
+									konferenci.add(""+Integer.reverseBytes(dosOdczytAtryb.readInt()));
+									//Log.i("[GanduService]Konferenci", pozostali+". "+konferenci[pozostali]);
+									Log.i("[GanduService]Konferenci", pozostali+". "+konferenci.get(pozostali));
+								}
+								break;
+							default:
+								;
+						}
+						//KONIEC przeczesanie atrybutow
+						//for(int bajty=0; bajty<atrybuty.length; bajty++)
+						//	Log.i("[GanduService]Atrybuty", ""+Integer.toString( ( atrybuty[bajty] & 0xff ) + 0x100, 16).substring( 1 ));
+						//wydzielenie tablicy bajtow atrybutow
+						
 						String trescCP1250 = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
 						//String tresc = new String(trescCP1250.getBytes("CP1250"),"UTF-8");
 						String tresc =trescCP1250;
@@ -734,7 +800,24 @@ public class GanduService extends Service {
 						wysylany.putString("przyszlaO",czasNadejscia);
 						
 						Log.i("START SQL","dodanie i odczytanie wiadomosci z bazy");
-						long idWiadomosci = archiveSQL.addMessage(sender, Integer.parseInt(ggnum), time, tresc, 1, "");
+						long idWiadomosci;
+						if(konferenci.size() == 0)
+							idWiadomosci = archiveSQL.addMessage(sender, Integer.parseInt(ggnum), time, tresc, 1, null);
+						else
+						{
+							idWiadomosci = archiveSQL.addMessage(sender, Integer.parseInt(ggnum), time, tresc, 1, (ArrayList<String>)konferenci.clone());
+							konferenci.add(""+sender);
+							wysylany.putStringArrayList("konferenciGG", (ArrayList<String>)konferenci.clone());
+							konferenci.add(ggnum);
+							Collections.sort(konferenci);
+							String uczestnicyKonferencjiPosortowani = "";
+							for(int i=0; i<konferenci.size(); i++)
+								uczestnicyKonferencjiPosortowani += konferenci.get(i)+";";
+							//wyciecie srednika z konca ciagu
+							uczestnicyKonferencjiPosortowani = uczestnicyKonferencjiPosortowani.substring(0, uczestnicyKonferencjiPosortowani.length()-1);
+							
+							wysylany.putString("konferenci", uczestnicyKonferencjiPosortowani);
+						}
 						wysylany.putLong("idSQL", idWiadomosci);
 						//Cursor wynikSQL = archiveSQL.readMessage(idWiadomosci);
 						//archiveSQL.showMessage(wynikSQL);
@@ -826,6 +909,20 @@ public class GanduService extends Service {
 					Log.e("GanduService: ", ""+excThread.getMessage());
 					connected = false;
 				}
+			}
+			try 
+			{
+				if(in != null)
+					in.close();
+				if(out != null)
+					out.close();
+				if(socket != null)
+					socket.close();
+			} 
+			catch (IOException e) 
+			{
+				// TODO Auto-generated catch block
+				Log.e("[GanduService]Blad zamykania gniazda oraz in/out", e.getMessage());
 			}
 			Log.i("ReplyInterpreter", "Watek zakonczony");
 			Log.i("GanduService", "wartosc connected = "+connected);
