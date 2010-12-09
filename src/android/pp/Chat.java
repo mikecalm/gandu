@@ -184,7 +184,12 @@ public class Chat extends TabActivity{
         	String numerGGKontaktu = ggNumbers.get(i);
         	//String header = numerShowName.get(numerGGKontaktu)+"-"+numerGGKontaktu;
         	String showNameGG = "";
-        	showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
+        	//showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
+        	//jesli wiadomosc jest od kogos spoza listy
+        	showNameGG = numerGGKontaktu;
+        	//jesli wiadomosc jest od kogos z listy
+        	if(numerIndex.indexOf(numerGGKontaktu) != -1)
+        		showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
         	/*for(int j=0; j<numerShowName.size(); j++)
         	{
         		if(numerShowName.get(j).endsWith("-"+numerGGKontaktu))
@@ -225,7 +230,7 @@ public class Chat extends TabActivity{
 		//Toast.makeText(getApplicationContext(), "onPause()", Toast.LENGTH_SHORT).show();
 		//preferencje
 
-		String tabs = "";		
+		/*String tabs = "";		
         //for (int i =0 ; i<tabHost.getChildCount() ; i++)
 		for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
         {
@@ -245,7 +250,7 @@ public class Chat extends TabActivity{
         }
         Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_SHORT).show();
         editor.putString("text", tabs);
-        editor.commit();
+        editor.commit();*/
         //tabHost.setCurrentTab(0);
         //tabHost.clearAllTabs();
 	}
@@ -275,6 +280,27 @@ public class Chat extends TabActivity{
             //mCallbackText.setText("Unbinding.");
         }
 		super.onDestroy();
+		String tabs = "";		
+        //for (int i =0 ; i<tabHost.getChildCount() ; i++)
+		for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
+        {
+			//do nazwy konkretnetnej zakladki dokopalem sie podgladajac w debugu
+			//w jakim polu zapisana jest nazwa zakladki.
+			//Wydaje mi sie, ze jak bedziemy miec zdefiniowany layout zakladki,
+			//to nazwe zakladki bedzie mozna uzyska poprzez odwolanie sie do konkretnego ID (R.id...)
+			//RelativeLayout layoutTaba = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);			
+			//TextView textViewWLayoutcieTaba = (TextView)layoutTaba.getChildAt(1);
+			TextView textViewWLayoutcieTaba = (TextView)tabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
+        	//tabs += textViewWLayoutcieTaba.getText()+"~";
+			String headerText = textViewWLayoutcieTaba.getText().toString();
+			if(!headerText.equals(""))
+				tabs += headerText+"~";
+        	//tabHost.setCurrentTab(i);
+        	//tabs += tabHost.getCurrentTabTag()+"~";                
+        }
+        Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_SHORT).show();
+        editor.putString("text", tabs);
+        editor.commit();
 		tabHost.clearAllTabs();
 		//Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
 	}
@@ -342,6 +368,11 @@ public class Chat extends TabActivity{
                 	String tresc = odebrany.getString("tresc");
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
                 	String przyszlaO = odebrany.getString("przyszlaO");
+                	String konferenci = odebrany.getString("konferenci");
+                	ArrayList<String> konferenciGG = odebrany.getStringArrayList("konferenciGG");
+                	String tytulTaba = wiadomoscOd;
+                	if(konferenci != null)
+                		tytulTaba=konferenci;
 
                 	//if(!hiddenTabs.contains(wiadomoscOd) && openedTabs.contains(wiadomoscOd))
                 	
@@ -349,22 +380,54 @@ public class Chat extends TabActivity{
                 	//zakladka zostala wczesniej zamknieta, to wiadomosc bedzie oczekiwac
                 	//w bazie na odczytanie (bedzie miec ustawiona flage unread do momentu ponownego
                 	//uruchomienia okna z rozmowami)
-                	if(!hiddenTabs.contains(wiadomoscOd))
+                	//if(!hiddenTabs.contains(wiadomoscOd))
+                	if(!hiddenTabs.contains(tytulTaba))                		
                 	{
                 		//jesli wiadomosc zostala przyslana przez osobe, ktorej
                 		//zaklada nie zostala wczesniej otwarta, to zostanie dodana
                 		//nowo zakladka, a flaga unread wiadomosci zostanie odznaczona (wartosc -1)
-                		if(!openedTabs.contains(wiadomoscOd))
+                		//if(!openedTabs.contains(wiadomoscOd))
+                		if(!openedTabs.contains(tytulTaba))
                 		{
-                			String showNameGG = numerShowName.get(numerIndex.indexOf(wiadomoscOd));
-                			String header = showNameGG+"-"+wiadomoscOd;
+                			String header = "";
+                			//wiadomosc niekonferencyjna
+                			if(konferenciGG == null)
+                			{
+	                			//jesli wiadomosc jest od kogos spoza listy                			
+	                			String showNameGG = wiadomoscOd;
+	                			//jesli wiadomosc jest od kogos z listy
+	                			if(numerIndex.indexOf(wiadomoscOd) != -1)
+	                				showNameGG = numerShowName.get(numerIndex.indexOf(wiadomoscOd));
+	                			header = showNameGG+"-"+wiadomoscOd;
+                			}
+                			//wiadomosc konferencyjna
+                			else
+                			{
+                				for(int i=0; i<konferenciGG.size(); i++)
+                				{
+	                				//jesli wiadomosc jest od kogos spoza listy                			
+		                			String showNameGG = konferenciGG.get(i);
+		                			//jesli wiadomosc jest od kogos z listy
+		                			if(numerIndex.indexOf(konferenciGG.get(i)) != -1)
+		                				showNameGG = numerShowName.get(numerIndex.indexOf(konferenciGG.get(i)));
+		                			header += showNameGG+"-"+konferenciGG.get(i)+";";
+		                			//wyciecie ostatniego srednika
+                				}
+	                			header = header.substring(0, header.length()-1);
+                			}
                 			firstTabSpec = tabHost.newTabSpec(header);
     		        		//tescik
     			            Intent nowyTab = new Intent(getApplicationContext(),Tab.class);
     			            nowyTab.putExtra("ggnumber", wiadomoscOd);
+    			            if(konferenciGG != null)
+                			{
+    			            	nowyTab.putStringArrayListExtra("konferenciGG", konferenciGG);
+    			            	nowyTab.putExtra("konferenciWBazie", konferenci);
+                			}
     			            firstTabSpec.setIndicator(header).setContent(nowyTab);
     			            //tescik
-    			            openedTabs.add(wiadomoscOd);
+    			            //openedTabs.add(wiadomoscOd);
+    			            openedTabs.add(tytulTaba);
     		            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
     		            	tabHost.addTab(firstTabSpec);
     		            	int aktualnaZakladka = tabHost.getCurrentTab();

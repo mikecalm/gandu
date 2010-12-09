@@ -129,6 +129,7 @@ public class GanduClient extends Activity {
                 	Intent intent = new Intent(getApplicationContext(),ContactBook.class);
 					try{
                 		startActivity(intent);
+                		finish();
                 	}catch(Exception  e)
                 	{
                 		Log.e("GanduClient",""+e.getMessage());
