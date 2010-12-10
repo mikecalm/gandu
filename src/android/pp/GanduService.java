@@ -391,6 +391,41 @@ public class GanduService extends Service {
 						Log.e("GanduService", "SendingMessage Failed!");
 					}
 					break;
+				
+                case Common.CLIENT_SEND_CONFERENCE_MESSAGE:
+                	odebrany = msg.getData();
+                	String textConference = odebrany.getString("text");
+                	ArrayList<String> konferenciGG = odebrany.getStringArrayList("konferenciGG");
+                	//String konferenciDoBazy = odebrany.getString("konferenci");
+                	//Object[] tablicaKonf = konferenciGG.toArray();
+                	//int[] tablicaKonferentow = new int[tablicaKonf.length];
+                	int[] tablicaKonferentow = new int[konferenciGG.size()];
+                	//for(int i=0;i<tablicaKonf.length;i++)
+                	for(int i=0;i<konferenciGG.size();i++)
+                		//tablicaKonferentow[i] = ((Integer)tablicaKonf[i]).intValue();
+                		tablicaKonferentow[i] = Integer.parseInt(konferenciGG.get(i));
+                	//START test wyslania wiadomosci konferencyjnej z gandu2 do gandu3 i do mnie
+                	int currentTime1 = (int)(System.currentTimeMillis() / 1000L);
+                	ChatMessage cm = new ChatMessage();
+                	//byte[] paczki = cm.setConferenceMessages("12345",new int[]{2522922,31841466}, currentTime1);
+                	byte[] paczki = cm.setConferenceMessages(textConference,tablicaKonferentow, currentTime1);
+					try 
+					{
+						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
+						//long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, "");
+						long idWiadomosciKonf = archiveSQL.addMessage(Integer.parseInt(ggnum), -1, currentTime1, textConference, -1, konferenciGG);
+						Log.i("[GanduService]START SQL","["+idWiadomosciKonf+"]dodanie wysylanej wiadomosci do bazy");
+						
+						out.write(paczki);
+						Log.i("[GanduService]Konferencja", "Wyslalem wiadomosci");
+						out.flush();
+					} 
+					catch (IOException e) 
+					{
+						Log.e("[GanduService]Konferencja","Blad wysylania konferencji");
+					}
+					//KONIEC test wyslania wiadomosci konferencyjnej z gandu2 do gandu i do mnie
+                	break;
 					
                 case Common.CLIENT_GET_STATUSES:
                 	Log.i("GanduService","Recived from Client");

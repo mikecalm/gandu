@@ -37,6 +37,7 @@ public class Tab extends Activity{
     String ggnumber = "";
     ArrayList<String> konferenciGG = null;
     String konferenciWBazie = "";
+    String mojNumer = "";
     
     ArchiveSQLite archiveSQL;
 	
@@ -62,6 +63,8 @@ public class Tab extends Activity{
 		Bundle b = this.getIntent().getExtras();
 		if(b != null)
 		{
+			if(b.containsKey("mojNumer"))
+				this.mojNumer = b.getString("mojNumer");
 			if(b.containsKey("ggnumber"))
 			{
 				this.ggnumber = b.getString("ggnumber");
@@ -80,12 +83,52 @@ public class Tab extends Activity{
 		if(konferenciGG != null)
 		{
 			//TODO odczyt z bazy starych i nieprzeczytanych wiadomosci konferencyjnych
-			;
+			Log.i("[Tab"+ggnumber+"]START SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
+	    	Cursor wynikSQLLast = archiveSQL.readLastMessagesFromConference(konferenciWBazie, 3600);
+			ArrayList<String> ostatnie = archiveSQL.showLastMessagesConference(wynikSQLLast, konferenciWBazie);
+			for(int i=0; i<ostatnie.size(); i++)
+			{
+				String wiadomoscIData = ostatnie.get(i);
+				int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+				int indeksOstatniegoSrednika = wiadomoscIData.lastIndexOf(";");
+				String nadawca = wiadomoscIData.substring(indeksOstatniegoSrednika+1,wiadomoscIData.length());
+				Long dataEpoch = Long.parseLong(data);
+				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1,indeksOstatniegoSrednika);
+				//jesli nasza wiadomosc
+				if(nadawca.equals(mojNumer))
+				{
+					tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+					tv.append(wiadomosc + "\n");
+				}
+				//wiadomosc od ktorego z naszych konferentow
+				else
+				{
+					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+nadawca+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+					tv.append(wiadomosc + "\n");
+				}
+			}
+	    	
+			Cursor wynikSQL = archiveSQL.readUnreadMessagesFromConference(konferenciWBazie);
+			ArrayList<String> nieprzeczytane = archiveSQL.showUnreadMessagesConferece(wynikSQL, konferenciWBazie);
+			for(int i=0; i<nieprzeczytane.size(); i++)
+			{
+				String wiadomoscIData = nieprzeczytane.get(i);
+				int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+				int indeksOstatniegoSrednika = wiadomoscIData.lastIndexOf(";");
+				String sender = wiadomoscIData.substring(indeksOstatniegoSrednika+1,wiadomoscIData.length());
+				Long dataEpoch = Long.parseLong(data);
+				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1, indeksOstatniegoSrednika);
+				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+sender+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				tv.append(wiadomosc + "\n");
+			}
+			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
 		}
 		//zakladka z rozmowa niekonferencyjna
 		else
 		{
-	    	Log.i("[Tab"+ggnumber+"]START SQL","Odczyt nieprzeczytanych wiadomosci.");
+	    	Log.i("[Tab"+ggnumber+"]START SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
 	    	Cursor wynikSQLLast = archiveSQL.readLastMessagesFrom(Integer.parseInt(ggnumber),3600);
 			ArrayList<String> ostatnie = archiveSQL.showLastMessages(wynikSQLLast,Integer.parseInt(ggnumber));
 			for(int i=0; i<ostatnie.size(); i++)
@@ -125,7 +168,7 @@ public class Tab extends Activity{
 				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 				tv.append(wiadomosc + "\n");
 			}
-			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt nieprzeczytanych wiadomosci.");
+			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
 		}
 		
 	}
@@ -189,10 +232,17 @@ public class Tab extends Activity{
 	OnClickListener listener = new OnClickListener() {
 		public void onClick(View v) {
 			Message msg = Message.obtain(null,Common.CLIENT_SEND_MESSAGE, 0, 0);
+			if(konferenciGG != null)
+				msg = Message.obtain(null,Common.CLIENT_SEND_CONFERENCE_MESSAGE, 0, 0);
 			Bundle wysylany = new Bundle();
 			wysylany.putString("text", et.getText().toString());
-			String ggnumber = Chat.tabHost.getCurrentTabTag();
-		    wysylany.putInt("ggnumber", Integer.parseInt(getNumber(ggnumber)));
+			if(konferenciGG != null)
+				wysylany.putStringArrayList("konferenciGG", (ArrayList<String>)konferenciGG.clone());
+			else
+			{
+				String ggnumber = Chat.tabHost.getCurrentTabTag();
+			    wysylany.putInt("ggnumber", Integer.parseInt(getNumber(ggnumber)));
+			}
 			
 			//wysylany.putString("ggnumber",getNumber());
 			//Calendar c = Calendar.getInstance();
@@ -299,7 +349,16 @@ public class Tab extends Activity{
                 	//int seq = odebrany.getInt("seq");
                 	//byte [] tresc = odebrany.getByteArray("tresc");                	
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
-                	if(!wiadomoscOd.equalsIgnoreCase(Tab.this.ggnumber))
+                	String konferenciDB = odebrany.getString("konferenci");
+                	//sprawdzenie, czy przyszla wiadomosc konferencyjna
+                	if(konferenciDB != null)
+                	{
+                		//jesli konferencyjna, czy nalezy do tej zakladki
+                		if(!konferenciWBazie.equals(konferenciDB))
+                			break;
+                	}
+                	//jesli nie konferencyjna, to czy nalezy do tej zakladki
+                	else if(!wiadomoscOd.equalsIgnoreCase(Tab.this.ggnumber))
                 		break;
                 	String tresc = odebrany.getString("tresc");
                 	String przyszlaO = odebrany.getString("przyszlaO");

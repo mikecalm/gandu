@@ -37,6 +37,7 @@ public class GanduClient extends Activity {
 	private Button connectPhones;
 	private EditText ggNumberEdit;
 	private EditText ggPasswordEdit;
+	String mojNumer = "";
 	// ------------------> OnCreate()
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -98,9 +99,11 @@ public class GanduClient extends Activity {
 
 	private OnClickListener connectListener = new OnClickListener() {
 		public void onClick(View v) {
+			mojNumer = ggNumberEdit.getText().toString();
 			Message msg = Message.obtain(null,Common.CLIENT_LOGIN, 0, 0);
 			Bundle wysylany = new Bundle();
-			wysylany.putString("numerGG", ggNumberEdit.getText().toString());
+			//wysylany.putString("numerGG", ggNumberEdit.getText().toString());
+			wysylany.putString("numerGG", mojNumer);
 			wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
 			msg.setData(wysylany);
 			
@@ -127,6 +130,7 @@ public class GanduClient extends Activity {
                 case Common.CLIENT_START_INTENT_CONTACTBOOK:
                 	Log.i("GanduClient","Odebralem"+msg.what);
                 	Intent intent = new Intent(getApplicationContext(),ContactBook.class);
+                	intent.putExtra("mojNumer", mojNumer);
 					try{
                 		startActivity(intent);
                 		finish();

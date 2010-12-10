@@ -88,4 +88,6 @@ public class Common {
    static final int CLIENT_IGNORE_CONTACT = 12;
    static final int CLIENT_UNIGNORE_CONTACT = 13;
    static final int CLIENT_GET_STATUSES = 14;
+   
+   static final int CLIENT_SEND_CONFERENCE_MESSAGE = 16;
 }
