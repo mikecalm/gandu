@@ -53,6 +53,7 @@ public class ContactBook extends ExpandableListActivity{
 
 	boolean mIsBound;
 	boolean connectedToGGServer;
+	String mojNumer = "";
 	String gglista = "";
 	SIMPLEContactBookList contactBookFull;
 	List<List<ViewableContacts>> contactsExpandableList;
@@ -78,6 +79,14 @@ public class ContactBook extends ExpandableListActivity{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		Bundle b = this.getIntent().getExtras();
+		if(b != null)
+		{
+			if(b.containsKey("mojNumer"))
+			{
+				this.mojNumer = b.getString("mojNumer");
+			}
+		}
 		setContentView(R.layout.contactbook);
 		//zbindowanie aktywnosci do serwisu
 		//doBindService();
@@ -916,6 +925,8 @@ public class ContactBook extends ExpandableListActivity{
 		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
 		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
 		intent.putExtra("ggnumber", numerGGWybranegoGosciaNaLiscie);
+		intent.putExtra("mojNumer", this.mojNumer);
+		//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
 		
 		ArrayList<String> numerIndex = new ArrayList<String>();
 		ArrayList<String> numerShowName = new ArrayList<String>();

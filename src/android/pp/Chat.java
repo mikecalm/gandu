@@ -40,6 +40,7 @@ public class Chat extends TabActivity{
 	public TabSpec firstTabSpec;
 	public SharedPreferences prefs;
 	public SharedPreferences.Editor editor;
+	String mojNumer = "";
 	
 	/** Messenger for communicating with service. */
     Messenger mService = null;
@@ -105,6 +106,8 @@ public class Chat extends TabActivity{
         {
 	    	if(!b.isEmpty())
 	    	{
+	    		if(b.containsKey("mojNumer"))
+	    			this.mojNumer = b.getString("mojNumer");
 	    		if(b.containsKey("ShowNameGGNumber") && b.containsKey("indexGGNumber"))
 	    		{
 	    			//numerShowName = (HashMap<String, String>)b.getParcelable("ShowNameGGNumber");
@@ -128,6 +131,7 @@ public class Chat extends TabActivity{
 		            //tescik
 		            Intent nowyTab = new Intent(this,Tab.class);
 		            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
+		            nowyTab.putExtra("mojNumer", this.mojNumer);
 		            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
 		            //tescik
 		            openedTabs.add(b.getString("ggnumber"));
@@ -153,35 +157,84 @@ public class Chat extends TabActivity{
 	        	String [] tab = odz.split("~");
 	        	for (String s: tab)
 	        	{
-		            String[] tabText = s.split("-");
-		            String ggNum = tabText[tabText.length-1];
-		            //jesli aktualnie otwarta zakladka byla juz poprzednio otwarta,
-		            //to nie dodawaj jej ponownie	            
-		            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !ggNum.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
-		            {
-		            	
-		            	ggNumbers.remove(ggNum);
-		            	
-		        		firstTabSpec = tabHost.newTabSpec(s);
-		        		//tescik
-			            Intent nowyTab = new Intent(this,Tab.class);
-			            nowyTab.putExtra("ggnumber", ggNum);
-			            firstTabSpec.setIndicator(s).setContent(nowyTab);
-			            //tescik
-			            openedTabs.add(ggNum);
-		            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
-		            	tabHost.addTab(firstTabSpec);
-		            }
+	        		Boolean konferencyjnaZakladka = false;
+	        		if(s.matches("^([0-9]+;)+[0-9]+$"))
+	        			konferencyjnaZakladka = true;
+	        		//jesli rozmowa konferencyjna
+	        		if(konferencyjnaZakladka)
+	        		{
+			            //jesli aktualnie otwarta zakladka byla juz poprzednio otwarta,
+			            //to nie dodawaj jej ponownie	            
+			            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !s.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
+			            {	
+			        		firstTabSpec = tabHost.newTabSpec(s);
+			        		//tescik
+				            Intent nowyTab = new Intent(this,Tab.class);
+				            nowyTab.putExtra("mojNumer", this.mojNumer);
+				            ArrayList<String> odzyskaniKonferenciGG = new ArrayList<String>();
+				            String[] odzyskaneNumery = s.split(";");
+				            String labelTaba = "";
+				            for(int odzyskane=0; odzyskane<odzyskaneNumery.length; odzyskane++)
+				            {
+				            	if(!odzyskaneNumery[odzyskane].equals(mojNumer))
+				            	{
+				            		odzyskaniKonferenciGG.add(odzyskaneNumery[odzyskane]);
+				            		String showNameGG = odzyskaneNumery[odzyskane];
+				            		//jesli wiadomosc jest od kogos z listy
+				                	if(numerIndex.indexOf(odzyskaneNumery[odzyskane]) != -1)
+				                		showNameGG = numerShowName.get(numerIndex.indexOf(odzyskaneNumery[odzyskane]));
+				                	labelTaba += showNameGG+"-"+odzyskaneNumery[odzyskane]+";";
+				            	}
+				            }
+				            labelTaba = labelTaba.substring(0, labelTaba.length()-1);
+				            //nowyTab.putExtra("ggnumber", ggNum);
+							nowyTab.putStringArrayListExtra("konferenciGG", odzyskaniKonferenciGG);
+							nowyTab.putExtra("konferenciWBazie",s);
+				            firstTabSpec.setIndicator(labelTaba).setContent(nowyTab);
+				            //tescik
+				            openedTabs.add(s);
+			            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+			            	tabHost.addTab(firstTabSpec);
+			            }
+	        		}
+	        		//jesli rozmowa niekonferencyjna
+	        		else
+	        		{
+			            String[] tabText = s.split("-");
+			            String ggNum = tabText[tabText.length-1];
+			            //jesli aktualnie otwarta zakladka byla juz poprzednio otwarta,
+			            //to nie dodawaj jej ponownie	            
+			            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !ggNum.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
+			            {
+			            	
+			            	ggNumbers.remove(ggNum);
+			            	
+			        		firstTabSpec = tabHost.newTabSpec(s);
+			        		//tescik
+				            Intent nowyTab = new Intent(this,Tab.class);
+				            nowyTab.putExtra("ggnumber", ggNum);
+				            nowyTab.putExtra("mojNumer", this.mojNumer);
+				            firstTabSpec.setIndicator(s).setContent(nowyTab);
+				            //tescik
+				            openedTabs.add(ggNum);
+			            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+			            	tabHost.addTab(firstTabSpec);
+			            }
+	        		}
 	        	}
 	        	editor.remove("text");
 	    		editor.commit();
         	}
         }
         
-        //dodanie zakladek kontaktow, ktorych nieprzeczytane wiadomosci sa w bazie
+        //dodanie zakladek kontaktow, ktorych nieprzeczytane wiadomosci (niekonferencyjne) sa w bazie
+        //Cursor numeryZBazyC = archiveSQL.readAllNonConferenceGGNumbers();
+        //ArrayList<String> numeryZBazy = archiveSQL.showAllNonConferenceGGNumbers(numeryZBazyC);
         for(int i=0; i<ggNumbers.size(); i++)
+        //for(int i=0; i<numeryZBazy.size(); i++)
         {
         	String numerGGKontaktu = ggNumbers.get(i);
+        	//String numerGGKontaktu = numeryZBazy.get(i);
         	//String header = numerShowName.get(numerGGKontaktu)+"-"+numerGGKontaktu;
         	String showNameGG = "";
         	//showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
@@ -204,10 +257,49 @@ public class Chat extends TabActivity{
     		//tescik
             Intent nowyTab = new Intent(this,Tab.class);
             nowyTab.putExtra("ggnumber", numerGGKontaktu);
+            nowyTab.putExtra("mojNumer", this.mojNumer);
             firstTabSpec.setIndicator(header).setContent(nowyTab);
             //firstTabSpec.setIndicator(header, getResources().getDrawable(R.drawable.available)).setContent(nowyTab);
             //tescik
             openedTabs.add(numerGGKontaktu);
+        	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
+        	tabHost.addTab(firstTabSpec);
+        }
+        
+        //dodanie zakladek konferencyjnych, ktorych nieprzeczytane wiadomosci (niekonferencyjne) sa w bazie
+        //Cursor konferencjeZBazyC = archiveSQL.readAllConferenceVariations();
+        Cursor konferencjeZBazyC = archiveSQL.readUnreadGGNumbersConference();
+        //ArrayList<String> konferencjeZBazy = archiveSQL.showAllConferenceVariations(konferencjeZBazyC);
+        ArrayList<String> konferencjeZBazy = archiveSQL.showUnreadGGNumbersConference(konferencjeZBazyC);
+        //for(int i=0; i<ggNumbers.size(); i++)
+        for(int i=0; i<konferencjeZBazy.size(); i++)
+        {
+        	firstTabSpec = tabHost.newTabSpec(konferencjeZBazy.get(i));
+    		//tescik
+            Intent nowyTab = new Intent(this,Tab.class);
+            nowyTab.putExtra("mojNumer", this.mojNumer);
+            ArrayList<String> odzyskaniKonferenciGG = new ArrayList<String>();
+            String[] odzyskaneNumery = konferencjeZBazy.get(i).split(";");
+            String labelTaba = "";
+            for(int odzyskane=0; odzyskane<odzyskaneNumery.length; odzyskane++)
+            {
+            	if(!odzyskaneNumery[odzyskane].equals(mojNumer))
+            	{
+            		odzyskaniKonferenciGG.add(odzyskaneNumery[odzyskane]);
+            		String showNameGG = odzyskaneNumery[odzyskane];
+            		//jesli wiadomosc jest od kogos z listy
+                	if(numerIndex.indexOf(odzyskaneNumery[odzyskane]) != -1)
+                		showNameGG = numerShowName.get(numerIndex.indexOf(odzyskaneNumery[odzyskane]));
+                	labelTaba += showNameGG+"-"+odzyskaneNumery[odzyskane]+";";
+            	}
+            }
+            labelTaba = labelTaba.substring(0, labelTaba.length()-1);
+            //nowyTab.putExtra("ggnumber", ggNum);
+			nowyTab.putStringArrayListExtra("konferenciGG", odzyskaniKonferenciGG);
+			nowyTab.putExtra("konferenciWBazie",konferencjeZBazy.get(i));
+            firstTabSpec.setIndicator(labelTaba).setContent(nowyTab);
+            //tescik
+            openedTabs.add(konferencjeZBazy.get(i));
         	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
         	tabHost.addTab(firstTabSpec);
         }
@@ -290,11 +382,21 @@ public class Chat extends TabActivity{
 			//to nazwe zakladki bedzie mozna uzyska poprzez odwolanie sie do konkretnego ID (R.id...)
 			//RelativeLayout layoutTaba = (RelativeLayout)tabHost.getTabWidget().getChildAt(i);			
 			//TextView textViewWLayoutcieTaba = (TextView)layoutTaba.getChildAt(1);
+			
 			TextView textViewWLayoutcieTaba = (TextView)tabHost.getTabWidget().getChildAt(i).findViewById(android.R.id.title);
-        	//tabs += textViewWLayoutcieTaba.getText()+"~";
-			String headerText = textViewWLayoutcieTaba.getText().toString();
-			if(!headerText.equals(""))
-				tabs += headerText+"~";
+			String labelTaba = textViewWLayoutcieTaba.getText().toString();
+			//String tagText = (String)tabHost.getTabWidget().getChildAt(i).getTag();
+			tabHost.setCurrentTab(i);
+			String tagText = tabHost.getCurrentTabTag();
+			//String headerText = textViewWLayoutcieTaba.getText().toString();
+			//jesli label taba jest pustym stringiem, to ta zakladka zostala zamknieta
+			//wiec nie chcemy, zeby sie otworzyla przy nastepnym wejsciu do rozmow
+			//if(!headerText.equals(""))
+			//if(!tagText.equals(""))			
+			if(!labelTaba.equals(""))
+				//tabs += headerText+"~";
+				tabs += tagText+"~";
+			
         	//tabHost.setCurrentTab(i);
         	//tabs += tabHost.getCurrentTabTag()+"~";                
         }
@@ -399,6 +501,8 @@ public class Chat extends TabActivity{
 	                			if(numerIndex.indexOf(wiadomoscOd) != -1)
 	                				showNameGG = numerShowName.get(numerIndex.indexOf(wiadomoscOd));
 	                			header = showNameGG+"-"+wiadomoscOd;
+	                			
+	                			firstTabSpec = tabHost.newTabSpec(header);
                 			}
                 			//wiadomosc konferencyjna
                 			else
@@ -414,11 +518,14 @@ public class Chat extends TabActivity{
 		                			//wyciecie ostatniego srednika
                 				}
 	                			header = header.substring(0, header.length()-1);
+	                			
+	                			firstTabSpec = tabHost.newTabSpec(konferenci);
                 			}
-                			firstTabSpec = tabHost.newTabSpec(header);
+                			//firstTabSpec = tabHost.newTabSpec(header);
     		        		//tescik
     			            Intent nowyTab = new Intent(getApplicationContext(),Tab.class);
     			            nowyTab.putExtra("ggnumber", wiadomoscOd);
+    			            nowyTab.putExtra("mojNumer", mojNumer);
     			            if(konferenciGG != null)
                 			{
     			            	nowyTab.putStringArrayListExtra("konferenciGG", konferenciGG);
@@ -431,7 +538,10 @@ public class Chat extends TabActivity{
     		            	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
     		            	tabHost.addTab(firstTabSpec);
     		            	int aktualnaZakladka = tabHost.getCurrentTab();
-    		            	tabHost.setCurrentTabByTag(header);
+    		            	if(konferenciGG == null)
+    		            		tabHost.setCurrentTabByTag(header);
+    		            	else
+    		            		tabHost.setCurrentTabByTag(konferenci);
     		            	tabHost.setCurrentTab(aktualnaZakladka);
                 		}
 	                	Long idSQL = odebrany.getLong("idSQL");
