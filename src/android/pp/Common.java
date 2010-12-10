@@ -32,6 +32,7 @@ public class Common {
     static final int GG_LOGIN_OK80 = 0x0035;
     static final int GG_LOGIN_FAILED = 0x0009;
     static final int GG_RECV_MSG80 = 0x002e;
+    static final int GG_STATUS80 = 0x0036;
     static final int GG_NOTIFY_REPLY80 = 0x0037;
     /**
      * CONTACT TYPES
@@ -88,4 +89,5 @@ public class Common {
    static final int CLIENT_IGNORE_CONTACT = 12;
    static final int CLIENT_UNIGNORE_CONTACT = 13;
    static final int CLIENT_GET_STATUSES = 14;
+   static final int CLIENT_SET_STATUSES = 15;
 }

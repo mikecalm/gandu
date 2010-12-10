@@ -1,7 +1,6 @@
 package android.pp;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +11,6 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.app.AlertDialog;
-import android.app.Application;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
 import android.content.ComponentName;
@@ -22,13 +20,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.text.Editable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -36,18 +32,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
-import android.view.View.OnCreateContextMenuListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 public class ContactBook extends ExpandableListActivity{
 
@@ -1078,19 +1071,24 @@ public class ContactBook extends ExpandableListActivity{
         @Override
         public void handleMessage(Message msg) {
         	//Log.i("ContactBook","Odebralem"+msg.what);
+        	Bundle odebrany ;
             switch (msg.what) {
                 case Common.FLAG_ACTIVITY_REGISTER:
                 	Log.i("Zarejestrowano ContactBook","Received: "+msg.what);
                 	//wyslanie do serwisu wiadomosci, ze pobierana jest lista kontaktow
                 	break;
                 case Common.FLAG_CONTACTBOOK:
-                	Bundle odebrany = msg.getData();
+                	odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
                 	prepareContactBook(gglista);
                 	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
                 	for(int parent=0; parent<groupsExpandableList.size(); parent++)
         				getExpandableListView().expandGroup(parent);
                 	break;
+                case Common.CLIENT_SET_STATUSES:
+                	odebrany = msg.getData();
+                	updateSD(odebrany.getInt("ggnumber"), odebrany.getInt("status"), odebrany.getString("description"));
+                	//TODO dodac do listy
                 default:
                     super.handleMessage(msg);
             }
@@ -1200,5 +1198,23 @@ public class ContactBook extends ExpandableListActivity{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    }
+    public void updateSD(int ggnumber, int status , String description) //aktualizuje status, opis kontaktu na liscie kontaktow
+    {
+    	for (int i =0 ; i<=(this.contactsExpandableList.size()-1); i++)
+    	{
+    		for (int j =0; j<=(this.contactsExpandableList.get(i).size()-1); j++)
+    		{
+    			int z = Integer.parseInt(this.contactsExpandableList.get(i).get(j).GGNumber) ;
+    			if (z == (ggnumber))
+    			{
+	    			this.contactsExpandableList.get(i).get(j).description = description;
+	    			this.contactsExpandableList.get(i).get(j).status = status;
+    			}
+    			
+    		}
+    
+    	}
+    	mAdapter.notifyDataSetChanged();
     }
 }
