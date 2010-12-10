@@ -63,8 +63,8 @@ import android.widget.TextView;
 	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);
 	            ((TextView)convertView.findViewById(R.id.username)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).showName);
 	            ((TextView)convertView.findViewById(R.id.description)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).description);
-	            if(((ViewableContacts)(getChild(groupPosition, childPosition))).showName.equals("Blip.pl"))
-	            	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
+	            //if(((ViewableContacts)(getChild(groupPosition, childPosition))).showName.equals("Blip.pl"))
+	            //	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
             
             return convertView;
         }

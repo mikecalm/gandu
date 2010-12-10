@@ -917,35 +917,38 @@ public class GanduService extends Service {
 							{
 								Log.i("GanduService",""+pobraneBajty+" "+description_size + " "+ in.available());
 								while (tmp!=description_size)
-								tmp+=in.read(bufor, tmp , description_size-tmp); 
+									tmp+=in.read(bufor, tmp , description_size-tmp); 
 								pobraneBajty+=bufor.length;
 								description = new String(bufor,"UTF-8");
-								Log.i("GanduService",""+description+" PobraneBajty: "+pobraneBajty);
-								try
-								{
-									Message msg3 = Message.obtain(null, Common.CLIENT_SET_STATUSES, 0 ,0 );
-									wysylany = new Bundle();
-									wysylany.putString("description", description);
-									wysylany.putInt("ggnumber", uin);
-									wysylany.putInt("status", status);
-									msg3.setData(wysylany);
-									for(int i=0; i<mClients.size(); i++)
-				                    {
-				                    	try
-				                    	{
-				                    		mClients.get(i).send(msg3);
-				                    	}catch(Exception e)
-				                    	{
-				                    		Log.e("GanduService", ""+e.getMessage());
-				                    	}
-				                    }
-								}
-								catch(Exception e)
-								{
-									;
-								}
-								
 							}
+							else
+								description = "";
+							Log.i("GanduService",""+description+" PobraneBajty: "+pobraneBajty);
+							try
+							{
+								Message msg3 = Message.obtain(null, Common.CLIENT_SET_STATUSES, 0 ,0 );
+								wysylany = new Bundle();
+								wysylany.putString("description", description);
+								wysylany.putInt("ggnumber", uin);
+								wysylany.putInt("status", status);
+								msg3.setData(wysylany);
+								for(int i=0; i<mClients.size(); i++)
+			                    {
+			                    	try
+			                    	{
+			                    		mClients.get(i).send(msg3);
+			                    	}catch(Exception e)
+			                    	{
+			                    		Log.e("GanduService", ""+e.getMessage());
+			                    	}
+			                    }
+							}
+							catch(Exception e)
+							{
+								;
+							}
+								
+							//}
 							
 						}
 							//pobraneBajty += in.read(smiec, pobraneBajty, dlugosc-pobraneBajty);
