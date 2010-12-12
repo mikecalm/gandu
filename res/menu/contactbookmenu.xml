@@ -2,6 +2,7 @@
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
 
+<item android:title="Przejdź do rozmów" android:id="@+id/GoToConversations05"></item>
 <item android:title="Import" android:id="@+id/Import01"></item>
 <item android:title="Export" android:id="@+id/Export03"></item>
 <item android:title="Dodaj kontakt" android:id="@+id/AddContact04"></item>
