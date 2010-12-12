@@ -278,9 +278,13 @@ public class Tab extends Activity{
 				//if(tabHost.getTabWidget().getChildCount() > 1)
 				//{
 					int indeksZamykanej = tabHost.getCurrentTab();
-					tabActiv.hiddenTabs.add(ggnumber);
+					if(konferenciGG == null)
+						tabActiv.hiddenTabs.add(ggnumber);
+					else
+						tabActiv.hiddenTabs.add(konferenciWBazie);
 					tabHost.getCurrentTabView().setVisibility(View.GONE);					
 					TextView asd = (TextView)tabHost.getTabWidget().getChildAt(tabHost.getCurrentTab()).findViewById(android.R.id.title);
+					tabActiv.savedTabs.remove(asd.getText());
 					asd.setText("");
 					//finish();
 					onStop();
@@ -301,10 +305,11 @@ public class Tab extends Activity{
 						//finish();
 					else
 					{
-						if(indeksZamykanej != 0)
+						/*if(indeksZamykanej != 0)
 							tabHost.setCurrentTab(0);
 						else
-							tabHost.setCurrentTab(1);
+							tabHost.setCurrentTab(1);*/
+						tabHost.setCurrentTabByTag(tabActiv.savedTabs.get(0));
 					}
 				//}
 				//else

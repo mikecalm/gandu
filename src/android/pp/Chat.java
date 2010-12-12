@@ -53,6 +53,7 @@ public class Chat extends TabActivity{
     ArchiveSQLite archiveSQL;
     public ArrayList<String> hiddenTabs;
     public ArrayList<String> openedTabs;
+    public ArrayList<String> savedTabs;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		
@@ -87,6 +88,7 @@ public class Chat extends TabActivity{
 		numerIndex = new ArrayList<String>();
 		hiddenTabs = new ArrayList<String>();
 		openedTabs = new ArrayList<String>();
+		savedTabs = new ArrayList<String>();
     	
 }
 
@@ -124,7 +126,8 @@ public class Chat extends TabActivity{
 		    		ggNumbers.remove(numerGGZKtoregoOtworzonoOknoZRozmowa);
 		    		
 		    		String tabHeader = b.getString("username") + "-" + b.getString("ggnumber");
-		            firstTabSpec = tabHost.newTabSpec(tabHeader);        
+		            firstTabSpec = tabHost.newTabSpec(tabHeader); 
+		            savedTabs.add(tabHeader);
 		            /** TabSpec setIndicator() is used to set name for the tab. */
 		            /** TabSpec setContent() is used to set content for a particular tab. */
 		           
@@ -168,6 +171,7 @@ public class Chat extends TabActivity{
 			            if(numerGGZKtoregoOtworzonoOknoZRozmowa.equals("") || !s.equals(numerGGZKtoregoOtworzonoOknoZRozmowa))
 			            {	
 			        		firstTabSpec = tabHost.newTabSpec(s);
+			        		savedTabs.add(s);
 			        		//tescik
 				            Intent nowyTab = new Intent(this,Tab.class);
 				            nowyTab.putExtra("mojNumer", this.mojNumer);
@@ -210,6 +214,7 @@ public class Chat extends TabActivity{
 			            	ggNumbers.remove(ggNum);
 			            	
 			        		firstTabSpec = tabHost.newTabSpec(s);
+			        		savedTabs.add(s);
 			        		//tescik
 				            Intent nowyTab = new Intent(this,Tab.class);
 				            nowyTab.putExtra("ggnumber", ggNum);
@@ -254,6 +259,7 @@ public class Chat extends TabActivity{
         	}*/
         	String header = showNameGG+"-"+numerGGKontaktu;
         	firstTabSpec = tabHost.newTabSpec(header);
+        	savedTabs.add(header);
     		//tescik
             Intent nowyTab = new Intent(this,Tab.class);
             nowyTab.putExtra("ggnumber", numerGGKontaktu);
@@ -275,6 +281,7 @@ public class Chat extends TabActivity{
         for(int i=0; i<konferencjeZBazy.size(); i++)
         {
         	firstTabSpec = tabHost.newTabSpec(konferencjeZBazy.get(i));
+        	savedTabs.add(konferencjeZBazy.get(i));
     		//tescik
             Intent nowyTab = new Intent(this,Tab.class);
             nowyTab.putExtra("mojNumer", this.mojNumer);
@@ -374,7 +381,7 @@ public class Chat extends TabActivity{
 		super.onDestroy();
 		String tabs = "";		
         //for (int i =0 ; i<tabHost.getChildCount() ; i++)
-		for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
+		/*for (int i =0 ; i<tabHost.getTabWidget().getChildCount() ; i++)
         {
 			//do nazwy konkretnetnej zakladki dokopalem sie podgladajac w debugu
 			//w jakim polu zapisana jest nazwa zakladki.
@@ -399,7 +406,9 @@ public class Chat extends TabActivity{
 			
         	//tabHost.setCurrentTab(i);
         	//tabs += tabHost.getCurrentTabTag()+"~";                
-        }
+        }*/
+		for(int i=0; i<savedTabs.size(); i++)
+			tabs += savedTabs.get(i)+"~";
         Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_SHORT).show();
         editor.putString("text", tabs);
         editor.commit();
@@ -503,6 +512,7 @@ public class Chat extends TabActivity{
 	                			header = showNameGG+"-"+wiadomoscOd;
 	                			
 	                			firstTabSpec = tabHost.newTabSpec(header);
+	                			savedTabs.add(header);
                 			}
                 			//wiadomosc konferencyjna
                 			else
@@ -520,6 +530,7 @@ public class Chat extends TabActivity{
 	                			header = header.substring(0, header.length()-1);
 	                			
 	                			firstTabSpec = tabHost.newTabSpec(konferenci);
+	                			savedTabs.add(konferenci);
                 			}
                 			//firstTabSpec = tabHost.newTabSpec(header);
     		        		//tescik
