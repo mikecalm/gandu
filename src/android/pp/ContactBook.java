@@ -800,6 +800,44 @@ public class ContactBook extends ExpandableListActivity{
 				nowy.AB5Groups = scg;
 				addContactToContactBook(nowy);*/
 			 	break;
+			case R.id.GoToConversations05:
+				Intent intent1 = new Intent(this.getApplicationContext(), Chat.class);
+				intent1.putExtra("mojNumer", this.mojNumer);
+				//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
+				
+
+				if(contactBookFull != null)
+				{
+					if(contactBookFull.A2Contactsy != null)
+					{
+						if(contactBookFull.A2Contactsy.Contacts != null)
+						{
+							ArrayList<String> numerIndex = new ArrayList<String>();
+							ArrayList<String> numerShowName = new ArrayList<String>();
+							//HashMap<String, String> numerShowName = new HashMap<String, String>();
+							for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
+							{
+								//numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName+"-"+contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+								numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
+								numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+								//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
+							}
+							intent1.putStringArrayListExtra("ShowNameGGNumber", numerShowName);
+							intent1.putStringArrayListExtra("indexGGNumber", numerIndex);
+							//intent.putExtra("ShowNameGGNumber", numerShowName);
+						}
+					}
+				}
+				
+				try
+				{
+					startActivity(intent1);
+				}
+				catch(Exception e)
+				{
+					Log.i("ContactBook",""+e.getMessage());
+				}
+				break;
 			//Moreitemsgohere(ifany)...
 		}
 		return false;

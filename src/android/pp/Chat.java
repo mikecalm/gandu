@@ -310,6 +310,16 @@ public class Chat extends TabActivity{
         	//firstTabSpec.setIndicator(s).setContent(new Intent(this,Tab.class));
         	tabHost.addTab(firstTabSpec);
         }
+        
+        //jesli nie otworzona zadnej zakladki, to zakoncz.
+        //taka sytuacja moze wystapic jesli ktos z listy kontaktow
+        //wybierze "przejdz do rozmow" a w bazie, ani w preferencjach
+        //nie bedzie zadnych rozmow do otworzenia.
+        if(tabHost.getTabWidget().getChildCount() == 0)
+        {
+        	Toast.makeText(getApplicationContext(), "Nie prowadzisz zadnej rozmowy", Toast.LENGTH_SHORT).show();
+        	finish();
+        }
         	
         //ustawienie kazdej karty po koleji jako aktualnie uzywanej
         //spowoduje wywolanie metody onCreate kazdej z otwartych zakladek.
@@ -409,7 +419,8 @@ public class Chat extends TabActivity{
         }*/
 		for(int i=0; i<savedTabs.size(); i++)
 			tabs += savedTabs.get(i)+"~";
-        Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_SHORT).show();
+		if(!tabs.equals(""))
+			Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_LONG).show();
         editor.putString("text", tabs);
         editor.commit();
 		tabHost.clearAllTabs();
