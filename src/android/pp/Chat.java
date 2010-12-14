@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import android.app.Activity;
+import android.app.NotificationManager;
 import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -54,10 +56,29 @@ public class Chat extends TabActivity{
     public ArrayList<String> hiddenTabs;
     public ArrayList<String> openedTabs;
     public ArrayList<String> savedTabs;
+    public HashMap<Integer, Long> hiddenTabsLastMessage;
+    public NotificationManager mNM;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
+		/*Bundle b = this.getIntent().getExtras();
+		if(b != null)
+        {
+	    	if(!b.isEmpty())
+	    	{
+	    		if(b.containsKey("restart"))
+	    		{
+	    			Intent  intent = new Intent(this.getApplicationContext(), ChatRestarter.class);
+	    			startActivity(intent);
+	    			this.finish();
+	    		}
+	    	}
+        }*/
+        /*if(this.getInstanceCount() > 1)
+        {
+        	restart();
+        }*/
 		setContentView(R.layout.chat);	
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
@@ -86,9 +107,11 @@ public class Chat extends TabActivity{
 		//numerShowName = new HashMap<String, String>();
 		numerShowName = new ArrayList<String>();
 		numerIndex = new ArrayList<String>();
-		hiddenTabs = new ArrayList<String>();
-		openedTabs = new ArrayList<String>();
-		savedTabs = new ArrayList<String>();
+		//hiddenTabs = new ArrayList<String>();
+		//openedTabs = new ArrayList<String>();
+		//savedTabs = new ArrayList<String>();
+		//hiddenTabsLastMessage = new HashMap<Integer, Long>();
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
     	
 }
 
@@ -96,6 +119,13 @@ public class Chat extends TabActivity{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		mNM.cancelAll();
+
+		hiddenTabs = new ArrayList<String>();
+		openedTabs = new ArrayList<String>();
+		savedTabs = new ArrayList<String>();
+		hiddenTabsLastMessage = new HashMap<Integer, Long>();
+		
 		//Toast.makeText(getApplicationContext(), "onResume()", Toast.LENGTH_SHORT).show();
         String odz = prefs.getString("text", null);
         String numerGGZKtoregoOtworzonoOknoZRozmowa = "";
@@ -372,12 +402,18 @@ public class Chat extends TabActivity{
             // it, then now is the time to unregister.
             if (mService != null) {
                 try {
+                	//if(ContactBook.getInstanceCount() < 1)
+                	//{
+                		Message msgContactBookOut = Message.obtain(null,
+                        		Common.CLIENT_CONTACTBOOK_OUT);
+                        mService.send(msgContactBookOut);
+                	//}
                     Message msg = Message.obtain(null,
                     		Common.CLIENT_UNREGISTER);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
-                  
                 } catch (RemoteException e) {
+                	Log.e("[Chat]OnDestroy", "Error: "+e.getMessage());
                     // There is nothing special we need to do if the service
                     // has crashed.
                 }
@@ -423,7 +459,14 @@ public class Chat extends TabActivity{
 			Toast.makeText(getApplicationContext(), tabs, Toast.LENGTH_LONG).show();
         editor.putString("text", tabs);
         editor.commit();
-		tabHost.clearAllTabs();
+        try
+        {
+        	tabHost.clearAllTabs();
+        }catch(Exception excCAT)
+        {
+        	Log.e("[Chat]OnDestroy", "Error: "+excCAT.getMessage());
+        }
+		Log.e("[Chat]OnDestroy", "linia 462.");
 		//Toast.makeText(getApplicationContext(), "onDestroy()", Toast.LENGTH_SHORT).show();
 	}
 
@@ -492,10 +535,12 @@ public class Chat extends TabActivity{
                 	String przyszlaO = odebrany.getString("przyszlaO");
                 	String konferenci = odebrany.getString("konferenci");
                 	ArrayList<String> konferenciGG = odebrany.getStringArrayList("konferenciGG");
+                	Long idSQL = odebrany.getLong("idSQL");
                 	String tytulTaba = wiadomoscOd;
                 	if(konferenci != null)
                 		tytulTaba=konferenci;
 
+                	Long idMsgLastNotification = null;
                 	//if(!hiddenTabs.contains(wiadomoscOd) && openedTabs.contains(wiadomoscOd))
                 	
                 	//jesli wiadomosc zostala przyslana przez osobe, ktorej
@@ -566,14 +611,21 @@ public class Chat extends TabActivity{
     		            		tabHost.setCurrentTabByTag(konferenci);
     		            	tabHost.setCurrentTab(aktualnaZakladka);
                 		}
-	                	Long idSQL = odebrany.getLong("idSQL");
+	                	//Long idSQL = odebrany.getLong("idSQL");
 	                	Log.i("[Chat]START SQL","oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
 						int liczbaZmienionychWierszy = archiveSQL.setMessageAsRead(idSQL);
 						Cursor wynikSQL = archiveSQL.readMessage(idSQL);
 						archiveSQL.showMessage(wynikSQL);
 						Log.i("[Chat]KONIEC SQL","L. zmienionych: "+liczbaZmienionychWierszy+". Oznaczenie wiadomosci"+idSQL+" jako przeczytanej.");
+
+                		idMsgLastNotification = idSQL;
                 	}
-                	    	
+                	else
+						//idMsgLastNotification = hiddenTabsLastMessage.put(Integer.parseInt(wiadomoscOd), idSQL);
+                		idMsgLastNotification = idSQL;
+                		
+            		if(idMsgLastNotification != null)
+            			mNM.cancel(Integer.parseInt(idMsgLastNotification.toString()));
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
                 	Log.i("[Chat]Odebralem wiadomosc od Serwisu", tresc);
@@ -585,6 +637,14 @@ public class Chat extends TabActivity{
             }
         }
     }
+    
+    /*public void restart()
+    {
+		Intent  intent = this.getIntent();
+		finish();
+		startActivity(intent);
+    }*/
+
 
 	/**
      * Target we publish for clients to send messages to IncomingHandler.

@@ -333,13 +333,19 @@ public class GanduService extends Service {
                 	
                 	if(inicjujLogowanie(ggnum))
                 	{
-                		showNotification("Zalogowany "+ggnum);
+                		//showNotification("Zalogowany "+ggnum);
+                		showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
+                        		GanduClient.class, -1);
+                		mNM.cancel(-1);
                 	}
                 	break;
                 case Common.CLIENT_GET_CONTACTBOOK:
                 	if(getContactbook())
                 	{
-                		showNotification("Pobieram liste kontaktow...");
+                		//showNotification("Pobieram liste kontaktow...");
+                		showNotification("Lista kontaktow", "Gandu", "Pobieram liste kontaktow...", R.drawable.icon, 
+                				GanduClient.class, -1);
+                		mNM.cancel(-1);
                 	}
                 	Log.i("GanduService","Pobieram liste kontaktow");
                 	
@@ -364,7 +370,10 @@ public class GanduService extends Service {
                 	String XMLList = odebranyXMLList.getString("listaGG");
                 	if(setContactbook(XMLList))
                 	{
-                		showNotification("Wysylam liste kontaktow...");
+                		//showNotification("Wysylam liste kontaktow...");
+                		showNotification("Lista kontaktow", "Gandu", "Wysylam liste kontaktow...", R.drawable.icon, 
+                				GanduClient.class, -1);
+                		mNM.cancel(-1);
                 	}
                 	Log.i("GanduService","Wyslalem liste kontaktow");
                 	
@@ -586,6 +595,13 @@ public class GanduService extends Service {
 						Log.e("GanduService", "Sending new contact info Failed!");
 					}
                 	break;
+                case Common.CLIENT_CONTACTBOOK_OUT:
+                	if(connected)
+                	{
+	                	showNotification("", "Gandu", "Gandu", R.drawable.icon, 
+	                    		ContactBook.class, -1);
+                	}
+                	break;
                 default:
                     super.handleMessage(msg);
             }
@@ -604,7 +620,10 @@ public class GanduService extends Service {
     	mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         // Display a notification about us starting.
-        showNotification("Witaj w Gandu");
+        //showNotification("Witaj w Gandu");
+    	showNotification("Witaj w Gandu", "Gandu", "Witaj w Gandu", R.drawable.icon, 
+        		GanduClient.class, -1);
+    	mNM.cancel(-1);
         
         archiveSQL = new ArchiveSQLite(this.getApplicationContext());
     }
@@ -639,33 +658,48 @@ public class GanduService extends Service {
     /**
      * Show a notification while this service is running.
      */
-    private void showNotification(String wiadomosc) {
+    private void showNotification(String wiadomosc, String tytul, String przeplywajacaWiadomosc, int ikona, 
+    		Class<?> uruchamianaAktywnosc, int idWiadomosci) {
+    //private void showNotification(String wiadomosc) {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         //CharSequence text = getText(R.string.remote_service_started);
-    	CharSequence text = "Gandu";
+    	//CharSequence tytul = "Gandu";
 
         // Set the icon, scrolling text and timestamp
         //Notification notification = new Notification(R.drawable.stat_sample, text,
         //        System.currentTimeMillis());
-    	Notification notification = new Notification(R.drawable.icon, wiadomosc,
+    	//Notification notification = new Notification(R.drawable.icon, wiadomosc,
+    	//Notification notification = new Notification(R.drawable.icon, "latajaca tresc",
+    		//	System.currentTimeMillis());
+    	Notification notification = new Notification(ikona, przeplywajacaWiadomosc,
     			System.currentTimeMillis());
 
         // The PendingIntent to launch our activity if the user selects this notification
-    	Intent intent = new Intent(this, GanduClient.class);
+    	//Intent intent = new Intent(this, GanduClient.class);
+    	Intent intent = new Intent(this, uruchamianaAktywnosc);
+    	//if(idWiadomosci != -1)
+    	//	intent.putExtra("restart", true);
     	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         //PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
           //      new Intent(this, GanduClient.class), 0);
     	PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
     			intent, 0);
+    			//intent, (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP));
 
         // Set the info for the views that show in the notification panel.
         //notification.setLatestEventInfo(this, getText(R.string.remote_service_label),
-        notification.setLatestEventInfo(this, wiadomosc, text, contentIntent);
+        //notification.setLatestEventInfo(this, wiadomosc, text, contentIntent);
+    	//notification.setLatestEventInfo(this, tytul, wiadomosc, contentIntent);
+    	notification.setLatestEventInfo(this, tytul, wiadomosc, contentIntent);
 
         // Send the notification.
         // We use a string id because it is a unique number.  We use it later to cancel.
         //mNM.notify(R.string.remote_service_started, notification);
-        mNM.notify(111, notification);
+        //mNM.notify(111, notification);
+    	if(idWiadomosci != -1)
+    		mNM.notify(idWiadomosci, notification);
+    	else
+    		mNM.notify(-1, notification);
     }
     
     //watek odbierajacy wiadomosci od serwera GG
@@ -868,6 +902,15 @@ public class GanduService extends Service {
 								+ dlugoscWiadomosci);
 						wysylany = new Bundle();
 						wysylany.putByteArray("tresc",tresc);*/
+
+						//START show notification
+						if(konferenci.size() == 0)
+							showNotification(tresc, ""+sender, ""+sender+": "+tresc, R.drawable.icon, 
+	                        		Chat.class, Integer.parseInt(""+idWiadomosci));
+						else
+							showNotification(tresc, ""+sender, "[Konferencja]"+sender+": "+tresc, R.drawable.icon, 
+	                        		Chat.class, Integer.parseInt(""+idWiadomosci));
+						//KONIEC show notification
 						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
 						message_recived.setData(wysylany);
 						for(int i=0; i<mClients.size(); i++)
@@ -880,7 +923,7 @@ public class GanduService extends Service {
 	                    		Log.e("GanduService", ""+e.getMessage());
 	                    	}
 	                    }
-						
+						mNM.cancel(-1);
 						break;
 					case Common.GG_STATUS80:
 					case Common.GG_NOTIFY_REPLY80:
@@ -980,6 +1023,9 @@ public class GanduService extends Service {
 					out.close();
 				if(socket != null)
 					socket.close();
+				mNM.cancel(-1);
+				showNotification("Serwer zerwal polaczenie", "Gandu", "Serwer zerwal polaczenie", R.drawable.icon, 
+                		GanduClient.class, -1);
 			} 
 			catch (IOException e) 
 			{
