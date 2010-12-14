@@ -1,6 +1,7 @@
 package android.pp;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -38,11 +39,16 @@ public class GanduClient extends Activity {
 	private EditText ggNumberEdit;
 	private EditText ggPasswordEdit;
 	String mojNumer = "";
+	
+	public NotificationManager mNM;
 	// ------------------> OnCreate()
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		mNM.cancel(-1);
 
 		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
 		//ggNumberEdit.setText("23543809");

@@ -13,6 +13,7 @@ import org.simpleframework.xml.core.Persister;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -61,6 +62,8 @@ public class ContactBook extends ExpandableListActivity{
 	public GetStatuses gs = new GetStatuses();
 	
 	AlertDialog alertDialog;
+	
+	public NotificationManager mNM;
 
 	//Adapter utrzymujacy dane z listy kontaktow
 	MyExpandableListAdapter mAdapter;
@@ -72,6 +75,8 @@ public class ContactBook extends ExpandableListActivity{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		mNM.cancel(-1);
 		Bundle b = this.getIntent().getExtras();
 		if(b != null)
 		{
@@ -152,6 +157,13 @@ public class ContactBook extends ExpandableListActivity{
 	}
 	
 	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		//mNM.cancel(-1);
+		super.onResume();
+	}
+	
+	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		if (mIsBound) {
@@ -159,6 +171,10 @@ public class ContactBook extends ExpandableListActivity{
             // it, then now is the time to unregister.
             if (mService != null) {
                 try {
+                    Message msgContactBookOut = Message.obtain(null,
+                    		Common.CLIENT_CONTACTBOOK_OUT);
+                    mService.send(msgContactBookOut);
+                	
                     Message msg = Message.obtain(null,
                     		Common.CLIENT_UNREGISTER);
                     msg.replyTo = mMessenger;
@@ -975,7 +991,8 @@ public class ContactBook extends ExpandableListActivity{
 		
 		try
 		{
-			startActivity(intent);
+			//startActivity(intent);
+			startActivityForResult(intent,999);
 		}
 		catch(Exception e)
 		{
