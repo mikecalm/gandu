@@ -12,6 +12,7 @@ public class ViewableContacts implements Comparable{
 	//Poki co jest String jako np URL do avatara
 	public String avatar;
 	public int status;
+	public Boolean blocked = false;
 	
 	@Override
 	public int compareTo(Object another) {

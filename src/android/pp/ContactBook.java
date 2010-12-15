@@ -639,6 +639,7 @@ public class ContactBook extends ExpandableListActivity{
 					{
 						SIMPLEContact wyszukiwanyKontakt = new SIMPLEContact();
 		        		wyszukiwanyKontakt.AA3ShowName = pobrany.showName;
+		        		pobrany.blocked = true;
 		        		int indeksKontaktu = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, wyszukiwanyKontakt, null);
 		        		SIMPLEContact kopiaKontaktu = this.contactBookFull.A2Contactsy.Contacts.get(indeksKontaktu);
 		        		kopiaKontaktu.AC3FlagIgnored = true;
@@ -680,6 +681,7 @@ public class ContactBook extends ExpandableListActivity{
 					{
 						SIMPLEContact wyszukiwanyKontakt = new SIMPLEContact();
 		        		wyszukiwanyKontakt.AA3ShowName = pobrany.showName;
+		        		pobrany.blocked = false;
 		        		int indeksKontaktu = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, wyszukiwanyKontakt, null);
 		        		SIMPLEContact kopiaKontaktu = this.contactBookFull.A2Contactsy.Contacts.get(indeksKontaktu);
 		        		kopiaKontaktu.AC3FlagIgnored = null;
@@ -1121,6 +1123,8 @@ public class ContactBook extends ExpandableListActivity{
 					dodawany.HomePhone = gcl.A2Contactsy.Contacts.get(i).AA5HomePhone;
 				if(gcl.A2Contactsy.Contacts.get(i).AA6Email != null)
 					dodawany.Email = gcl.A2Contactsy.Contacts.get(i).AA6Email;
+				if(gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored != null)
+					dodawany.blocked = gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored;				
 				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;
 				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);
 			}

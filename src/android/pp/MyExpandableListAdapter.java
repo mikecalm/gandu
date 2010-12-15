@@ -65,29 +65,34 @@ import android.widget.TextView;
 	            ((TextView)convertView.findViewById(R.id.description)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).description);
 	            //if(((ViewableContacts)(getChild(groupPosition, childPosition))).showName.equals("Blip.pl"))
 	            //	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
-	            switch(((ViewableContacts)(getChild(groupPosition, childPosition))).status)
+	            if(((ViewableContacts)(getChild(groupPosition, childPosition))).blocked)
+	            	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.blocked);
+	            else
 	            {
-	            	case Common.GG_STATUS_AVAIL:
-	            	case Common.GG_STATUS_AVAIL_DESCR:
-	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.available);
-	            		break;
-	            	case Common.GG_STATUS_INVISIBLE:
-	            	case Common.GG_STATUS_INVISIBLE_DESCR:
-	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.offline);
-	            		break;
-	            	case Common.GG_STATUS_NOT_AVAIL:
-	            	case Common.GG_STATUS_NOT_AVAIL_DESCR:
-	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
-	            		break;
-	            	case Common.GG_STATUS_BUSY:
-	            	case Common.GG_STATUS_BUSY_DESCR:
-	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.away);
-	            		break;
-	            	case Common.GG_STATUS_BLOCKED:
-	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.blocked);
-	            		break;
-	            	default:
-	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
+		            switch(((ViewableContacts)(getChild(groupPosition, childPosition))).status)
+		            {
+		            	case Common.GG_STATUS_AVAIL:
+		            	case Common.GG_STATUS_AVAIL_DESCR:
+		            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.available);
+		            		break;
+		            	case Common.GG_STATUS_INVISIBLE:
+		            	case Common.GG_STATUS_INVISIBLE_DESCR:
+		            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.offline);
+		            		break;
+		            	case Common.GG_STATUS_NOT_AVAIL:
+		            	case Common.GG_STATUS_NOT_AVAIL_DESCR:
+		            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
+		            		break;
+		            	case Common.GG_STATUS_BUSY:
+		            	case Common.GG_STATUS_BUSY_DESCR:
+		            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.away);
+		            		break;
+		            	case Common.GG_STATUS_BLOCKED:
+		            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.blocked);
+		            		break;
+		            	default:
+		            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
+		            }
 	            }
 	            //if(((ViewableContacts)(getChild(groupPosition, childPosition))).showName.equals("Blip.pl"))
 		            //	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
