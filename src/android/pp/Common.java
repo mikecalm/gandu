@@ -24,6 +24,9 @@ public class Common {
     static final int GG_STATUS_NOT_AVAIL_DESCR = 0x0015;
     static final int GG_STATUS_INVISIBLE = 0x0014;
     static final int GG_STATUS_INVISIBLE_DESCR = 0x0016;
+    static final int GG_STATUS_BUSY = 0x0003;
+    static final int GG_STATUS_BUSY_DESCR = 0x0005;
+    static final int GG_STATUS_BLOCKED = 0x0006;
     /**
      * REPLIES FROM SERVER GG
     */
