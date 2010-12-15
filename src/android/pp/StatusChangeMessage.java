@@ -48,6 +48,8 @@ public class StatusChangeMessage {
 					this.status = Integer.reverseBytes(Common.GG_STATUS_NOT_AVAIL_DESCR);
 				else if(stat.equals("Dostepny"))
 					this.status = Integer.reverseBytes(Common.GG_STATUS_AVAIL_DESCR);
+				else if(stat.equals("Zaraz wracam"))
+					this.status = Integer.reverseBytes(Common.GG_STATUS_BUSY_DESCR);
 			}
 			else
 			{
@@ -58,6 +60,8 @@ public class StatusChangeMessage {
 					this.status = Integer.reverseBytes(Common.GG_STATUS_NOT_AVAIL);
 				else if(stat.equals("Dostepny"))
 					this.status = Integer.reverseBytes(Common.GG_STATUS_AVAIL);
+				else if(stat.equals("Zaraz wracam"))
+					this.status = Integer.reverseBytes(Common.GG_STATUS_BUSY);
 			}
 			
 			byte[] resztaPaczki;

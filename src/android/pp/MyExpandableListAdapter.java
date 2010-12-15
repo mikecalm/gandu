@@ -79,6 +79,13 @@ import android.widget.TextView;
 	            	case Common.GG_STATUS_NOT_AVAIL_DESCR:
 	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
 	            		break;
+	            	case Common.GG_STATUS_BUSY:
+	            	case Common.GG_STATUS_BUSY_DESCR:
+	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.away);
+	            		break;
+	            	case Common.GG_STATUS_BLOCKED:
+	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.blocked);
+	            		break;
 	            	default:
 	            		((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
 	            }

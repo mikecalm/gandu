@@ -127,7 +127,7 @@ public class ContactBook extends ExpandableListActivity{
 				if(actionId == EditorInfo.IME_ACTION_DONE)
 				{
 					Message msg2 = Message.obtain(null,Common.CLIENT_CHANGE_STATUS, 0, 0);
-					String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
+					String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny","Zaraz wracam"};
                     Bundle wysylany = new Bundle();
         			wysylany.putString("status", items[ustawionyStatus]);
         			if(statusDescription.getText() != null)
@@ -881,6 +881,11 @@ public class ContactBook extends ExpandableListActivity{
             map.put("ResID", R.drawable.notavailable);
             list.add(map);
             
+            map = new HashMap<String, Object>();
+            map.put("Name", "Zaraz wracam");
+            map.put("ResID", R.drawable.away);
+            list.add(map);
+            
             /*StatusListAdapter adapter = new StatusListAdapter(ContactBook.this, list,
                     R.layout.status_row, new String[]{},
                     new int[] { R.id.statusName, R.id.statusImage });*/
@@ -894,7 +899,7 @@ public class ContactBook extends ExpandableListActivity{
                     public void onClick(DialogInterface dialog, int which) {
             
                         /* User clicked so do some stuff */
-                        String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
+                        String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny","Zaraz wracam"};
                         Message msg2 = Message.obtain(null,Common.CLIENT_CHANGE_STATUS, 0, 0);
                         Bundle wysylany = new Bundle();
             			wysylany.putString("status", items[which]);
@@ -916,6 +921,9 @@ public class ContactBook extends ExpandableListActivity{
         	    					break;
         	    				case 2:
         	    					statusButton.setImageResource(R.drawable.notavailable);
+        	    					break;
+        	    				case 3:
+        	    					statusButton.setImageResource(R.drawable.away);
         	    					break;
         	    			}
         	    		}catch(Exception excMsg)
