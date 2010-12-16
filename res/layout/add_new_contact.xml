@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"  
+  android:orientation="vertical"
+  android:layout_height="wrap_content" 
+  android:layout_width="fill_parent">  
+  <ScrollView   
+   android:id="@+id/NewScrollView" 
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"> 
+
+	<LinearLayout android:id="@+id/NewInsideScroolLayout" 
+	android:orientation="vertical"
+	android:layout_width="fill_parent" 
+	android:layout_height="wrap_content">
+	
+		<EditText 
+		android:id="@+id/NewGGNumber" 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent" 
+		android:singleLine="true" 
+		android:hint="Numer GG" 
+		android:inputType="phone">
+		</EditText>
+		
+		<EditText 
+		android:id="@+id/NewShowName" 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent" 
+		android:singleLine="true" 
+		android:hint="Nazwa kontaktu" 
+		android:inputType="text">
+		</EditText>
+		
+		<ToggleButton 
+		android:id="@+id/NewMoreToggle" 
+		android:layout_height="wrap_content" 
+		android:textOff="Więcej"
+		android:textOn="Mniej" 
+		android:layout_gravity="center_horizontal" android:layout_width="fill_parent">
+		</ToggleButton>		
+		
+		<LinearLayout android:id="@+id/NewWiecejLayout" 
+		android:orientation="vertical"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:visibility="gone">
+		
+			<EditText 
+			android:id="@+id/NewEmail" 
+			android:layout_height="wrap_content" 
+			android:layout_width="fill_parent" 
+			android:singleLine="true" 
+			android:hint="E-mail" 
+			android:inputType="textEmailAddress">
+			</EditText>
+		
+			<EditText 
+			android:id="@+id/NewMobilePhone" 
+			android:layout_height="wrap_content" 
+			android:layout_width="fill_parent" 
+			android:singleLine="true" 
+			android:hint="Tel. komórkowy" 
+			android:inputType="phone">
+			</EditText>
+			
+			<EditText 
+			android:id="@+id/NewHomePhone" 
+			android:layout_height="wrap_content" 
+			android:layout_width="fill_parent" 
+			android:singleLine="true" 
+			android:hint="Tel. stacjonarny" 
+			android:inputType="phone">
+			</EditText>
+			
+			<EditText 
+			android:id="@+id/NewWwwAddress" 
+			android:layout_height="wrap_content" 
+			android:layout_width="fill_parent" 
+			android:singleLine="true" 
+			android:hint="Strona WWW" 
+			android:inputType="textUri">
+			</EditText>		
+		</LinearLayout>
+		
+		<Button 
+		android:text="Dodaj" 
+		android:id="@+id/NewDodajButton" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"></Button>
+	</LinearLayout>
+  </ScrollView>
+
+</LinearLayout>
