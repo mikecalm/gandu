@@ -32,6 +32,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.ConditionVariable;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -56,7 +57,11 @@ public class GanduService extends Service {
     /** Holds last value set by a client. */
     int mValue = 0;
     ArchiveSQLite archiveSQL;
+    //variable which controls the ping thread
+    private ConditionVariable mCondition;
     
+    ArrayList<String> numerShowName;
+    ArrayList<String> numerIndex;    
   
    public Boolean getContactbook()
    {
@@ -254,6 +259,11 @@ public class GanduService extends Service {
 			//uruchom watek odbierajacy komunikaty z serwera GG
 			Thread cThread = new Thread(new ReplyInterpreter());
 			cThread.start();
+			//uruchom watek wysylajacy okresowo wiadomosc PING, 
+			//podtrzymujaca polaczenie z serwerem GG
+			Thread pingingThread = new Thread(null, pingTask, "NotifyingService");
+	        mCondition = new ConditionVariable(false);
+	        pingingThread.start();
     	}
     	catch(Exception excinit)
     	{
@@ -467,6 +477,25 @@ public class GanduService extends Service {
                 case Common.CLIENT_ADD_NEW_CONTACT:
                 	odebrany = msg.getData();
                 	String numerGG = odebrany.getString("numerGG");
+                	String showName = odebrany.getString("showNameGG");
+                	if(numerIndex != null)
+                	{
+                		//sprawdzenie, czy nie ma juz danego numeru na liscie
+                		int miejsce = 0;
+                		if((miejsce = numerIndex.indexOf(numerGG)) != -1)
+                		{
+                			numerIndex.remove(miejsce);
+                			numerShowName.remove(miejsce);
+                			numerShowName.add(showName);
+                			numerIndex.add(numerGG);
+                		}
+                		//jesli nie ma
+                		else
+                		{
+                			numerShowName.add(showName);
+                			numerIndex.add(numerGG);
+                		}
+                	}
                 	Boolean ignorowany = odebrany.getBoolean("ingorowany");
                 	try
                 	{
@@ -602,6 +631,15 @@ public class GanduService extends Service {
 	                    		ContactBook.class, -1);
                 	}
                 	break;
+                case Common.CLIENT_GG_NUM_SHOW_NAME:
+                	odebrany = msg.getData();
+                	if(odebrany.containsKey("ShowNameGGNumber") && odebrany.containsKey("indexGGNumber"))
+    	    		{
+    	    			//numerShowName = (HashMap<String, String>)b.getParcelable("ShowNameGGNumber");
+    	    			numerShowName = odebrany.getStringArrayList("ShowNameGGNumber");
+    	    			numerIndex = odebrany.getStringArrayList("indexGGNumber");
+    	    		}
+                	break;
                 default:
                     super.handleMessage(msg);
             }
@@ -626,6 +664,9 @@ public class GanduService extends Service {
     	mNM.cancel(-1);
         
         archiveSQL = new ArchiveSQLite(this.getApplicationContext());
+        
+		numerShowName = new ArrayList<String>();
+		numerIndex = new ArrayList<String>();
     }
 
     @Override
@@ -830,27 +871,30 @@ public class GanduService extends Service {
 						Log.i("[GanduService]Atrybuty", "Po wydzieleniem atrybutow");
 						//START przeczesanie atrybutow
 						ArrayList<String> konferenci = new ArrayList<String>();
-						ByteArrayInputStream odczyAtryb = new ByteArrayInputStream(atrybuty);
-						DataInputStream dosOdczytAtryb = new DataInputStream(odczyAtryb);			
-						switch(dosOdczytAtryb.readByte())
+						if(atrybuty.length != 0)
 						{
-							//sprawdzenie, czy to wiadomosc konferencyjna
-							case 0x01:
-								Log.i("[GanduService]Atrybuty", "wiadomosc konferencyjna!!");
-								//odczytanie liczby pozostalych uczestnikow konferencji(poza nadawca)
-								int liczbaPozosyalychUczest = Integer.reverseBytes(dosOdczytAtryb.readInt());
-								//konferenci = new int[liczbaPozosyalychUczest];
-								//pobranie numerow pozostalych uczestnikow
-								for(int pozostali=0; pozostali<liczbaPozosyalychUczest; pozostali++)
-								{
-									//konferenci[pozostali] = Integer.reverseBytes(dosOdczytAtryb.readInt());
-									konferenci.add(""+Integer.reverseBytes(dosOdczytAtryb.readInt()));
-									//Log.i("[GanduService]Konferenci", pozostali+". "+konferenci[pozostali]);
-									Log.i("[GanduService]Konferenci", pozostali+". "+konferenci.get(pozostali));
-								}
-								break;
-							default:
-								;
+							ByteArrayInputStream odczyAtryb = new ByteArrayInputStream(atrybuty);
+							DataInputStream dosOdczytAtryb = new DataInputStream(odczyAtryb);			
+							switch(dosOdczytAtryb.readByte())
+							{
+								//sprawdzenie, czy to wiadomosc konferencyjna
+								case 0x01:
+									Log.i("[GanduService]Atrybuty", "wiadomosc konferencyjna!!");
+									//odczytanie liczby pozostalych uczestnikow konferencji(poza nadawca)
+									int liczbaPozosyalychUczest = Integer.reverseBytes(dosOdczytAtryb.readInt());
+									//konferenci = new int[liczbaPozosyalychUczest];
+									//pobranie numerow pozostalych uczestnikow
+									for(int pozostali=0; pozostali<liczbaPozosyalychUczest; pozostali++)
+									{
+										//konferenci[pozostali] = Integer.reverseBytes(dosOdczytAtryb.readInt());
+										konferenci.add(""+Integer.reverseBytes(dosOdczytAtryb.readInt()));
+										//Log.i("[GanduService]Konferenci", pozostali+". "+konferenci[pozostali]);
+										Log.i("[GanduService]Konferenci", pozostali+". "+konferenci.get(pozostali));
+									}
+									break;
+								default:
+									;
+							}
 						}
 						//KONIEC przeczesanie atrybutow
 						//for(int bajty=0; bajty<atrybuty.length; bajty++)
@@ -860,11 +904,22 @@ public class GanduService extends Service {
 						String trescCP1250 = new String(pozostalaCzescWiadomosci, offset_plain-24, offset_attributes-(offset_plain+1), "CP1250");
 						//String tresc = new String(trescCP1250.getBytes("CP1250"),"UTF-8");
 						String tresc =trescCP1250;
+						tresc = tresc.replace("\r", "");
 						Log.e("[GanduService]Odczytana wiadomosc: ", tresc);
 						Log.e("[GanduService]Od numeru: ", "" + sender);
 						wysylany = new Bundle();
 						wysylany.putString("tresc",tresc);
 						wysylany.putString("wiadomoscOd",""+sender);
+						String wiadomoscOdSN = ""+sender;
+						if(numerIndex != null)
+						{
+							int indeksSN = 0;
+							if((indeksSN = numerIndex.indexOf(sender)) != -1)
+							{
+								wiadomoscOdSN = numerShowName.get(indeksSN);								
+							}
+						}
+						wysylany.putString("wiadomoscOdName", wiadomoscOdSN);
 						String czasNadejscia = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new java.util.Date (time*1000L));
 						wysylany.putString("przyszlaO",czasNadejscia);
 						
@@ -1017,6 +1072,7 @@ public class GanduService extends Service {
 			}
 			try 
 			{
+				mCondition.open();
 				if(in != null)
 					in.close();
 				if(out != null)
@@ -1024,7 +1080,7 @@ public class GanduService extends Service {
 				if(socket != null)
 					socket.close();
 				mNM.cancel(-1);
-				showNotification("Serwer zerwal polaczenie", "Gandu", "Serwer zerwal polaczenie", R.drawable.icon, 
+				showNotification("Nastapilo rozlaczenie z serwerem", "Gandu", "Nastapilo rozlaczenie z serwerem", R.drawable.icon, 
                 		GanduClient.class, -1);
 			} 
 			catch (IOException e) 
@@ -1036,4 +1092,33 @@ public class GanduService extends Service {
 			Log.i("GanduService", "wartosc connected = "+connected);
 		}
     }
+    
+    //watek pingowy
+    private Runnable pingTask = new Runnable() {
+        public void run() {
+        	Log.i("[GanduService]pingTask", "Start watku pingTask");
+        	//wyslanie ping co 4 minuty
+        	//Zakonczenie watku jesli mCondition zostanie otwarte (mCondition.open)
+        	while(!mCondition.block(4 * 60 * 1000))
+        	{
+        		try
+        		{
+	        		byte[] paczkaBajtow;
+	        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        		DataOutputStream dos = new DataOutputStream(baos);
+					dos.writeInt(Integer.reverseBytes(Common.GG_PING));
+					dos.writeInt(Integer.reverseBytes(0));
+					paczkaBajtow = baos.toByteArray();
+					out.write(paczkaBajtow);
+					out.flush();
+					Log.i("[GanduService]pingTask", "Wyslalem Ping do serwera");
+        		}
+        		catch(Exception excPing)
+        		{
+        			Log.e("[GanduService]pingTask", "pingTask watek rzucil blad: "+excPing.getMessage());
+        		}
+        	}
+        	Log.i("[GanduService]pingTask", "Stop watku pingTask");
+        }
+    };
 }
