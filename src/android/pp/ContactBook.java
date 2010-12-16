@@ -127,7 +127,7 @@ public class ContactBook extends ExpandableListActivity{
 				if(actionId == EditorInfo.IME_ACTION_DONE)
 				{
 					Message msg2 = Message.obtain(null,Common.CLIENT_CHANGE_STATUS, 0, 0);
-					String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny","Zaraz wracam"};
+					String[] items = new String[]{"Dostepny","Zaraz wracam","Niewidoczny","Niedostepny"};
                     Bundle wysylany = new Bundle();
         			wysylany.putString("status", items[ustawionyStatus]);
         			if(statusDescription.getText() != null)
@@ -439,15 +439,22 @@ public class ContactBook extends ExpandableListActivity{
     				.get(child);
 	    		menu.setHeaderTitle(pobrany.showName);
 	    		SIMPLEContact szukanyPrzytrzymany = new SIMPLEContact();
-	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;
-	    		String[] menuItems = {"Edytuj","Usun","Ignoruj"};
-	    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
-	    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
-	    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
+	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;	    			
+	    		String[] menuItems = {"Edytuj","Usun"};
+	    		if(pobrany.GGNumber != null)
 	    		{
-	    			//jesli jest, to zamiast opcji ignoruj, bedzie opcja "Nie ignoruj"
-	    			if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored == true)
-	    				menuItems[2] = "Nie ignoruj";
+		    		if(!pobrany.GGNumber.equals(""))
+		    		{
+			    		menuItems = new String[]{"Edytuj","Usun","Ignoruj"};
+			    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
+			    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
+			    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
+			    		{
+			    			//jesli jest, to zamiast opcji ignoruj, bedzie opcja "Nie ignoruj"
+			    			if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored == true)
+			    				menuItems[2] = "Nie ignoruj";
+			    		}
+		    		}
 	    		}
 	    		for (int i = 0; i<menuItems.length; i++) {
 	    			menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -563,74 +570,77 @@ public class ContactBook extends ExpandableListActivity{
 					//to trzeba wyslac do serwera informacje o
 					//usunieciu kontaktu z listy, zeby nie przysylal
 					//nam informacji o dostepnosci kontaktu
-					if(pobrany.GGNumber != "")
-					{
-						//jesli kontakt usuwany jest z grupy ignorowani ale jest tez w innej grupie,
-						//to informujemy serwis, zeby powiadomij serwer,
-						//ze ten kontakt nie jest juz ignorowany
-						if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001") && usuwanyKontaktJestTezWInnejGrupie)
-						{							
-							Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
-		    	    		try
-		    	    		{
-		    		    		Bundle wysylany = new Bundle();
-		    					wysylany.putString("numerGG", pobrany.GGNumber);
-		                    	wysylany.putBoolean("ingorowany", true);
-		                    	wysylany.putBoolean("kontaktIstnieje", true);
-		    					msg3.setData(wysylany);
-		    	    			mService.send(msg3);
-		    	    		}catch(Exception excMsg)
-		    	    		{
-		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i istniejacym) kontakcie:\n"+
-		    	    					excMsg.getMessage());
-		    	    		}
-						}
-						//jesli kontakt usuwany jest z grupy ignorowani i nie ma go w innej grupie,
-						//to informujemy serwis, zeby powiadomij serwer,
-						//ze ten kontakt nie jest juz ignorowany i nie mamy tego kontaktu na liscie
-						//(zeby nie przysylal wiadomosci o dostepnosci kontaktu)
-						else if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001"))
+		        	if(pobrany.GGNumber != null)
+		        	{
+						if(!pobrany.GGNumber.equals(""))
 						{
-							Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
-		    	    		try
-		    	    		{
-		    		    		Bundle wysylany = new Bundle();
-		    					wysylany.putString("numerGG", pobrany.GGNumber);
-		                    	wysylany.putBoolean("ingorowany", true);
-		                    	wysylany.putBoolean("kontaktIstnieje", false);
-		    					msg3.setData(wysylany);
-		    	    			mService.send(msg3);
-		    	    		}catch(Exception excMsg)
-		    	    		{
-		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i nieistniejacym) kontakcie:\n"+
-		    	    					excMsg.getMessage());
-		    	    		}
+							//jesli kontakt usuwany jest z grupy ignorowani ale jest tez w innej grupie,
+							//to informujemy serwis, zeby powiadomij serwer,
+							//ze ten kontakt nie jest juz ignorowany
+							if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001") && usuwanyKontaktJestTezWInnejGrupie)
+							{							
+								Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
+			    	    		try
+			    	    		{
+			    		    		Bundle wysylany = new Bundle();
+			    					wysylany.putString("numerGG", pobrany.GGNumber);
+			                    	wysylany.putBoolean("ingorowany", true);
+			                    	wysylany.putBoolean("kontaktIstnieje", true);
+			    					msg3.setData(wysylany);
+			    	    			mService.send(msg3);
+			    	    		}catch(Exception excMsg)
+			    	    		{
+			    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i istniejacym) kontakcie:\n"+
+			    	    					excMsg.getMessage());
+			    	    		}
+							}
+							//jesli kontakt usuwany jest z grupy ignorowani i nie ma go w innej grupie,
+							//to informujemy serwis, zeby powiadomij serwer,
+							//ze ten kontakt nie jest juz ignorowany i nie mamy tego kontaktu na liscie
+							//(zeby nie przysylal wiadomosci o dostepnosci kontaktu)
+							else if(usuwanaGrupaID.equals("00000000-0000-0000-0000-000000000001"))
+							{
+								Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
+			    	    		try
+			    	    		{
+			    		    		Bundle wysylany = new Bundle();
+			    					wysylany.putString("numerGG", pobrany.GGNumber);
+			                    	wysylany.putBoolean("ingorowany", true);
+			                    	wysylany.putBoolean("kontaktIstnieje", false);
+			    					msg3.setData(wysylany);
+			    	    			mService.send(msg3);
+			    	    		}catch(Exception excMsg)
+			    	    		{
+			    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(ignorowanym i nieistniejacym) kontakcie:\n"+
+			    	    					excMsg.getMessage());
+			    	    		}
+							}
+							//w tej sytuacji nie wysylamy do serwisu zadnej informacji,
+							//bo dalej chcemy otrzymywac wiadomosci o dostepnosci kontaktu
+							else if(usuwanyKontaktJestTezWInnejGrupie)
+								;
+							//w tej sytuacji informujemy serwis, zeby powiadomij serwer,
+							//ze nie mamy juz tego kontaktu na liscie
+							//(zeby nie przysylal wiadomosci o dostepnosci kontaktu)
+							else
+							{
+								Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
+			    	    		try
+			    	    		{
+			    		    		Bundle wysylany = new Bundle();
+			    					wysylany.putString("numerGG", pobrany.GGNumber);
+			                    	wysylany.putBoolean("ingorowany", false);
+			                    	wysylany.putBoolean("kontaktIstnieje", false);
+			    					msg3.setData(wysylany);
+			    	    			mService.send(msg3);
+			    	    		}catch(Exception excMsg)
+			    	    		{
+			    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(nieignorowanym i nieistniejacy) kontakcie:\n"+
+			    	    					excMsg.getMessage());
+			    	    		}
+							}
 						}
-						//w tej sytuacji nie wysylamy do serwisu zadnej informacji,
-						//bo dalej chcemy otrzymywac wiadomosci o dostepnosci kontaktu
-						else if(usuwanyKontaktJestTezWInnejGrupie)
-							;
-						//w tej sytuacji informujemy serwis, zeby powiadomij serwer,
-						//ze nie mamy juz tego kontaktu na liscie
-						//(zeby nie przysylal wiadomosci o dostepnosci kontaktu)
-						else
-						{
-							Message msg3 = Message.obtain(null,Common.CLIENT_REMOVE_CONTACT, 0, 0);	        
-		    	    		try
-		    	    		{
-		    		    		Bundle wysylany = new Bundle();
-		    					wysylany.putString("numerGG", pobrany.GGNumber);
-		                    	wysylany.putBoolean("ingorowany", false);
-		                    	wysylany.putBoolean("kontaktIstnieje", false);
-		    					msg3.setData(wysylany);
-		    	    			mService.send(msg3);
-		    	    		}catch(Exception excMsg)
-		    	    		{
-		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o usuwanym(nieignorowanym i nieistniejacy) kontakcie:\n"+
-		    	    					excMsg.getMessage());
-		    	    		}
-						}
-					}
+		        	}
 					break;
 				//akcja ignoruj/nie ignoruj
 				case 2:
@@ -874,6 +884,11 @@ public class ContactBook extends ExpandableListActivity{
             list.add(map);
 
             map = new HashMap<String, Object>();
+            map.put("Name", "Zaraz wracam");
+            map.put("ResID", R.drawable.away);
+            list.add(map);
+
+            map = new HashMap<String, Object>();
             map.put("Name", "Niewidoczny");
             map.put("ResID", R.drawable.offline);
             list.add(map);
@@ -881,12 +896,7 @@ public class ContactBook extends ExpandableListActivity{
             map = new HashMap<String, Object>();
             map.put("Name", "Niedostepny");
             map.put("ResID", R.drawable.notavailable);
-            list.add(map);
-            
-            map = new HashMap<String, Object>();
-            map.put("Name", "Zaraz wracam");
-            map.put("ResID", R.drawable.away);
-            list.add(map);
+            list.add(map);            
             
             /*StatusListAdapter adapter = new StatusListAdapter(ContactBook.this, list,
                     R.layout.status_row, new String[]{},
@@ -901,7 +911,7 @@ public class ContactBook extends ExpandableListActivity{
                     public void onClick(DialogInterface dialog, int which) {
             
                         /* User clicked so do some stuff */
-                        String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny","Zaraz wracam"};
+                        String[] items = new String[]{"Dostepny","Zaraz wracam","Niewidoczny","Niedostepny"};
                         Message msg2 = Message.obtain(null,Common.CLIENT_CHANGE_STATUS, 0, 0);
                         Bundle wysylany = new Bundle();
             			wysylany.putString("status", items[which]);
@@ -919,13 +929,13 @@ public class ContactBook extends ExpandableListActivity{
         	    					statusButton.setImageResource(R.drawable.available);
         	    					break;
         	    				case 1:
-        	    					statusButton.setImageResource(R.drawable.offline);
+        	    					statusButton.setImageResource(R.drawable.away);
         	    					break;
         	    				case 2:
-        	    					statusButton.setImageResource(R.drawable.notavailable);
+        	    					statusButton.setImageResource(R.drawable.offline);
         	    					break;
         	    				case 3:
-        	    					statusButton.setImageResource(R.drawable.away);
+        	    					statusButton.setImageResource(R.drawable.notavailable);
         	    					break;
         	    			}
         	    		}catch(Exception excMsg)
@@ -969,19 +979,24 @@ public class ContactBook extends ExpandableListActivity{
 		//Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
 		
 
-		SIMPLEContact szukanyKontakt = new SIMPLEContact();
-		szukanyKontakt.AA3ShowName = ((TextView)v.findViewById(R.id.username)).getText().toString();
-		int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, szukanyKontakt, null);
-		String numerGGWybranegoGosciaNaLiscie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AA2GGNumber;
-		Log.i("[Metoda1]kontakt z numerem: ", numerGGWybranegoGosciaNaLiscie);
+		//SIMPLEContact szukanyKontakt = new SIMPLEContact();
+		//szukanyKontakt.AA3ShowName = ((TextView)v.findViewById(R.id.username)).getText().toString();
+		//int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, szukanyKontakt, null);
+		//String numerGGWybranegoGosciaNaLiscie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AA2GGNumber;
+		//Log.i("[Metoda1]kontakt z numerem: ", numerGGWybranegoGosciaNaLiscie);
 		//alternatywna metoda pobrania numeru kliknietego goscia
 		ViewableContacts pobrany = this.contactsExpandableList.get(groupPosition).get(childPosition);
 		Log.i("[Metoda2]kontakt z numerem: ", ""+pobrany.GGNumber);		
 		
-
+		if(pobrany.GGNumber == null)
+			return false;
+		if(pobrany.GGNumber.equals(""))
+			return false;
+		
 		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
 		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
-		intent.putExtra("ggnumber", numerGGWybranegoGosciaNaLiscie);
+		//intent.putExtra("ggnumber", numerGGWybranegoGosciaNaLiscie);
+		intent.putExtra("ggnumber", pobrany.GGNumber);
 		intent.putExtra("mojNumer", this.mojNumer);
 		//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
 		
@@ -1111,7 +1126,14 @@ public class ContactBook extends ExpandableListActivity{
 					{
 						//dodawany.GGNumber = Integer.parseInt(gcl.A2Contactsy.Contacts.get(i).AA2GGNumber);
 						dodawany.GGNumber = gcl.A2Contactsy.Contacts.get(i).AA2GGNumber;
-						gs.StatusesPairs.add(new GetStatusesStruct(Integer.reverseBytes(Integer.parseInt(dodawany.GGNumber)), (byte)0x01));
+						
+						byte type = (byte)0x03;
+						if(gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored != null)
+							if(gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored)
+								type = (byte)0x04;	
+						gs.StatusesPairs.add(new GetStatusesStruct(Integer.reverseBytes(Integer.parseInt(dodawany.GGNumber)), type));
+						
+						//gs.StatusesPairs.add(new GetStatusesStruct(Integer.reverseBytes(Integer.parseInt(dodawany.GGNumber)), (byte)0x01));
 					}catch(Exception ExcAdd1)
 					{
 						Log.e("ExcAdd1", ExcAdd1.getMessage());
@@ -1279,20 +1301,29 @@ public class ContactBook extends ExpandableListActivity{
     }
     public void updateSD(int ggnumber, int status , String description) //aktualizuje status, opis kontaktu na liscie kontaktow
     {
-    	for (int i =0 ; i<=(this.contactsExpandableList.size()-1); i++)
+    	if(this.contactsExpandableList != null)
     	{
-    		for (int j =0; j<=(this.contactsExpandableList.get(i).size()-1); j++)
-    		{
-    			int z = Integer.parseInt(this.contactsExpandableList.get(i).get(j).GGNumber) ;
-    			if (z == (ggnumber))
-    			{
-	    			this.contactsExpandableList.get(i).get(j).description = description;
-	    			this.contactsExpandableList.get(i).get(j).status = status;
-    			}
-    			
-    		}
-    
+	    	for (int i =0 ; i<=(this.contactsExpandableList.size()-1); i++)
+	    	{
+	    		for (int j =0; j<=(this.contactsExpandableList.get(i).size()-1); j++)
+	    		{
+	    			if(this.contactsExpandableList.get(i).get(j).GGNumber != null)
+	    			{
+	    				if(!this.contactsExpandableList.get(i).get(j).GGNumber.equals(""))
+	    				{
+			    			int z = Integer.parseInt(this.contactsExpandableList.get(i).get(j).GGNumber) ;
+			    			if (z == (ggnumber))
+			    			{
+				    			this.contactsExpandableList.get(i).get(j).description = description;
+				    			this.contactsExpandableList.get(i).get(j).status = status;
+			    			}
+	    				}
+	    			}
+	    			
+	    		}
+	    
+	    	}
+	    	mAdapter.notifyDataSetChanged();
     	}
-    	mAdapter.notifyDataSetChanged();
     }
 }
