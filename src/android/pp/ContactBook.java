@@ -403,6 +403,7 @@ public class ContactBook extends ExpandableListActivity{
 	    	    		{
 	    		    		Bundle wysylany = new Bundle();
 	    					wysylany.putString("numerGG", new_numerGG);
+	    					wysylany.putString("showNameGG", nowy.AA3ShowName);
 	    					//jesli nowy kontakt dodawany jest do grupy ignorowanych
 	    					//to trzeba wyslac do serwisu wiadomosc o tym, ze kontakt
 	    					//jest ignorowany. Serwer GG nie bedzie przysylal nam wiadomosci
@@ -833,8 +834,8 @@ public class ContactBook extends ExpandableListActivity{
 				intent1.putExtra("mojNumer", this.mojNumer);
 				//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
 				
-
-				if(contactBookFull != null)
+				prepareGGNumShowNameForIntent(intent1, null);
+				/*if(contactBookFull != null)
 				{
 					if(contactBookFull.A2Contactsy != null)
 					{
@@ -855,7 +856,7 @@ public class ContactBook extends ExpandableListActivity{
 							//intent.putExtra("ShowNameGGNumber", numerShowName);
 						}
 					}
-				}
+				}*/
 				
 				try
 				{
@@ -1000,7 +1001,8 @@ public class ContactBook extends ExpandableListActivity{
 		intent.putExtra("mojNumer", this.mojNumer);
 		//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
 		
-		ArrayList<String> numerIndex = new ArrayList<String>();
+		prepareGGNumShowNameForIntent(intent, null);
+		/*ArrayList<String> numerIndex = new ArrayList<String>();
 		ArrayList<String> numerShowName = new ArrayList<String>();
 		//HashMap<String, String> numerShowName = new HashMap<String, String>();
 		for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
@@ -1011,7 +1013,7 @@ public class ContactBook extends ExpandableListActivity{
 			//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
 		}
 		intent.putStringArrayListExtra("ShowNameGGNumber", numerShowName);
-		intent.putStringArrayListExtra("indexGGNumber", numerIndex);
+		intent.putStringArrayListExtra("indexGGNumber", numerIndex);*/
 		//intent.putExtra("ShowNameGGNumber", numerShowName);
 		
 		try
@@ -1025,7 +1027,41 @@ public class ContactBook extends ExpandableListActivity{
 		}
 		return false;
     }
-
+	
+	public void prepareGGNumShowNameForIntent(Intent intent, Bundle bundle)
+	{
+		if(contactBookFull != null)
+		{
+			if(contactBookFull.A2Contactsy != null)
+			{
+				if(contactBookFull.A2Contactsy.Contacts != null)
+				{
+					ArrayList<String> numerIndex = new ArrayList<String>();
+					ArrayList<String> numerShowName = new ArrayList<String>();
+					//HashMap<String, String> numerShowName = new HashMap<String, String>();
+					for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
+					{
+						//numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName+"-"+contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+						numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
+						numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+						//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
+					}
+					if(intent != null)
+					{
+						intent.putStringArrayListExtra("ShowNameGGNumber", numerShowName);
+						intent.putStringArrayListExtra("indexGGNumber", numerIndex);
+					}
+					else if (bundle != null)
+					{
+						bundle.putStringArrayList("ShowNameGGNumber", numerShowName);
+						bundle.putStringArrayList("indexGGNumber", numerIndex);
+					}
+					//intent.putExtra("ShowNameGGNumber", numerShowName);
+				}
+			}
+		}
+	}
+	
 	public void prepareContactBook(String xmlList)
     {
     	Serializer serializer = new Persister();
@@ -1181,6 +1217,18 @@ public class ContactBook extends ExpandableListActivity{
                 	odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
                 	prepareContactBook(gglista);
+                	Message msg3 = Message.obtain(null,Common.CLIENT_GG_NUM_SHOW_NAME, 0, 0);	        
+    	    		try
+    	    		{
+    		    		Bundle wysylany = new Bundle();
+    					prepareGGNumShowNameForIntent(null, wysylany);
+    					msg3.setData(wysylany);
+    	    			mService.send(msg3);
+    	    		}catch(Exception excMsg)
+    	    		{
+    	    			Log.e("ContactBook","gg num -> show name:\n"+
+    	    					excMsg.getMessage());
+    	    		}
                 	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
                 	for(int parent=0; parent<groupsExpandableList.size(); parent++)
         				getExpandableListView().expandGroup(parent);
