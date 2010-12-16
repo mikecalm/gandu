@@ -10,6 +10,8 @@ import java.util.List;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
+import com.google.android.maps.GeoPoint;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
@@ -20,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -440,7 +443,7 @@ public class ContactBook extends ExpandableListActivity{
 	    		menu.setHeaderTitle(pobrany.showName);
 	    		SIMPLEContact szukanyPrzytrzymany = new SIMPLEContact();
 	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;
-	    		String[] menuItems = {"Edytuj","Usun","Ignoruj"};
+	    		String[] menuItems = {"Edytuj","Usun","Ignoruj","Lokalizuj"};
 	    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
 	    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
 	    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
@@ -734,6 +737,15 @@ public class ContactBook extends ExpandableListActivity{
 	    	    					excMsg.getMessage());
 	    	    		}
 					}
+					break;
+				case 3:
+					Geo geo = new Geo();
+					GeoPoint g = geo.getFix(pobrany.GGNumber);
+					Intent i = new Intent(getApplicationContext(),Maps.class);
+					i.putExtra("latitude", g.getLatitudeE6());
+					i.putExtra("longitude", g.getLongitudeE6());
+					startActivity(i);
+					
 					break;
 			}
 		}

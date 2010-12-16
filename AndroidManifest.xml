@@ -5,6 +5,8 @@
       android:versionName="1.0">
     <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon">
 
+	<uses-library android:name="com.google.android.maps" />
+	
 	<activity android:name=".GanduClient" android:label="@string/app_name">
 		<intent-filter>
 			<action android:name="android.intent.action.MAIN"></action>
@@ -20,6 +22,8 @@
 	<activity android:name=".AddNewContact" 
 	android:theme="@android:style/Theme.Dialog">
 	</activity>
+	<activity android:name=".Maps">
+	</activity>
 
     
     
@@ -30,8 +34,9 @@
 </service>
 </application>
 
-
 <uses-sdk android:minSdkVersion="3"></uses-sdk>
 
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
 </manifest> 
