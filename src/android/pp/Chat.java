@@ -291,7 +291,7 @@ public class Chat extends TabActivity{
 
 	@Override
 	protected void onDestroy() {
-		//super.onDestroy();
+		super.onDestroy();
 		//Toast.makeText(getApplicationContext(), "[Chat]onDestroy()", Toast.LENGTH_SHORT).show();
 		// TODO Auto-generated method stub
 		if (mIsBound) {
