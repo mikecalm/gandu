@@ -443,7 +443,7 @@ public class ContactBook extends ExpandableListActivity{
 	    		menu.setHeaderTitle(pobrany.showName);
 	    		SIMPLEContact szukanyPrzytrzymany = new SIMPLEContact();
 	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;
-	    		String[] menuItems = {"Edytuj","Usun","Ignoruj","Lokalizuj"};
+	    		String[] menuItems = {"Edytuj","Usun","Ignoruj","Lokalizuj","Lokalizuj mnie"};
 	    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
 	    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
 	    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
@@ -741,11 +741,24 @@ public class ContactBook extends ExpandableListActivity{
 				case 3:
 					Geo geo = new Geo();
 					GeoPoint g = geo.getFix(pobrany.GGNumber);
-					Intent i = new Intent(getApplicationContext(),Maps.class);
-					i.putExtra("latitude", g.getLatitudeE6());
-					i.putExtra("longitude", g.getLongitudeE6());
-					startActivity(i);
+					if(g != null)
+					{
+						Intent i = new Intent(getApplicationContext(),Maps.class);
+						i.putExtra("latitude", g.getLatitudeE6());
+						i.putExtra("longitude", g.getLongitudeE6());
+						startActivity(i);
+					}
+					else 
+					{
+						Toast.makeText(getApplicationContext(), "U¿ytkownik nie udostêpnia \nswojej lokalizacji", Toast.LENGTH_SHORT).show();
+					}
 					
+					break;
+				case 4: 
+					Geo geo2 = new Geo();
+					Intent j = new Intent(getApplicationContext(), Maps.class);
+					j.putExtra("FromDevice", true);
+					startActivity(j);
 					break;
 			}
 		}
