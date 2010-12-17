@@ -308,6 +308,18 @@ public class GanduService extends Service {
     	}
     	return true;
     }
+    
+    public String pobierzShowName(String numerGG)
+    {
+    	String znalezionyShowName = numerGG;
+    	if(numerIndex != null)
+    	{
+    		int indeks = 0;
+    		if((indeks = numerIndex.indexOf(numerGG)) != -1)
+    			znalezionyShowName = numerShowName.get(indeks);
+    	}
+    	return znalezionyShowName;
+    }
 
     /**
      * Handler of incoming messages from clients.
@@ -739,7 +751,8 @@ public class GanduService extends Service {
         //PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
           //      new Intent(this, GanduClient.class), 0);
     	PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-    			intent, 0);
+    			//intent, 0);
+    			intent, PendingIntent.FLAG_UPDATE_CURRENT);
     			//intent, (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP));
 
         // Set the info for the views that show in the notification panel.
@@ -975,11 +988,14 @@ public class GanduService extends Service {
 						wysylany.putByteArray("tresc",tresc);*/
 
 						//START show notification
+						String senderName = pobierzShowName(""+sender);
 						if(konferenci.size() == 0)
-							showNotification(tresc, ""+sender, ""+sender+": "+tresc, R.drawable.icon, 
+							//showNotification(tresc, ""+sender, ""+sender+": "+tresc, R.drawable.icon, 
+							showNotification(tresc, ""+senderName, ""+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
 						else
-							showNotification(tresc, ""+sender, "[Konferencja]"+sender+": "+tresc, R.drawable.icon, 
+							//showNotification(tresc, ""+sender, "[Konferencja]"+sender+": "+tresc, R.drawable.icon, 
+							showNotification(tresc, ""+senderName, "[Konferencja]"+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
 						//KONIEC show notification
 						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
