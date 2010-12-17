@@ -19,10 +19,10 @@ public class GetStatuses {
 		int size = StatusesPairs.size(); //TO DO if > 400 new packet
 		try
 		{
-			while(--size>0)
+			for(int i=0; i<size; i++)
 			{
-				dos.writeInt(this.StatusesPairs.get(size).uin);
-				dos.write(this.StatusesPairs.get(size).type);
+				dos.writeInt(this.StatusesPairs.get(i).uin);
+				dos.write(this.StatusesPairs.get(i).type);
 			}
 			resztaPaczki = baos.toByteArray();
 	    	//wyliczyc this.dlugoscResztyPakietu
@@ -38,8 +38,6 @@ public class GetStatuses {
 		{
 			Log.e("GetStatuses","Byte Package NOT Created!");
 			return null;
-		}
-		
-		
+		}				
 	}
 }

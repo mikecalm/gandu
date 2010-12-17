@@ -14,6 +14,7 @@ public class Common {
     static final int GG_REMOVE_NOTIFY = 0x000e;
     static final int GG_NOTIFY_FIRST = 0x000f;
     static final int GG_NOTIFY_LAST = 0x0010;
+    static final int GG_PING = 0x0008;
     
     /**
      * STATES 
@@ -96,4 +97,5 @@ public class Common {
    static final int CLIENT_SET_STATUSES = 15;
    static final int CLIENT_SEND_CONFERENCE_MESSAGE = 16;
    static final int CLIENT_CONTACTBOOK_OUT = 17;
+   static final int CLIENT_GG_NUM_SHOW_NAME = 19;
 }

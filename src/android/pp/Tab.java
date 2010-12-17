@@ -35,7 +35,9 @@ public class Tab extends Activity{
     EditText et;
     TextView tv;
     String ggnumber = "";
+    String ggnumberShowName = "";
     ArrayList<String> konferenciGG = null;
+    ArrayList<String> konferenciGGShowName = null;
     String konferenciWBazie = "";
     String mojNumer = "";
     
@@ -65,15 +67,18 @@ public class Tab extends Activity{
 		{
 			if(b.containsKey("mojNumer"))
 				this.mojNumer = b.getString("mojNumer");
-			if(b.containsKey("ggnumber"))
+			if(b.containsKey("ggnumber") && b.containsKey("ggnumberShowName"))
 			{
 				this.ggnumber = b.getString("ggnumber");
+				this.ggnumberShowName = b.getString("ggnumberShowName");
 	    		Log.i("[Tab]onCreate, przyjalem ggnumber: ",this.ggnumber);
 			}
-			if(b.containsKey("konferenciGG") && b.containsKey("konferenciWBazie"))
+			if(b.containsKey("konferenciGG") && b.containsKey("konferenciWBazie") && b.containsKey("konferenciGGShowName"))
 			{
 				konferenciGG = new ArrayList<String>();
 				konferenciGG = b.getStringArrayList("konferenciGG");
+				konferenciGGShowName = new ArrayList<String>();
+				konferenciGGShowName = b.getStringArrayList("konferenciGGShowName");
 				konferenciWBazie = b.getString("konferenciWBazie");
 			}
 		}
@@ -101,10 +106,13 @@ public class Tab extends Activity{
 					tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(wiadomosc + "\n");
 				}
-				//wiadomosc od ktorego z naszych konferentow
+				//wiadomosc od ktoregos z naszych konferentow
 				else
 				{
-					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+nadawca+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+					
+					//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+nadawca+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+					int indeksKonfShow = konferenciGG.indexOf(nadawca);
+					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+konferenciGGShowName.get(indeksKonfShow)+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(wiadomosc + "\n");
 				}
 			}
@@ -120,7 +128,9 @@ public class Tab extends Activity{
 				String sender = wiadomoscIData.substring(indeksOstatniegoSrednika+1,wiadomoscIData.length());
 				Long dataEpoch = Long.parseLong(data);
 				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1, indeksOstatniegoSrednika);
-				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+sender+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+sender+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				int indeksKonfShow = konferenciGG.indexOf(sender);
+				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+konferenciGGShowName.get(indeksKonfShow)+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 				tv.append(wiadomosc + "\n");
 			}
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
@@ -151,7 +161,8 @@ public class Tab extends Activity{
 					String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
 					Long dataEpoch = Long.parseLong(data);
 					String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
-					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+					//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(wiadomosc + "\n");
 				}
 			}
@@ -165,7 +176,8 @@ public class Tab extends Activity{
 				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
 				Long dataEpoch = Long.parseLong(data);
 				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
-				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 				tv.append(wiadomosc + "\n");
 			}
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
@@ -241,7 +253,8 @@ public class Tab extends Activity{
 			else
 			{
 				String ggnumber = Chat.tabHost.getCurrentTabTag();
-			    wysylany.putInt("ggnumber", Integer.parseInt(getNumber(ggnumber)));
+			    //wysylany.putInt("ggnumber", Integer.parseInt(getNumber(ggnumber)));
+				wysylany.putInt("ggnumber", Integer.parseInt(ggnumber));
 			}
 			
 			//wysylany.putString("ggnumber",getNumber());
@@ -284,7 +297,8 @@ public class Tab extends Activity{
 						tabActiv.hiddenTabs.add(konferenciWBazie);
 					tabHost.getCurrentTabView().setVisibility(View.GONE);					
 					TextView asd = (TextView)tabHost.getTabWidget().getChildAt(tabHost.getCurrentTab()).findViewById(android.R.id.title);
-					tabActiv.savedTabs.remove(asd.getText());
+					//tabActiv.savedTabs.remove(asd.getText());
+					tabActiv.savedTabs.remove(tabHost.getCurrentTabTag());
 					asd.setText("");
 					//finish();
 					onStop();
@@ -355,6 +369,7 @@ public class Tab extends Activity{
                 	//byte [] tresc = odebrany.getByteArray("tresc");                	
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");
                 	String konferenciDB = odebrany.getString("konferenci");
+                	String wiadomoscOdN = odebrany.getString("wiadomoscOdName");
                 	//sprawdzenie, czy przyszla wiadomosc konferencyjna
                 	if(konferenciDB != null)
                 	{
@@ -371,7 +386,8 @@ public class Tab extends Activity{
                 	//String tmp = tresc.toString();
                 	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
                 	//Tab.this.tv.setBackgroundColor(R.color.conctactbookdown);
-                	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
+                	//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
+                	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOdN+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));                	
                 	tv.append(tresc+"\n");
                 	//Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
