@@ -443,26 +443,18 @@ public class ContactBook extends ExpandableListActivity{
     				.get(child);
 	    		menu.setHeaderTitle(pobrany.showName);
 	    		SIMPLEContact szukanyPrzytrzymany = new SIMPLEContact();
-	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;	    			
-	    		String[] menuItems = {"Edytuj","Usun"};
-	    		if(pobrany.GGNumber != null)
 	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;
-	    		String[] menuItems = {"Edytuj","Usun","Ignoruj","Lokalizuj","Lokalizuj mnie"};
-	    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
-	    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
-	    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
+	    		String[] menuItems = {"Edytuj","Usun","Lokalizuj","Lokalizuj mnie"};
+	    		if(!pobrany.GGNumber.equals(""))
 	    		{
-		    		if(!pobrany.GGNumber.equals(""))
+	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj"};
+		    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
+		    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
+		    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
 		    		{
-			    		menuItems = new String[]{"Edytuj","Usun","Ignoruj"};
-			    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
-			    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
-			    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
-			    		{
-			    			//jesli jest, to zamiast opcji ignoruj, bedzie opcja "Nie ignoruj"
-			    			if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored == true)
-			    				menuItems[2] = "Nie ignoruj";
-			    		}
+		    			//jesli jest, to zamiast opcji ignoruj, bedzie opcja "Nie ignoruj"
+		    			if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored == true)
+		    				menuItems[4] = "Nie ignoruj";
 		    		}
 	    		}
 	    		for (int i = 0; i<menuItems.length; i++) {
@@ -475,7 +467,8 @@ public class ContactBook extends ExpandableListActivity{
     			ViewableGroups pobrany = this.groupsExpandableList
 				.get(group);
 	    		menu.setHeaderTitle(pobrany.name);
-	    		String[] menuItems = {"Dodaj kontakt","cztery"};
+	    		//String[] menuItems = {"Dodaj kontakt","cztery"};
+	    		String[] menuItems = {"Dodaj kontakt"};
 	    		for (int i = 0; i<menuItems.length; i++) {
 	    			menu.add(Menu.NONE, i, i, menuItems[i]);
 	    		}
@@ -651,8 +644,31 @@ public class ContactBook extends ExpandableListActivity{
 						}
 		        	}
 					break;
-				//akcja ignoruj/nie ignoruj
 				case 2:
+					Geo geo = new Geo();
+					GeoPoint g = geo.getFix(pobrany.GGNumber);
+					if(g != null)
+					{
+						Intent i = new Intent(getApplicationContext(),Maps.class);
+						i.putExtra("latitude", g.getLatitudeE6());
+						i.putExtra("longitude", g.getLongitudeE6());
+						startActivity(i);
+					}
+					else 
+					{
+						Toast.makeText(getApplicationContext(), "U¿ytkownik nie udostêpnia \nswojej lokalizacji", Toast.LENGTH_SHORT).show();
+					}
+					
+					break;
+				case 3: 
+					Geo geo2 = new Geo();
+					Intent j = new Intent(getApplicationContext(), Maps.class);
+					j.putExtra("FromDevice", true);
+					startActivity(j);
+					break;
+				//akcja ignoruj/nie ignoruj
+				//case 2:
+				case 4:
 					//jesli wybrano ignoruj
 					if(menuItemName.equalsIgnoreCase("ignoruj"))
 					{
@@ -753,29 +769,7 @@ public class ContactBook extends ExpandableListActivity{
 	    	    					excMsg.getMessage());
 	    	    		}
 					}
-					break;
-				case 3:
-					Geo geo = new Geo();
-					GeoPoint g = geo.getFix(pobrany.GGNumber);
-					if(g != null)
-					{
-						Intent i = new Intent(getApplicationContext(),Maps.class);
-						i.putExtra("latitude", g.getLatitudeE6());
-						i.putExtra("longitude", g.getLongitudeE6());
-						startActivity(i);
-					}
-					else 
-					{
-						Toast.makeText(getApplicationContext(), "U¿ytkownik nie udostêpnia \nswojej lokalizacji", Toast.LENGTH_SHORT).show();
-					}
-					
-					break;
-				case 4: 
-					Geo geo2 = new Geo();
-					Intent j = new Intent(getApplicationContext(), Maps.class);
-					j.putExtra("FromDevice", true);
-					startActivity(j);
-					break;
+					break;				
 			}
 		}
 		//akcja dla grupy
