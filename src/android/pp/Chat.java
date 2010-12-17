@@ -167,6 +167,7 @@ public class Chat extends TabActivity{
 		            //tescik
 		            Intent nowyTab = new Intent(this,Tab.class);
 		            nowyTab.putExtra("ggnumber", b.getString("ggnumber"));
+		            nowyTab.putExtra("ggnumberShowName", pobierzShowName(b.getString("ggnumber")));
 		            nowyTab.putExtra("mojNumer", this.mojNumer);
 		            firstTabSpec.setIndicator(tabHeader).setContent(nowyTab);
 		            //tescik
@@ -178,7 +179,7 @@ public class Chat extends TabActivity{
 		        	tabHost.addTab(firstTabSpec);
 		            //usuniecie ggnumber z intentu, zeby przy zmianie orientacji
 		            //nie dodawal po raz kolejny ostatnio otwartej zakladki
-		            this.getIntent().removeExtra("ggnumber");     
+		            this.getIntent().removeExtra("ggnumber");
 		            this.getIntent().removeExtra("username");
 		        	//this.getIntent().getExtras().clear();
 	    		}
@@ -209,6 +210,9 @@ public class Chat extends TabActivity{
 				            Intent nowyTab = new Intent(this,Tab.class);
 				            nowyTab.putExtra("mojNumer", this.mojNumer);
 				            ArrayList<String> odzyskaniKonferenciGG = new ArrayList<String>();
+				            ArrayList<String> odzyskaniKonferenciGGShowName = new ArrayList<String>();
+				            String labelTaba = pobierzShowNameDlaKonferentow(s,odzyskaniKonferenciGG,odzyskaniKonferenciGGShowName);
+				            /*ArrayList<String> odzyskaniKonferenciGG = new ArrayList<String>();
 				            String[] odzyskaneNumery = s.split(";");
 				            String labelTaba = "";
 				            for(int odzyskane=0; odzyskane<odzyskaneNumery.length; odzyskane++)
@@ -227,9 +231,10 @@ public class Chat extends TabActivity{
 				                	labelTaba += showNameGG+";";
 				            	}
 				            }
-				            labelTaba = labelTaba.substring(0, labelTaba.length()-1);
+				            labelTaba = labelTaba.substring(0, labelTaba.length()-1);*/
 				            //nowyTab.putExtra("ggnumber", ggNum);
 							nowyTab.putStringArrayListExtra("konferenciGG", odzyskaniKonferenciGG);
+							nowyTab.putStringArrayListExtra("konferenciGGShowName", odzyskaniKonferenciGGShowName);
 							nowyTab.putExtra("konferenciWBazie",s);
 				            firstTabSpec.setIndicator(labelTaba).setContent(nowyTab);
 				            //tescik
@@ -256,6 +261,7 @@ public class Chat extends TabActivity{
 			        		//tescik
 				            Intent nowyTab = new Intent(this,Tab.class);
 				            nowyTab.putExtra("ggnumber", ggNum);
+				            nowyTab.putExtra("ggnumberShowName", pobierzShowName(ggNum));
 				            nowyTab.putExtra("mojNumer", this.mojNumer);
 				            
 				            String label = ggNum;
@@ -292,13 +298,14 @@ public class Chat extends TabActivity{
         	String showNameGG = "";
         	//showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
         	//jesli wiadomosc jest od kogos spoza listy
-        	showNameGG = numerGGKontaktu;
+        	showNameGG = pobierzShowName(numerGGKontaktu);
+        	/*showNameGG = numerGGKontaktu;
         	//jesli wiadomosc jest od kogos z listy
         	if(numerIndex != null)
         	{
 	        	if(numerIndex.indexOf(numerGGKontaktu) != -1)
 	        		showNameGG = numerShowName.get(numerIndex.indexOf(numerGGKontaktu));
-        	}
+        	}*/
         	/*for(int j=0; j<numerShowName.size(); j++)
         	{
         		if(numerShowName.get(j).endsWith("-"+numerGGKontaktu))
@@ -317,6 +324,7 @@ public class Chat extends TabActivity{
     		//tescik
             Intent nowyTab = new Intent(this,Tab.class);
             nowyTab.putExtra("ggnumber", numerGGKontaktu);
+            nowyTab.putExtra("ggnumberShowName", showNameGG);
             nowyTab.putExtra("mojNumer", this.mojNumer);
             firstTabSpec.setIndicator(header).setContent(nowyTab);
             //firstTabSpec.setIndicator(header, getResources().getDrawable(R.drawable.available)).setContent(nowyTab);
@@ -340,7 +348,9 @@ public class Chat extends TabActivity{
             Intent nowyTab = new Intent(this,Tab.class);
             nowyTab.putExtra("mojNumer", this.mojNumer);
             ArrayList<String> odzyskaniKonferenciGG = new ArrayList<String>();
-            String[] odzyskaneNumery = konferencjeZBazy.get(i).split(";");
+            ArrayList<String> odzyskaniKonferenciGGShowName = new ArrayList<String>();
+            String labelTaba = pobierzShowNameDlaKonferentow(konferencjeZBazy.get(i), odzyskaniKonferenciGG, odzyskaniKonferenciGGShowName);            
+            /*String[] odzyskaneNumery = konferencjeZBazy.get(i).split(";");
             String labelTaba = "";
             for(int odzyskane=0; odzyskane<odzyskaneNumery.length; odzyskane++)
             {
@@ -358,9 +368,10 @@ public class Chat extends TabActivity{
             		labelTaba += showNameGG+";";
             	}
             }
-            labelTaba = labelTaba.substring(0, labelTaba.length()-1);
+            labelTaba = labelTaba.substring(0, labelTaba.length()-1);*/
             //nowyTab.putExtra("ggnumber", ggNum);
 			nowyTab.putStringArrayListExtra("konferenciGG", odzyskaniKonferenciGG);
+			nowyTab.putStringArrayListExtra("konferenciGGShowName", odzyskaniKonferenciGGShowName);
 			nowyTab.putExtra("konferenciWBazie",konferencjeZBazy.get(i));
             firstTabSpec.setIndicator(labelTaba).setContent(nowyTab);
             //tescik
@@ -369,7 +380,7 @@ public class Chat extends TabActivity{
         	tabHost.addTab(firstTabSpec);
         }
         
-        //jesli nie otworzona zadnej zakladki, to zakoncz.
+        //jesli nie otworzono zadnej zakladki, to zakoncz.
         //taka sytuacja moze wystapic jesli ktos z listy kontaktow
         //wybierze "przejdz do rozmow" a w bazie, ani w preferencjach
         //nie bedzie zadnych rozmow do otworzenia.
@@ -563,6 +574,8 @@ public class Chat extends TabActivity{
                 	String przyszlaO = odebrany.getString("przyszlaO");
                 	String konferenci = odebrany.getString("konferenci");
                 	ArrayList<String> konferenciGG = odebrany.getStringArrayList("konferenciGG");
+                	ArrayList<String> konferenciGGNew = new ArrayList<String>();
+                	ArrayList<String> konferenciGGShowName = new ArrayList<String>();
                 	Long idSQL = odebrany.getLong("idSQL");
                 	String tytulTaba = wiadomoscOd;
                 	if(konferenci != null)
@@ -607,7 +620,8 @@ public class Chat extends TabActivity{
                 			//wiadomosc konferencyjna
                 			else
                 			{
-                				for(int i=0; i<konferenciGG.size(); i++)
+                				header = pobierzShowNameDlaKonferentow(konferenci, konferenciGGNew, konferenciGGShowName);
+                				/*for(int i=0; i<konferenciGG.size(); i++)
                 				{
 	                				//jesli wiadomosc jest od kogos spoza listy                			
 		                			String showNameGG = konferenciGG.get(i);
@@ -621,7 +635,7 @@ public class Chat extends TabActivity{
 		                			header += showNameGG+";";
 		                			//wyciecie ostatniego srednika
                 				}
-	                			header = header.substring(0, header.length()-1);
+	                			header = header.substring(0, header.length()-1);*/
 	                			
 	                			firstTabSpec = tabHost.newTabSpec(konferenci);
 	                			savedTabs.add(konferenci);
@@ -630,10 +644,12 @@ public class Chat extends TabActivity{
     		        		//tescik
     			            Intent nowyTab = new Intent(getApplicationContext(),Tab.class);
     			            nowyTab.putExtra("ggnumber", wiadomoscOd);
+    			            nowyTab.putExtra("ggnumberShowName", pobierzShowName(wiadomoscOd));
     			            nowyTab.putExtra("mojNumer", mojNumer);
     			            if(konferenciGG != null)
                 			{
     			            	nowyTab.putStringArrayListExtra("konferenciGG", konferenciGG);
+    			            	nowyTab.putStringArrayListExtra("konferenciGGShowName", konferenciGGShowName);
     			            	nowyTab.putExtra("konferenciWBazie", konferenci);
                 			}
     			            firstTabSpec.setIndicator(header).setContent(nowyTab);
@@ -771,6 +787,53 @@ public class Chat extends TabActivity{
             mIsBound = false;
             //mCallbackText.setText("Unbinding.");
         }
-    }	    
+    }
+    
+    public String pobierzShowName(String numerGG)
+    {
+    	String znalezionyShowName = numerGG;
+    	if(numerIndex != null)
+    	{
+    		int indeks = 0;
+    		if((indeks = numerIndex.indexOf(numerGG)) != -1)
+    			znalezionyShowName = numerShowName.get(indeks);
+    	}
+    	return znalezionyShowName;
+    }
+    
+    /*
+     * numInd i numSN musza zostac zainicjowane przed wejsciem do funkcji
+     * numInd = new ArrayList<String>();
+     * numSn = new ArrayList<String>();
+     * aby po wyjsciu pozostaly odpowienio uzupelnione
+     */
+    public String pobierzShowNameDlaKonferentow(String konferenciRozdzieleniSrednikiem, 
+    											ArrayList<String> numInd, ArrayList<String> numSN)
+    {
+    	String[] numeryKonf = konferenciRozdzieleniSrednikiem.split(";");
+    	String konferenciShowNameRozdzieleniSrednikiem = "";
+    	for(int i=0; i<numeryKonf.length; i++)
+    	{
+    		numInd.add(numeryKonf[i]);
+    		numSN.add(numeryKonf[i]);
+    		konferenciShowNameRozdzieleniSrednikiem += numeryKonf[i]+";"; 
+    	}
+    	if(numerIndex != null)
+    	{
+    		konferenciShowNameRozdzieleniSrednikiem = "";
+    		for(int i=0; i<numInd.size(); i++)
+    		{
+	    		int indeks = 0;
+	    		if((indeks = numerIndex.indexOf(numInd.get(i))) != -1)
+	    		{
+	    			numSN.remove(i);
+	    			numSN.add(i, numerShowName.get(indeks));
+	    		}
+	    		konferenciShowNameRozdzieleniSrednikiem += numSN.get(i)+";";
+    		}
+    	}
+    	konferenciShowNameRozdzieleniSrednikiem = konferenciShowNameRozdzieleniSrednikiem.substring(0, konferenciShowNameRozdzieleniSrednikiem.length()-1);
+    	return konferenciShowNameRozdzieleniSrednikiem;
+    }
 }
 
