@@ -29,6 +29,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -49,6 +50,8 @@ public class GanduService extends Service {
 	DataOutputStream out;
 	String ggnum;
 	String ggpass;
+	String descriptionLast = "http://code.google.com/p/gandu/";
+	String statusLast = "Dostepny";
 	byte[] skompresowanaLista = null;
     /** For showing and hiding our notification. */
     NotificationManager mNM;
@@ -131,6 +134,26 @@ public class GanduService extends Service {
 		  return false;	  	  
 	  }
 	  return true;	  	  
+   }
+   
+   public void saveOnInternalMemory(String tmp, String ggNum)
+   {
+	   //String extStorageDirectory = Environment.getDataDirectory().toString() ;
+	   //File file = new File(extStorageDirectory, "contactBook"+"GGNumber"+".xml");
+	   
+	   try {
+			//FileOutputStream fos = new FileOutputStream(file);
+		   //FileOutputStream fos = openFileOutput("Kontakty_"+"GGNumber"+".xml", Context.MODE_PRIVATE);
+		   FileOutputStream fos = openFileOutput("Kontakty_"+ggNum+".xml", Context.MODE_PRIVATE);
+		   //FileOutputStream fos = openFileOutput("Kontakty_"+"GGNumber"+".xml", Context.MODE_WORLD_READABLE);
+			byte [] buffer = tmp.getBytes("UTF-8");
+			fos.write(buffer);
+			fos.flush();
+			fos.close(); 		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
    }
    
    public void saveOnSDCard(String tmp)
@@ -277,7 +300,8 @@ public class GanduService extends Service {
     	try
     	{
 	    	int numergg = Integer.parseInt(numerGG);
-	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, "http://code.google.com/p/gandu/");
+	    	//Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, "http://code.google.com/p/gandu/");
+	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, descriptionLast);	    	
 	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
 	    	out.write(paczkalogowania);
 	    	out.flush();
@@ -408,16 +432,18 @@ public class GanduService extends Service {
 					try {
 						int currentTime = (int)(System.currentTimeMillis() / 1000L);
 						//byte[] paczka = sm.setMessage(text,ggnumber);
-						byte[] paczka = sm.setMessage(text,ggnumber,currentTime);
-						
-						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
-						//long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, "");
-						long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, null);
-						Log.i("[GanduService]START SQL","["+idWiadomosci+"]dodanie wysylanej wiadomosci do bazy");
+						byte[] paczka = sm.setMessage(text,ggnumber,currentTime);						
 						
 						out.write(paczka);
 						Log.i("GanduService", "Wyslalem wiadomosc");
 						out.flush();
+
+						//jesli nie powiedzie sie proba wyslania wiadomosci,
+						//to nie zostanie ona dodana do bazy, bo program przejdzie do
+						//sekcji catch ponizej
+						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
+						long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, null);
+						Log.i("[GanduService]START SQL","["+idWiadomosci+"]dodanie wysylanej wiadomosci do bazy");
 					} catch (Exception e) {
 						Log.e("GanduService", "SendingMessage Failed!");
 					}
@@ -441,15 +467,16 @@ public class GanduService extends Service {
                 	//byte[] paczki = cm.setConferenceMessages("12345",new int[]{2522922,31841466}, currentTime1);
                 	byte[] paczki = cm.setConferenceMessages(textConference,tablicaKonferentow, currentTime1);
 					try 
-					{
-						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
-						//long idWiadomosci = archiveSQL.addMessage(Integer.parseInt(ggnum), ggnumber, currentTime, text, -1, "");
-						long idWiadomosciKonf = archiveSQL.addMessage(Integer.parseInt(ggnum), -1, currentTime1, textConference, -1, konferenciGG);
-						Log.i("[GanduService]START SQL","["+idWiadomosciKonf+"]dodanie wysylanej wiadomosci do bazy");
-						
+					{												
 						out.write(paczki);
 						Log.i("[GanduService]Konferencja", "Wyslalem wiadomosci");
 						out.flush();
+						//jesli nie powiedzie sie proba wyslania wiadomosci,
+						//to nie zostanie ona dodana do bazy, bo program przejdzie do
+						//sekcji catch ponizej
+						Log.i("[GanduService]START SQL","dodanie wysylanej wiadomosci do bazy");
+						long idWiadomosciKonf = archiveSQL.addMessage(Integer.parseInt(ggnum), -1, currentTime1, textConference, -1, konferenciGG);
+						Log.i("[GanduService]START SQL","["+idWiadomosciKonf+"]dodanie wysylanej wiadomosci do bazy");
 					} 
 					catch (IOException e) 
 					{
@@ -482,6 +509,8 @@ public class GanduService extends Service {
 						out.write(pack);
 						Log.i("GanduService", "Ustawiam status");
 						out.flush();
+						descriptionLast = opisStatusu;
+						statusLast = status;
 					} catch (Exception e) {
 						Log.e("GanduService", "Status setting Failed!");
 					}
@@ -655,6 +684,24 @@ public class GanduService extends Service {
     	    			numerIndex = odebrany.getStringArrayList("indexGGNumber");
     	    			//Log.i("[GanduService]","CLIENT_GG_NUM_SHOW_NAME numerIndex size: "+numerIndex.size());
     	    		}
+                	break;
+                case Common.CLIENT_GET_INITIAL_INFO:
+                	try
+                	{
+                	String zalogowanyNumer = ggnum;
+                	String ustawionyOpis = descriptionLast;
+                	String ustawionyStatus = statusLast;
+                	Message msg4 = Message.obtain(null,Common.CLIENT_SET_INITIAL_INFO, 0, 0);
+                	Bundle initialInfo = new Bundle();
+                	initialInfo.putString("mojNumer", zalogowanyNumer);
+                	initialInfo.putString("description", ustawionyOpis);
+                	initialInfo.putString("status", ustawionyStatus);
+                	msg4.setData(initialInfo);
+                	msg.replyTo.send(msg4);
+                	}catch(Exception excInitial)
+                	{
+                		Log.e("[GanduService]Common.CLIENT_GET_INITIAL_INFO", excInitial.getMessage());
+                	}
                 	break;
                 default:
                     super.handleMessage(msg);
@@ -849,7 +896,9 @@ public class GanduService extends Service {
 							pobraneBajtyZeStosu += in.read(spakowanaSkompresowana, pobraneBajtyZeStosu, dlugoscSpakowana-pobraneBajtyZeStosu);
 						String lista = inflateContactBook(spakowanaSkompresowana);
 						
-						saveOnSDCard(lista);
+						//saveOnSDCard(lista);
+						//saveOnInternalMemory(lista);
+						saveOnInternalMemory(lista,ggnum);
 						Message msg2 = Message.obtain(null,Common.FLAG_CONTACTBOOK, 0, 0);
 						wysylany = new Bundle();
 						wysylany.putString("listaGG", lista);

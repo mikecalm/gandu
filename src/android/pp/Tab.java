@@ -261,8 +261,10 @@ public class Tab extends Activity{
 			//Calendar c = Calendar.getInstance();
 			//tv.setBackgroundColor(R.color.conctactbookup);
 			//tv.append(c.getTime().toString() + "\n" + et.getText().toString() + "\n");
-		    tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b><hr>"+"\n"));
-			tv.append(new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(System.currentTimeMillis()) + "\n" + et.getText().toString() + "\n");			
+		    //tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b><hr>"+"\n"));
+			//tv.append(new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(System.currentTimeMillis()) + "\n" + et.getText().toString() + "\n");
+			tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis())+"<//FONT><br />")));
+			tv.append(et.getText().toString() + "\n");
 			//wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
 			et.setText("");
 			msg.setData(wysylany);

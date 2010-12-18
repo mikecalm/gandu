@@ -1,7 +1,14 @@
 package android.pp;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,6 +31,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -63,6 +71,7 @@ public class ContactBook extends ExpandableListActivity{
 	int ustawionyStatus = 0;
 	static final private int NEW_CONTACT_ACTIVITY_RESULT = 0;
 	public GetStatuses gs = new GetStatuses();
+	ArrayList<String> itemsy = new ArrayList();
 	
 	AlertDialog alertDialog;
 	
@@ -74,20 +83,36 @@ public class ContactBook extends ExpandableListActivity{
 	/** Messenger for communicating with service. */
     Messenger mService = null;
     
+    //variable which controls the ping thread and initialThread
+    private ConditionVariable mCondition;
+    private ConditionVariable mInitial;
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		itemsy.add("Dostepny");
+		itemsy.add("Zaraz wracam");
+		itemsy.add("Niewidoczny");
+		itemsy.add("Niedostepny");
+        mCondition = new ConditionVariable(false);
+        mInitial = new ConditionVariable(false);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mNM.cancel(-1);
-		Bundle b = this.getIntent().getExtras();
+		/*Bundle b = this.getIntent().getExtras();
 		if(b != null)
 		{
 			if(b.containsKey("mojNumer"))
 			{
 				this.mojNumer = b.getString("mojNumer");
 			}
-		}
+		}*/
+		//uruchom watek oczekujacy na polaczenie z serwisem, 
+		//i pobierajacym z niego mojNumer, aktualny status i opis
+		Thread initialThread = new Thread(null, initialTask, "initialService");
+        mInitial = new ConditionVariable(false);
+        initialThread.start();
+        
 		setContentView(R.layout.contactbook);
 		//zbindowanie aktywnosci do serwisu
 		//doBindService();
@@ -96,22 +121,10 @@ public class ContactBook extends ExpandableListActivity{
 		mIsBound = true;
 		
         //Ustawienie adaptera z danymi listy kontaktow
-        //mAdapter = new MyExpandableListAdapter(getApplicationContext());
 		mAdapter = new MyExpandableListAdapter(getApplicationContext());
         setListAdapter(mAdapter);
         
         registerForContextMenu(this.getExpandableListView());
-        
-        /*getExpandableListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-			
-			@Override
-			public void onCreateContextMenu(ContextMenu menu, View v,
-					ContextMenuInfo menuInfo) {
-				// TODO Auto-generated method stub
-				menu.setHeaderTitle("Test");
-				v.showContextMenu();
-			}
-		});*/
         
         //prefs = getPreferences(0);
         prefs = getSharedPreferences("otwarteZakladki", 0);
@@ -156,13 +169,15 @@ public class ContactBook extends ExpandableListActivity{
             	//int wybrany = alertDialog.getListView().getCheckedItemPosition();
             	//Toast.makeText(getApplicationContext(), "wybrano", wybrany).show();
             }
-        });		
+        });
+        
+        //zaladowanie listy kontaktow z pliku, jesli taki istnieje
+        //jest w IncomingHandler w Common.CLIENT_SET_INITIAL_INFO        
 	}
 	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
-		//mNM.cancel(-1);
 		super.onResume();
 	}
 	
@@ -236,7 +251,6 @@ public class ContactBook extends ExpandableListActivity{
                 	String new_komorkowy = data.getStringExtra("komorkowy");
                 	String new_stacjonarny = data.getStringExtra("stacjonarny");
                 	String new_stronaWWW = data.getStringExtra("stronaWWW");
-                	//String new_grupaName = data.getStringExtra("grupaName");
                 	String new_groupID = data.getStringExtra("grupaID");
                 	//START Jesli wyedytowano kontakt
                 	Boolean edit_edited = data.getBooleanExtra("edited",false);
@@ -347,16 +361,6 @@ public class ContactBook extends ExpandableListActivity{
     					grupy.add("00000000-0000-0000-0000-000000000000");
     				else
     					grupy.add(new_groupID);
-    				/*{
-    					String groupID = "";
-    					for(int ig=0; ig<this.groupsExpandableList.size(); ig++)
-    						if(this.groupsExpandableList.get(ig).name.equals(new_grupaName))
-    						{
-    							groupID = this.groupsExpandableList.get(ig).groupid;
-    							break;
-    						}
-    					grupy.add(groupID);
-    				}*/
     				scg.Groups = grupy;
     				//nowy.AB5Groups = new 
     				nowy.AB5Groups = scg;
@@ -467,7 +471,6 @@ public class ContactBook extends ExpandableListActivity{
     			ViewableGroups pobrany = this.groupsExpandableList
 				.get(group);
 	    		menu.setHeaderTitle(pobrany.name);
-	    		//String[] menuItems = {"Dodaj kontakt","cztery"};
 	    		String[] menuItems = {"Dodaj kontakt"};
 	    		for (int i = 0; i<menuItems.length; i++) {
 	    			menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -482,7 +485,6 @@ public class ContactBook extends ExpandableListActivity{
 		String menuItemName = item.getTitle().toString();
 		int group = ExpandableListView.getPackedPositionGroup(info.packedPosition);
 		int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
-		//String listItemName = Countries[info.position];
 		//akcja dla kontaktu
 		if(child != -1)
 		{
@@ -491,7 +493,6 @@ public class ContactBook extends ExpandableListActivity{
 				.get(child);
 			ViewableGroups pobranyG = this.groupsExpandableList
 			.get(group);
-			//Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.showName), Toast.LENGTH_SHORT).show();
 			switch(item.getItemId())
 			{
 				//akcja edytuj
@@ -565,9 +566,8 @@ public class ContactBook extends ExpandableListActivity{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-		        	saveOnInternalMemory(this.gglista);
+		        	saveOnInternalMemory(this.gglista,mojNumer);
 		        	mAdapter.notifyDataSetChanged();
-					//mAdapter.notifyDataSetChanged();
 					//jesli usuwany kontakt ma wpisany numer GG
 					//to trzeba wyslac do serwera informacje o
 					//usunieciu kontaktu z listy, zeby nie przysylal
@@ -695,7 +695,7 @@ public class ContactBook extends ExpandableListActivity{
 							// TODO Auto-generated catch block
 							Log.e("ContactBook blad ignorowania",e.getMessage());
 						}
-			        	saveOnInternalMemory(this.gglista);
+			        	saveOnInternalMemory(this.gglista,mojNumer);
 		        		this.mAdapter.notifyDataSetChanged();
 		        		//wyslanie do serwisu informacji, zeby powiadomij serwer GG o ignorowaniu kontaktu
 		        		Message msg3 = Message.obtain(null,Common.CLIENT_IGNORE_CONTACT, 0, 0);	        
@@ -753,7 +753,7 @@ public class ContactBook extends ExpandableListActivity{
 							// TODO Auto-generated catch block
 							Log.e("ContactBook blad ignorowania",e.getMessage());
 						}
-			        	saveOnInternalMemory(this.gglista);
+						saveOnInternalMemory(this.gglista,mojNumer);
 		        		this.mAdapter.notifyDataSetChanged();
 		        		//wyslanie do serwisu informacji, zeby powiadomij serwer GG o ignorowaniu kontaktu
 		        		Message msg3 = Message.obtain(null,Common.CLIENT_UNIGNORE_CONTACT, 0, 0);	        
@@ -777,7 +777,6 @@ public class ContactBook extends ExpandableListActivity{
 		{
 			ViewableGroups pobrany = this.groupsExpandableList
 			.get(group);
-			//Toast.makeText(getApplicationContext(), String.format("Wybrano %s dla %s", menuItemName, pobrany.name), Toast.LENGTH_SHORT).show();
 			switch(item.getItemId())
 			{
 				//dodaj kontakt (do wybranej grupy)
@@ -788,8 +787,6 @@ public class ContactBook extends ExpandableListActivity{
 					break;
 			}					
 		}
-		//TextView text = (TextView)findViewById(R.id.footer);
-		//text.setText(String.format("Selected %s for item %s", menuItemName, listItemName));
 		return true;
     }
 	
@@ -840,47 +837,12 @@ public class ContactBook extends ExpandableListActivity{
 			case R.id.AddContact04:
 				Intent intent = new Intent(this.getApplicationContext(), AddNewContact.class);
 				startActivityForResult(intent,NEW_CONTACT_ACTIVITY_RESULT);
-				//startActivity(intent);
-				/*SIMPLEContact nowy = new SIMPLEContact();
-				nowy.AA1Guid = "guid";
-				nowy.AA3ShowName = "NowyShowName";
-				nowy.AA2GGNumber = "123456";
-				SIMPLEContactGroups scg = new SIMPLEContactGroups();
-				ArrayList<String> grupy = new ArrayList<String>();
-				grupy.add(this.contactBookFull.A1Groupsy.Groups.get(0).A1Id);
-				scg.Groups = grupy;
-				//nowy.AB5Groups = new 
-				nowy.AB5Groups = scg;
-				addContactToContactBook(nowy);*/
 			 	break;
 			case R.id.GoToConversations05:
 				Intent intent1 = new Intent(this.getApplicationContext(), Chat.class);
 				intent1.putExtra("mojNumer", this.mojNumer);
-				//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
 				
 				prepareGGNumShowNameForIntent(intent1, null);
-				/*if(contactBookFull != null)
-				{
-					if(contactBookFull.A2Contactsy != null)
-					{
-						if(contactBookFull.A2Contactsy.Contacts != null)
-						{
-							ArrayList<String> numerIndex = new ArrayList<String>();
-							ArrayList<String> numerShowName = new ArrayList<String>();
-							//HashMap<String, String> numerShowName = new HashMap<String, String>();
-							for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
-							{
-								//numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName+"-"+contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
-								numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
-								numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
-								//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
-							}
-							intent1.putStringArrayListExtra("ShowNameGGNumber", numerShowName);
-							intent1.putStringArrayListExtra("indexGGNumber", numerIndex);
-							//intent.putExtra("ShowNameGGNumber", numerShowName);
-						}
-					}
-				}*/
 				
 				try
 				{
@@ -923,9 +885,6 @@ public class ContactBook extends ExpandableListActivity{
             map.put("ResID", R.drawable.notavailable);
             list.add(map);            
             
-            /*StatusListAdapter adapter = new StatusListAdapter(ContactBook.this, list,
-                    R.layout.status_row, new String[]{},
-                    new int[] { R.id.statusName, R.id.statusImage });*/
             StatusListAdapter adapter = new StatusListAdapter(ContactBook.this, list,
                     0, new String[]{},
                     new int[] {});
@@ -967,26 +926,8 @@ public class ContactBook extends ExpandableListActivity{
         	    		{
         	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
         	    		}
-                        /*new AlertDialog.Builder(ContactBook.this)
-                                .setMessage("Status: " + items[which])
-                                .show();*/
                     }
                 }).create();
-        	//ListAdapter la = new Simple
-            //return new AlertDialog.Builder(ContactBook.this)
-        	//return alertDialog = new AlertDialog.Builder(ContactBook.this)
-            //    .setTitle("Status")
-            //    .setItems(new String[]{"Dostepny","Niewidoczny","Niedostepny"}, new DialogInterface.OnClickListener() {
-            //        public void onClick(DialogInterface dialog, int which) {
-            //
-            //            /* User clicked so do some stuff */
-            //            String[] items = new String[]{"Dostepny","Niewidoczny","Niedostepny"};
-            //            /*new AlertDialog.Builder(ContactBook.this)
-            //                    .setMessage("Status: " + items[which])
-            //                    .show();*/
-            //        }
-            //    })
-            //    .create();
             //w tym przypadku nie jest potrzebny break na koncu, bo w case jest zwracany obiekt
         	//break;
         }
@@ -999,16 +940,6 @@ public class ContactBook extends ExpandableListActivity{
 	public boolean onChildClick(ExpandableListView parent,
             View v, int groupPosition, int childPosition,
             long id) {
-		
-		//Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
-		//Toast.makeText(this.getApplicationContext(), "username: "+((TextView)v.findViewById(R.id.username)).getText()+" grupa: "+groupPosition+" podgrupa: "+childPosition, Toast.LENGTH_SHORT).show();
-		
-
-		//SIMPLEContact szukanyKontakt = new SIMPLEContact();
-		//szukanyKontakt.AA3ShowName = ((TextView)v.findViewById(R.id.username)).getText().toString();
-		//int indeksSzukanegoKontaktu = Collections.binarySearch(contactBookFull.A2Contactsy.Contacts, szukanyKontakt, null);
-		//String numerGGWybranegoGosciaNaLiscie = contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoKontaktu).AA2GGNumber;
-		//Log.i("[Metoda1]kontakt z numerem: ", numerGGWybranegoGosciaNaLiscie);
 		//alternatywna metoda pobrania numeru kliknietego goscia
 		ViewableContacts pobrany = this.contactsExpandableList.get(groupPosition).get(childPosition);
 		Log.i("[Metoda2]kontakt z numerem: ", ""+pobrany.GGNumber);		
@@ -1020,29 +951,13 @@ public class ContactBook extends ExpandableListActivity{
 		
 		Intent intent = new Intent(this.getApplicationContext(), Chat.class);
 		intent.putExtra("username",((TextView)v.findViewById(R.id.username)).getText());
-		//intent.putExtra("ggnumber", numerGGWybranegoGosciaNaLiscie);
 		intent.putExtra("ggnumber", pobrany.GGNumber);
 		intent.putExtra("mojNumer", this.mojNumer);
-		//intent.putExtra("mojNumer", numerGGWybranegoGosciaNaLiscie);
 		
 		prepareGGNumShowNameForIntent(intent, null);
-		/*ArrayList<String> numerIndex = new ArrayList<String>();
-		ArrayList<String> numerShowName = new ArrayList<String>();
-		//HashMap<String, String> numerShowName = new HashMap<String, String>();
-		for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
-		{
-			//numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName+"-"+contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
-			numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
-			numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
-			//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
-		}
-		intent.putStringArrayListExtra("ShowNameGGNumber", numerShowName);
-		intent.putStringArrayListExtra("indexGGNumber", numerIndex);*/
-		//intent.putExtra("ShowNameGGNumber", numerShowName);
 		
 		try
 		{
-			//startActivity(intent);
 			startActivityForResult(intent,999);
 		}
 		catch(Exception e)
@@ -1062,13 +977,10 @@ public class ContactBook extends ExpandableListActivity{
 				{
 					ArrayList<String> numerIndex = new ArrayList<String>();
 					ArrayList<String> numerShowName = new ArrayList<String>();
-					//HashMap<String, String> numerShowName = new HashMap<String, String>();
 					for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
 					{
-						//numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName+"-"+contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
 						numerShowName.add(contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
 						numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
-						//numerShowName.put(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber, contactBookFull.A2Contactsy.Contacts.get(i).AA3ShowName);
 					}
 					if(intent != null)
 					{
@@ -1080,7 +992,6 @@ public class ContactBook extends ExpandableListActivity{
 						bundle.putStringArrayList("ShowNameGGNumber", numerShowName);
 						bundle.putStringArrayList("indexGGNumber", numerIndex);
 					}
-					//intent.putExtra("ShowNameGGNumber", numerShowName);
 				}
 			}
 		}
@@ -1129,8 +1040,7 @@ public class ContactBook extends ExpandableListActivity{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			serializer.write(this.contactBookFull, baos);
 			this.gglista = baos.toString("UTF-8");
-        	saveOnInternalMemory(this.gglista);
-			//sortContactListSIMPLE(this.contactBookFull);
+			saveOnInternalMemory(this.gglista,mojNumer);
 			this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
 			this.groupsExpandableList = new ArrayList<ViewableGroups>();
 			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
@@ -1167,6 +1077,7 @@ public class ContactBook extends ExpandableListActivity{
 			
 			kontaktyExp.add(new ArrayList<ViewableContacts>());
 		}
+		gs = new GetStatuses();
 		for(int i=0; i<gcl.A2Contactsy.Contacts.size(); i++)
 		{
 			for(int j=0; j<gcl.A2Contactsy.Contacts.get(i).AB5Groups.Groups.size(); j++)
@@ -1193,7 +1104,6 @@ public class ContactBook extends ExpandableListActivity{
 								type = (byte)0x04;	
 						gs.StatusesPairs.add(new GetStatusesStruct(Integer.reverseBytes(Integer.parseInt(dodawany.GGNumber)), type));
 						
-						//gs.StatusesPairs.add(new GetStatusesStruct(Integer.reverseBytes(Integer.parseInt(dodawany.GGNumber)), (byte)0x01));
 					}catch(Exception ExcAdd1)
 					{
 						Log.e("ExcAdd1", ExcAdd1.getMessage());
@@ -1211,16 +1121,11 @@ public class ContactBook extends ExpandableListActivity{
 				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);
 			}
 		}
-		Message m =  Message.obtain(null,Common.CLIENT_GET_STATUSES, 0, 0);
-		Bundle wysylany = new Bundle();
-		wysylany.putByteArray("bytePackage", gs.preparePackage());
-		m.setData(wysylany);
-		Log.i("ContactBook","Wyslalem do serwisu");
-		try {
-			mService.send(m);
-		} catch (Exception e) {
-			Log.e("ContactBook","wysylanie"+e.getMessage());
-		}
+		//uruchom watek oczekujacy na , 
+		//podtrzymujaca polaczenie z serwerem GG
+		Thread statusesThread = new Thread(null, statusesTask, "statusesService");
+        mCondition = new ConditionVariable(false);
+        statusesThread.start();
     }
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
@@ -1230,7 +1135,6 @@ public class ContactBook extends ExpandableListActivity{
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	//Log.i("ContactBook","Odebralem"+msg.what);
         	Bundle odebrany ;
             switch (msg.what) {
                 case Common.FLAG_ACTIVITY_REGISTER:
@@ -1261,6 +1165,41 @@ public class ContactBook extends ExpandableListActivity{
                 	odebrany = msg.getData();
                 	updateSD(odebrany.getInt("ggnumber"), odebrany.getInt("status"), odebrany.getString("description"));
                 	//TODO dodac do listy
+                	break;
+                case Common.CLIENT_SET_INITIAL_INFO:
+                	odebrany = msg.getData();
+                	mojNumer = odebrany.getString("mojNumer");
+                	String opisOdSer = odebrany.getString("description");
+                	String statusOdSer = odebrany.getString("status");
+                	statusDescription.setText(opisOdSer);
+                	int statusOstatni = itemsy.indexOf(statusOdSer);
+                	switch(statusOstatni)
+                	{
+	                	case 0:
+	    					statusButton.setImageResource(R.drawable.available);
+	    					break;
+	    				case 1:
+	    					statusButton.setImageResource(R.drawable.away);
+	    					break;
+	    				case 2:
+	    					statusButton.setImageResource(R.drawable.offline);
+	    					break;
+	    				case 3:
+	    					statusButton.setImageResource(R.drawable.notavailable);
+	    					break;
+                		default:
+                			statusButton.setImageResource(R.drawable.notavailable);
+                	}
+                	//zaladowanie listy kontaktow z pliku, jesli taki istnieje
+                	gglista = readFromInternalMemory("Kontakty_"+mojNumer+".xml");
+                    if(!gglista.equals(""))
+                    {
+            	    	prepareContactBook(gglista);
+            	    	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
+            	    	for(int parent=0; parent<groupsExpandableList.size(); parent++)
+            				getExpandableListView().expandGroup(parent);
+                    }
+                	break;
                 default:
                     super.handleMessage(msg);
             }
@@ -1284,6 +1223,8 @@ public class ContactBook extends ExpandableListActivity{
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = new Messenger(service);
+            mInitial.open();
+            mCondition.open();
             //mCallbackText.setText("Attached.");
 
             // We want to monitor the service for as long as we are
@@ -1299,23 +1240,12 @@ public class ContactBook extends ExpandableListActivity{
                 // disconnected (and then reconnected if it can be restarted)
                 // so there is no need to do anything here.
             }
-
-            // As part of the sample, tell the user what happened.
-            //Toast.makeText(Binding.this, R.string.remote_service_connected,
-            //Toast.makeText(GanduClient.this, "remote_service_connected",
-            //        Toast.LENGTH_SHORT).show();
         }
 
         public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
-            //mCallbackText.setText("Disconnected.");
-
-            // As part of the sample, tell the user what happened.
-            //Toast.makeText(Binding.this, R.string.remote_service_disconnected,
-            //Toast.makeText(GanduClient.this, "remote_service_disconnected",
-            //        Toast.LENGTH_SHORT).show();
         }
     };
     
@@ -1327,7 +1257,6 @@ public class ContactBook extends ExpandableListActivity{
                 GanduService.class), mConnection, Context.BIND_AUTO_CREATE);
         
         mIsBound = true;
-        //mCallbackText.setText("Binding.");
     }
 
     void doUnbindService() {
@@ -1350,18 +1279,13 @@ public class ContactBook extends ExpandableListActivity{
             // Detach our existing connection.
             unbindService(mConnection);
             mIsBound = false;
-            //mCallbackText.setText("Unbinding.");
         }
     }
     
-    public void saveOnInternalMemory(String tmp)
-    {
-	   //String extStorageDirectory = Environment.getDataDirectory().toString() ;
-	   //File file = new File(extStorageDirectory, "contactBook"+"GGNumber"+".xml");
-	   
+    public void saveOnInternalMemory(String tmp, String ggNum)
+    {  
 	   try {
-			//FileOutputStream fos = new FileOutputStream(file);
-		   FileOutputStream fos = openFileOutput("Kontakty_"+"GGNumber"+".xml", Context.MODE_PRIVATE);
+		   FileOutputStream fos = openFileOutput("Kontakty_"+ggNum+".xml", Context.MODE_PRIVATE);
 			byte [] buffer = tmp.getBytes("UTF-8");
 			fos.write(buffer);
 			fos.flush();
@@ -1371,6 +1295,108 @@ public class ContactBook extends ExpandableListActivity{
 			e.printStackTrace();
 		}
     }
+    
+    public String readFromInternalMemory(String fileName)
+    {
+    	String result = "";    
+    	try
+    	{
+    		String linia = "";
+    		FileInputStream inFile = openFileInput(fileName);
+    		InputStreamReader isr = new	InputStreamReader(inFile);
+    		BufferedReader bfr = new BufferedReader(isr);
+    		while((linia = bfr.readLine()) != null)
+    		{
+    			result += linia;
+    		}
+    	} 
+    	catch( IOException ex )
+    	{
+    		System.out.println("B³¹d przy operacji na pliku: "+ex);
+    	}
+		return result;
+    }
+    
+    public void sendStatusesInfoToService()
+    {
+    	Message m =  Message.obtain(null,Common.CLIENT_GET_STATUSES, 0, 0);
+		Bundle wysylany = new Bundle();
+		wysylany.putByteArray("bytePackage", gs.preparePackage());
+		m.setData(wysylany);
+		Log.i("ContactBook","Wyslalem do serwisu");
+		try {
+			mService.send(m);
+		} catch (Exception e) {
+			Log.e("ContactBook","wysylanie"+e.getMessage());
+		}
+    }
+    public void sendGGNumShowNameInfoToService()
+    {
+    	Message msg3 = Message.obtain(null,Common.CLIENT_GG_NUM_SHOW_NAME, 0, 0);	        
+		try
+		{
+    		Bundle wysylany = new Bundle();
+			prepareGGNumShowNameForIntent(null, wysylany);
+			msg3.setData(wysylany);
+			mService.send(msg3);
+		}catch(Exception excMsg)
+		{
+			Log.e("ContactBook","gg num -> show name:\n"+
+					excMsg.getMessage());
+		}
+    }
+    public void sendInitialInfoRequestToService()
+    {
+    	Message m =  Message.obtain(null,Common.CLIENT_GET_INITIAL_INFO, 0, 0);
+    	m.replyTo = mMessenger;
+		Log.i("ContactBook","Wyslalem do serwisu");
+		try {
+			mService.send(m);
+		} catch (Exception e) {
+			Log.e("ContactBook","wysylanie"+e.getMessage());
+		}
+    }
+  //watek wysylania listy kontaktow do serwisu w celu pobrania statusow
+    private Runnable initialTask = new Runnable() {
+        public void run() {
+        	Log.i("[ContactBook]initialTask", "Start watku initialTask");
+        	//jesli polaczenie z serwisem juz zostalo nawiazane, to od razu
+        	//mozna wyslac do serwisu zadanie pobrania statusow kontaktow z listy
+        	if(mService == null)
+        	{
+	        	//Wyjscie z petli i zakonczenie watku jesli mCondition 
+        		//zostanie otwarte (mCondition.open).
+        		//mCondition jest otwierane w metodzie onServiceConnected
+        		//obiektu mConnection, czyli po polaczeniu ContactBook z GanduService
+	        	while(!mInitial.block(4 * 60 * 1000))
+	        		;
+        	}
+        	sendInitialInfoRequestToService();
+        	Log.i("[ContactBook]initialTask", "Stop watku initialTask");
+        }
+    };
+    
+  //watek wysylania listy kontaktow do serwisu w celu pobrania statusow
+    private Runnable statusesTask = new Runnable() {
+        public void run() {
+        	Log.i("[ContactBook]statusesTask", "Start watku statusesTask");
+        	//jesli polaczenie z serwisem juz zostalo nawiazane, to od razu
+        	//mozna wyslac do serwisu zadanie pobrania statusow kontaktow z listy
+        	if(mService == null)
+        	{
+	        	//Wyjscie z petli i zakonczenie watku jesli mCondition 
+        		//zostanie otwarte (mCondition.open).
+        		//mCondition jest otwierane w metodzie onServiceConnected
+        		//obiektu mConnection, czyli po polaczeniu ContactBook z GanduService
+	        	while(!mCondition.block(4 * 60 * 1000))
+	        		;
+        	}
+        	sendStatusesInfoToService();
+        	sendGGNumShowNameInfoToService();
+        	Log.i("[ContactBook]statusesTask", "Stop watku statusesTask");
+        }
+    };
+    
     public void updateSD(int ggnumber, int status , String description) //aktualizuje status, opis kontaktu na liscie kontaktow
     {
     	if(this.contactsExpandableList != null)

@@ -1,7 +1,9 @@
 package android.pp;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +43,8 @@ public class GanduClient extends Activity {
 	String mojNumer = "";
 	
 	public NotificationManager mNM;
+	ProgressDialog mDialog1;
+	private static final int DIALOG1_KEY = 0;
 	// ------------------> OnCreate()
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -100,11 +104,20 @@ public class GanduClient extends Activity {
 	protected void onStop() {
 		// TODO Auto-generated method stub		
 		super.onStop();
+		try
+		{
+			if(mDialog1 != null)
+				mDialog1.dismiss();
+		}catch(Exception ex)
+		{
+			;
+		}
 	}
 
 
 	private OnClickListener connectListener = new OnClickListener() {
 		public void onClick(View v) {
+			showDialog(DIALOG1_KEY);
 			mojNumer = ggNumberEdit.getText().toString();
 			Message msg = Message.obtain(null,Common.CLIENT_LOGIN, 0, 0);
 			Bundle wysylany = new Bundle();
@@ -123,6 +136,22 @@ public class GanduClient extends Activity {
 			}
 		}
 	};
+	
+	@Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+            case DIALOG1_KEY: {
+            	mDialog1 = new ProgressDialog(this);
+            	mDialog1.setTitle("Logowanie");
+            	mDialog1.setMessage("Prosze czekac...");
+            	mDialog1.setIndeterminate(true);
+            	//mDialog1.setCancelable(false);
+            	mDialog1.setCancelable(true);
+                return mDialog1;
+            }
+        }
+        return null;
+    }
 	
   
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
