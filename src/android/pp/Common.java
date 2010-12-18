@@ -97,5 +97,7 @@ public class Common {
    static final int CLIENT_SET_STATUSES = 15;
    static final int CLIENT_SEND_CONFERENCE_MESSAGE = 16;
    static final int CLIENT_CONTACTBOOK_OUT = 17;
-   static final int CLIENT_GG_NUM_SHOW_NAME = 19;
+   static final int CLIENT_GG_NUM_SHOW_NAME = 18;
+   static final int CLIENT_GET_INITIAL_INFO = 20;
+   static final int CLIENT_SET_INITIAL_INFO = 21;
 }
