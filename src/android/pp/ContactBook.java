@@ -107,11 +107,6 @@ public class ContactBook extends ExpandableListActivity{
 				this.mojNumer = b.getString("mojNumer");
 			}
 		}*/
-		//uruchom watek oczekujacy na polaczenie z serwisem, 
-		//i pobierajacym z niego mojNumer, aktualny status i opis
-		Thread initialThread = new Thread(null, initialTask, "initialService");
-        mInitial = new ConditionVariable(false);
-        initialThread.start();
         
 		setContentView(R.layout.contactbook);
 		//zbindowanie aktywnosci do serwisu
@@ -171,8 +166,14 @@ public class ContactBook extends ExpandableListActivity{
             }
         });
         
+		//uruchom watek oczekujacy na polaczenie z serwisem, 
+		//i pobierajacym z niego mojNumer, aktualny status i opis
+		Thread initialThread = new Thread(null, initialTask, "initialService");
+        mInitial = new ConditionVariable(false);
+        initialThread.start();
         //zaladowanie listy kontaktow z pliku, jesli taki istnieje
-        //jest w IncomingHandler w Common.CLIENT_SET_INITIAL_INFO        
+        //jest w IncomingHandler w Common.CLIENT_SET_INITIAL_INFO.
+        //takie info od serwisu przychodzi w reakcji na instrukcje powyzej
 	}
 	
 	@Override
@@ -1173,6 +1174,7 @@ public class ContactBook extends ExpandableListActivity{
                 	String statusOdSer = odebrany.getString("status");
                 	statusDescription.setText(opisOdSer);
                 	int statusOstatni = itemsy.indexOf(statusOdSer);
+                	ustawionyStatus = statusOstatni;
                 	switch(statusOstatni)
                 	{
 	                	case 0:
@@ -1188,6 +1190,7 @@ public class ContactBook extends ExpandableListActivity{
 	    					statusButton.setImageResource(R.drawable.notavailable);
 	    					break;
                 		default:
+                			ustawionyStatus = 0;
                 			statusButton.setImageResource(R.drawable.notavailable);
                 	}
                 	//zaladowanie listy kontaktow z pliku, jesli taki istnieje
