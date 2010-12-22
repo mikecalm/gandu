@@ -100,4 +100,5 @@ public class Common {
    static final int CLIENT_GG_NUM_SHOW_NAME = 18;
    static final int CLIENT_GET_INITIAL_INFO = 20;
    static final int CLIENT_SET_INITIAL_INFO = 21;
+   static final int CLIENT_EXIT_PROGRAM = 22;
 }

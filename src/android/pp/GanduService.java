@@ -25,6 +25,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import com.google.android.maps.ItemizedOverlay;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -45,6 +47,8 @@ import android.widget.Toast;
 public class GanduService extends Service {
 	String[] ip = null;
 	private boolean connected = false;
+	Thread cThread;
+	Thread pingingThread;
 	Socket socket;
 	DataInputStream in;
 	DataOutputStream out;
@@ -62,6 +66,8 @@ public class GanduService extends Service {
     ArchiveSQLite archiveSQL;
     //variable which controls the ping thread
     private ConditionVariable mCondition;
+    //private ConditionVariable mConditionPingExit;
+    //private ConditionVariable mConditionGGExit;
     
     ArrayList<String> numerShowName;
     ArrayList<String> numerIndex;    
@@ -245,11 +251,6 @@ public class GanduService extends Service {
 	   return compressedDataLength;
    }
     
-    public void wyloguj()
-    {
-    	;
-    }
-    
     public Boolean inicjujLogowanie(String numerGG)
     {
     	try {
@@ -280,12 +281,16 @@ public class GanduService extends Service {
 			out = new DataOutputStream(socket.getOutputStream());
 			connected = true;
 			//uruchom watek odbierajacy komunikaty z serwera GG
-			Thread cThread = new Thread(new ReplyInterpreter());
+			//Thread cThread = new Thread(new ReplyInterpreter());
+			cThread = new Thread(new ReplyInterpreter());
 			cThread.start();
 			//uruchom watek wysylajacy okresowo wiadomosc PING, 
 			//podtrzymujaca polaczenie z serwerem GG
-			Thread pingingThread = new Thread(null, pingTask, "NotifyingService");
+			//Thread pingingThread = new Thread(null, pingTask, "NotifyingService");
+			pingingThread = new Thread(null, pingTask, "NotifyingService");
 	        mCondition = new ConditionVariable(false);
+	        //mConditionPingExit = new ConditionVariable(false);
+	        //mConditionGGExit = new ConditionVariable(false);
 	        pingingThread.start();
     	}
     	catch(Exception excinit)
@@ -295,13 +300,44 @@ public class GanduService extends Service {
     	return true;
     }
     
+    public int kodStatusuNaPodstawieStringa(String status, String opis)
+    {
+    	int kodStatusu = Common.GG_STATUS_NOT_AVAIL; 
+    	if(opis.equals(""))
+    	{
+    		if(status.equals("Dostepny"))
+    			kodStatusu = Common.GG_STATUS_AVAIL;
+    		else if(status.equals("Niewidoczny"))
+    			kodStatusu = Common.GG_STATUS_INVISIBLE;
+    		else if(status.equals("Zaraz wracam"))
+    			kodStatusu = Common.GG_STATUS_BUSY;
+    		else if(status.equals("Niedostepny"))
+    			kodStatusu = Common.GG_STATUS_NOT_AVAIL;
+    	}
+    	else
+    	{    		
+
+    		if(status.equals("Dostepny"))
+    			kodStatusu = Common.GG_STATUS_AVAIL_DESCR;
+    		else if(status.equals("Niewidoczny"))
+    			kodStatusu = Common.GG_STATUS_INVISIBLE_DESCR;
+    		else if(status.equals("Zaraz wracam"))
+    			kodStatusu = Common.GG_STATUS_BUSY_DESCR;
+    		else if(status.equals("Niedostepny"))
+    			kodStatusu = Common.GG_STATUS_NOT_AVAIL_DESCR;
+    	}
+    	Log.i("[GanduService]kodStatusuNaPodstawieStringa","Kod Statusu: "+kodStatusu+", "+status);
+    	return kodStatusu;
+    }
+    
     public Boolean wyslijPaczkeLogowania(String numerGG, String hasloGG, int ziarno)
     {
     	try
     	{
 	    	int numergg = Integer.parseInt(numerGG);
 	    	//Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, "http://code.google.com/p/gandu/");
-	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, descriptionLast);	    	
+	    	//Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, descriptionLast);
+	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, kodStatusuNaPodstawieStringa(statusLast, descriptionLast), (byte)0xff, descriptionLast);	    	
 	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
 	    	out.write(paczkalogowania);
 	    	out.flush();
@@ -344,6 +380,34 @@ public class GanduService extends Service {
     	}
     	return znalezionyShowName;
     }
+    
+    public void wylogujIZakoncz(String opis)
+    {
+    	StatusChangeMessage scm = new StatusChangeMessage();
+		try {
+			byte[] pack = scm.setStatus("Niedostepny",opis);
+			out.write(pack);
+			Log.i("GanduService", "Ustawiam status niedostepny");
+			out.flush();
+		} catch (Exception e) {
+			Log.e("GanduService", "Status setting Failed!");
+		}
+		//zakonczenie serwisu dopiero po zakonczeniu watku ping
+		//while(!mConditionPingExit.block(1000))
+		//	;
+		//Log.e("[GanduService]wylogujIZakoncz", "koniec watku ping");
+		//zakonczenie serwisu dopiero po zakonczeniu watku obslugujacego
+		//polaczenie z serwerem GG
+		//while(!mConditionGGExit.block(1000))
+		//	;		
+		//Log.e("[GanduService]wylogujIZakoncz", "koniec watku obslugujacego GG");
+		//Log.i("[GanduService]wylogujIZakoncz","przed stopSelf");
+		stopSelf();
+		//Log.i("[GanduService]wylogujIZakoncz","po stopSelf");
+		//metoda zabijajaca proces serwisu
+		//int pid = android.os.Process.myPid();
+		//android.os.Process.killProcess(pid);
+    }
 
     /**
      * Handler of incoming messages from clients.
@@ -355,6 +419,7 @@ public class GanduService extends Service {
             switch (msg.what) {
                 case Common.CLIENT_REGISTER:
                     mClients.add(msg.replyTo);
+                    Log.i("[GanduService]bindService","Liczba zbindowanych: "+mClients.size());
                    
                     Message msg2 = Message.obtain(null,Common.FLAG_ACTIVITY_REGISTER, 0, 0);
                     
@@ -503,17 +568,38 @@ public class GanduService extends Service {
                    	odebrany = msg.getData();
                 	String status = odebrany.getString("status");
                 	String opisStatusu = odebrany.getString("opisStatusu");
-                	StatusChangeMessage scm = new StatusChangeMessage();
-					try {
-						byte[] pack = scm.setStatus(status,opisStatusu);
-						out.write(pack);
-						Log.i("GanduService", "Ustawiam status");
-						out.flush();
-						descriptionLast = opisStatusu;
-						statusLast = status;
-					} catch (Exception e) {
-						Log.e("GanduService", "Status setting Failed!");
-					}
+                	//jesli wczesniej wybrano w contactBook status niedostepny
+                	//i teraz zmienia ktos status na jakis inny niz niedostepny
+                	//to ponownie zaloguj na numer gg i haslo podane podczas logowania
+                	if(statusLast.equals("Niedostepny"))
+                	{
+                		if(!ggnum.equals("") && !(status.equals("Niedostepny")))
+                		{
+							descriptionLast = opisStatusu;
+							statusLast = status;
+	                		if(inicjujLogowanie(ggnum))
+	                    	{
+	                    		//showNotification("Zalogowany "+ggnum);
+	                    		showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
+	                            		GanduClient.class, -1, false);
+	                    		mNM.cancel(-1);
+	                    	}
+                		}
+                	}
+                	else
+                	{
+	                	StatusChangeMessage scm = new StatusChangeMessage();
+						try {
+							byte[] pack = scm.setStatus(status,opisStatusu);
+							out.write(pack);
+							Log.i("GanduService", "Ustawiam status");
+							out.flush();
+							descriptionLast = opisStatusu;
+							statusLast = status;
+						} catch (Exception e) {
+							Log.e("GanduService", "Status setting Failed!");
+						}
+                	}
 				break;
                 case Common.CLIENT_ADD_NEW_CONTACT:
                 	odebrany = msg.getData();
@@ -703,6 +789,11 @@ public class GanduService extends Service {
                 		Log.e("[GanduService]Common.CLIENT_GET_INITIAL_INFO", excInitial.getMessage());
                 	}
                 	break;
+                case Common.CLIENT_EXIT_PROGRAM:
+                	odebrany = msg.getData();
+                	String opisPoWylogowaniu = odebrany.getString("opisStatusu");
+                	wylogujIZakoncz(opisPoWylogowaniu);
+                	break;
                 default:
                     super.handleMessage(msg);
             }
@@ -717,7 +808,7 @@ public class GanduService extends Service {
     @Override
     public void onCreate() {
     	
-    	//Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
+    	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
     	mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         // Display a notification about us starting.
@@ -734,8 +825,8 @@ public class GanduService extends Service {
 
     @Override
     public void onDestroy() {
+    	Log.i("[GanduService]onDestroy","Wewnatrz onDestroy()");
     	//zamkniecie socketa polaczonego z serwerem
-    	//wyloguj();
     	try
     	{
     		socket.close();
@@ -757,6 +848,13 @@ public class GanduService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mMessenger.getBinder();
+    }
+    
+    @Override
+    public boolean onUnbind(Intent intent) {
+    	super.onUnbind(intent);
+    	Log.i("[GanduService]onUnbind","Wszedlem do onUbind, aktywnosci odlaczone!");
+    	return false;
     }
 
     /**
@@ -1171,6 +1269,7 @@ public class GanduService extends Service {
 			}
 			Log.i("ReplyInterpreter", "Watek zakonczony");
 			Log.i("GanduService", "wartosc connected = "+connected);
+			//mConditionGGExit.open();
 		}
     }
     
@@ -1200,6 +1299,7 @@ public class GanduService extends Service {
         		}
         	}
         	Log.i("[GanduService]pingTask", "Stop watku pingTask");
+        	//mConditionPingExit.open();
         }
     };
 }

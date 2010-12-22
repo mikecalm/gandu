@@ -184,6 +184,7 @@ public class ContactBook extends ExpandableListActivity{
 	
 	@Override
 	protected void onDestroy() {
+		super.onDestroy();
 		// TODO Auto-generated method stub
 		if (mIsBound) {
             // If we have received the service, and hence registered with
@@ -205,7 +206,6 @@ public class ContactBook extends ExpandableListActivity{
                 }
             }
         }
-		super.onDestroy();
 	}
 	
 	@Override
@@ -819,7 +819,22 @@ public class ContactBook extends ExpandableListActivity{
 				String odz = prefs.getString("text", null);
 				editor.remove("text");
 	    		editor.commit();
-			 	moveTaskToBack(true);
+	    		Message msgExit = Message.obtain(null, Common.CLIENT_EXIT_PROGRAM, 0, 0);
+	    		try
+	    		{
+		    		Bundle wysylanyExit = new Bundle();	    	
+        			if(statusDescription.getText() != null)
+        				wysylanyExit.putString("opisStatusu", statusDescription.getText().toString());
+        			else
+        				wysylanyExit.putString("opisStatusu", "");
+					msgExit.setData(wysylanyExit);
+	    			mService.send(msgExit);
+		    		finish();
+	    		}catch(Exception exExit)
+	    		{
+	    			Log.e("]ContactBook]Wyloguj i zakoncz", exExit.getMessage());
+	    		}
+			 	//moveTaskToBack(true);
 			 	break;
 			case R.id.Export03:			
 				//wyslanie do serwisu wiadomosci, ze eksportowana jest lista kontaktow    		
