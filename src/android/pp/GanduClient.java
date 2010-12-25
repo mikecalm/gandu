@@ -53,13 +53,13 @@ public class GanduClient extends Activity {
 		
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mNM.cancel(-1);
-
-		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
-		ggNumberEdit.setText("23543809");
-		//ggNumberEdit.setText("31082603");
+		prefs = getPreferences(0);
+		editor = prefs.edit();
 		
+		ggNumberEdit = (EditText) findViewById(R.id.EditText01);
 		ggPasswordEdit = (EditText) findViewById(R.id.EditText02);
-		ggPasswordEdit.setText("password");
+		ggNumberEdit.setText(prefs.getString("mojNumer",""));
+	    ggPasswordEdit.setText(prefs.getString("mojeHaslo",""));
 		connectPhones = (Button) findViewById(R.id.Button01);
 		connectPhones.setText("Zaloguj...");
 		connectPhones.setOnClickListener(connectListener);
@@ -119,6 +119,9 @@ public class GanduClient extends Activity {
 		public void onClick(View v) {
 			showDialog(DIALOG1_KEY);
 			mojNumer = ggNumberEdit.getText().toString();
+			editor.putString("mojNumer", ggNumberEdit.getText().toString());
+			editor.putString("mojeHaslo", ggPasswordEdit.getText().toString());
+			editor.commit();
 			Message msg = Message.obtain(null,Common.CLIENT_LOGIN, 0, 0);
 			Bundle wysylany = new Bundle();
 			//wysylany.putString("numerGG", ggNumberEdit.getText().toString());

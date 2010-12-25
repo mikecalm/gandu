@@ -645,7 +645,7 @@ public class ContactBook extends ExpandableListActivity{
 						}
 		        	}
 					break;
-				case 2:
+				case 2: //Lokalizuj
 					Geo geo = new Geo();
 					GeoPoint g = geo.getFix(pobrany.GGNumber);
 					if(g != null)
@@ -661,10 +661,11 @@ public class ContactBook extends ExpandableListActivity{
 					}
 					
 					break;
-				case 3: 
-					Geo geo2 = new Geo();
+				case 3: //Lokalizuj mnie
 					Intent j = new Intent(getApplicationContext(), Maps.class);
 					j.putExtra("FromDevice", true);
+					j.putExtra("source", mojNumer);
+					j.putExtra("ggnumber",pobrany.GGNumber);
 					startActivity(j);
 					break;
 				//akcja ignoruj/nie ignoruj
