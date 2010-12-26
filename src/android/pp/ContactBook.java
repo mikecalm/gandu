@@ -9,11 +9,16 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -30,6 +35,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -37,6 +43,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.text.Html;
+import android.text.style.URLSpan;
+import android.text.util.Linkify;
+import android.text.util.Linkify.MatchFilter;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -46,6 +56,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.URLUtil;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
@@ -127,6 +139,7 @@ public class ContactBook extends ExpandableListActivity{
 		
 		/* Wyswietl liste statusow */
 		statusDescription = (EditText) findViewById(R.id.EditText01);
+		
 		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
 		
 		//dodanie akcji na wcisniecie przycisku "Done" po wpisaniu tekstu
@@ -157,6 +170,7 @@ public class ContactBook extends ExpandableListActivity{
 				return false;
 			}
 		});
+		
         statusButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
             	//wygenerowanie akcja na zdarzenie wybrania przycisku zmiany statusu
@@ -452,14 +466,14 @@ public class ContactBook extends ExpandableListActivity{
 	    		String[] menuItems = {"Edytuj","Usun","Lokalizuj","Lokalizuj mnie"};
 	    		if(!pobrany.GGNumber.equals(""))
 	    		{
-	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj"};
+	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Otwórz link z opisu","Ignoruj"};
 		    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
 		    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
 		    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
 		    		{
 		    			//jesli jest, to zamiast opcji ignoruj, bedzie opcja "Nie ignoruj"
 		    			if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored == true)
-		    				menuItems[4] = "Nie ignoruj";
+		    				menuItems[5] = "Nie ignoruj";
 		    		}
 	    		}
 	    		for (int i = 0; i<menuItems.length; i++) {
@@ -670,7 +684,32 @@ public class ContactBook extends ExpandableListActivity{
 					break;
 				//akcja ignoruj/nie ignoruj
 				//case 2:
-				case 4:
+				case 4: //link
+						String adres =null;			
+						Pattern pattern = Pattern.compile("(http|ftp|https):\\/\\/[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&amp;:/~\\+#]*[\\w\\-\\@?^=%&amp;/~\\+#])?");
+						Matcher matcher = pattern.matcher(pobrany.description);
+						while(matcher.find())
+						{
+								if(matcher.group().startsWith("www") || matcher.group().length()> 2)
+								{
+									adres = matcher.group();		
+								}								
+						}
+						if(adres!=null)
+						{
+							Intent k = new Intent(getApplicationContext(), WWW.class);
+							k.putExtra("adres", adres);
+							startActivity(k);
+						}
+						else
+						{
+							Toast.makeText(getApplicationContext(),"Brak URL w opisie", Toast.LENGTH_SHORT).show();
+						}
+					    
+					
+					break;
+					
+				case 5:
 					//jesli wybrano ignoruj
 					if(menuItemName.equalsIgnoreCase("ignoruj"))
 					{
@@ -1012,6 +1051,7 @@ public class ContactBook extends ExpandableListActivity{
 			this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
 			this.groupsExpandableList = new ArrayList<ViewableGroups>();
 			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
+			statusDescription.setSelection(0, statusDescription.getText().length());
 		} catch (Exception excSimp) {
 			Log.e("SIMPLE Error",excSimp.getMessage());
 		}
