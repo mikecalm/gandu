@@ -15,6 +15,11 @@ public class Common {
     static final int GG_NOTIFY_FIRST = 0x000f;
     static final int GG_NOTIFY_LAST = 0x0010;
     static final int GG_PING = 0x0008;
+    static final int GG_DCC7_ID_REQUEST = 0x0023;
+    static final int GG_DCC7_NEW = 0x0020;
+    static final int GG_DCC7_ABORT = 0x0025;
+    static final int GG_DCC7_REJECT = 0x0022;
+    static final int GG_DCC7_ACCEPT = 0x0021;
     
     /**
      * STATES 
@@ -38,6 +43,7 @@ public class Common {
     static final int GG_RECV_MSG80 = 0x002e;
     static final int GG_STATUS80 = 0x0036;
     static final int GG_NOTIFY_REPLY80 = 0x0037;
+    static final int GG_DCC7_ID_REPLY = 0x0023;
     /**
      * CONTACT TYPES
      */
@@ -56,6 +62,17 @@ public class Common {
     */
     static final byte GG_USERLIST_GET=  0x02; 	//import listy
     static final byte GG_USERLIST_PUT= 0x00; 	//poczatek eksportu listy
+    
+    /**
+     * TYPE RODZJA TRANSMISJI
+     */
+    static final int GG_DCC7_TYPE_VOICE = 0x00000001; /* rozmowa g³osowa (ju¿ nieu¿ywane) */
+    static final int GG_DCC7_TYPE_FILE = 0x00000004;	/* przesy³anie plików */
+    
+    /**
+     * REASON powod odmowy przyjecia pliku
+     */
+    static final int GG_DCC7_REJECT_USER = 0x00000002;	/* u¿ytkownik odrzuci³ po³¹czenie */
     
     /**
      * Command to the service to register a client, receiving callbacks
@@ -101,4 +118,5 @@ public class Common {
    static final int CLIENT_GET_INITIAL_INFO = 20;
    static final int CLIENT_SET_INITIAL_INFO = 21;
    static final int CLIENT_EXIT_PROGRAM = 22;
+   static final int CLIENT_SEND_FILE = 23;
 }
