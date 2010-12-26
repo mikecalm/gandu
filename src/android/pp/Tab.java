@@ -16,6 +16,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.Html;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -58,10 +59,7 @@ public class Tab extends Activity{
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
 		getApplicationContext().bindService(intent,mConnection,1);
-		mIsBound = true;
-		//btn.setOnKeyListener(keyListener);
-		//getParent().
-		
+		mIsBound = true;	
 		Bundle b = this.getIntent().getExtras();
 		if(b != null)
 		{
@@ -114,6 +112,7 @@ public class Tab extends Activity{
 					int indeksKonfShow = konferenciGG.indexOf(nadawca);
 					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+konferenciGGShowName.get(indeksKonfShow)+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(wiadomosc + "\n");
+					
 				}
 			}
 	    	
@@ -153,6 +152,7 @@ public class Tab extends Activity{
 					String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
 					tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(wiadomosc + "\n");
+					
 				}
 				else
 				{
@@ -164,6 +164,7 @@ public class Tab extends Activity{
 					//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 					tv.append(wiadomosc + "\n");
+					
 				}
 			}
 	    	
@@ -182,6 +183,7 @@ public class Tab extends Activity{
 			}
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
 		}
+		Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
 		
 	}
 	public void onResume(){
@@ -391,6 +393,7 @@ public class Tab extends Activity{
                 	//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
                 	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOdN+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));                	
                 	tv.append(tresc+"\n");
+                	Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
                 	//Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
                 	Log.i("[Tab]Od numeru", wiadomoscOd);

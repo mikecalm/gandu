@@ -47,7 +47,7 @@ public class Geo {
 			
 		}catch(Exception e)
 		{
-			
+			Log.e("Geo",e.getMessage());
 		}
 	}
 	
@@ -84,7 +84,6 @@ public class Geo {
 					String longitude = tab[1];
 					//ip = readline.split(" ");
 					GeoPoint g = new GeoPoint((int)(Double.parseDouble(latitude)*1E6), (int)(Double.parseDouble(longitude)*1E6));
-				    
 				    //l.setLatitude(Double.parseDouble(latitude));
 				    //l.setLongitude(Double.parseDouble(longitude));
 				    			    

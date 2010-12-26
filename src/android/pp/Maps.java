@@ -33,6 +33,7 @@ public class Maps extends MapActivity implements LocationListener {
 	// private int latitude;
 	// private int longitude;
 	private GeoPoint gp;
+	private String source; 
 
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle bundle) {
@@ -48,12 +49,16 @@ public class Maps extends MapActivity implements LocationListener {
 			this.gp = new GeoPoint(b.getInt("latitude"), b.getInt("longitude"));
 			this.showOnMap(gp);
 		}
-		else if (b.containsKey("FromDevice"))
+		else if (b.containsKey("FromDevice") && b.containsKey("source"))
 		{
+			source = b.getString("source");
 			double [] fix = this.getFix();
-			int latitude = (int) (fix[0]* 1E6);
-			int longitude = (int)(fix[1]* 1E6);
+			Geo geo = new Geo();
+			geo.addFix(source, Double.toString(fix[0]), Double.toString(fix[1]));
 			
+			int latitude = (int) (fix[0]* 1E6);
+			int longitude = (int)(fix[1]* 1E6);			
+						
 			this.gp = new GeoPoint(latitude,longitude);
 			this.showOnMap(this.gp);
 		}
@@ -161,8 +166,11 @@ public class Maps extends MapActivity implements LocationListener {
 	public void onLocationChanged(Location location)
 	{
 		mLocation = location;
+		Geo geo = new Geo();
+		geo.addFix(source, Double.toString(mLocation.getLatitude()),  Double.toString(mLocation.getLongitude()));
 		int latitude = (int) (location.getLatitude()* 1E6);
 		int longitude = (int)(location.getLongitude()* 1E6);
+		
 		showOnMap(new GeoPoint(latitude,longitude));
 		Toast.makeText(getApplicationContext(), LocationToAddress(mLocation), Toast.LENGTH_SHORT).show();
 		

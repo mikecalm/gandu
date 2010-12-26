@@ -3,12 +3,14 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">    
+    android:layout_height="fill_parent"
+    >    
      <Button
         android:id="@+id/ok"
         android:layout_width="60px"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"       
+        android:layout_alignParentBottom="true" 
+        android:singleLine="true"   
         android:layout_alignWithParentIfMissing="true"
         android:text="Send"/>        
     <EditText
@@ -24,7 +26,9 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"> 
 	<TextView
-        android:id="@+id/lblComments"  
+        android:id="@+id/lblComments" 
+        android:linksClickable="true"
+        android:textColorLink="#FFCC00"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:text="Tutaj bedzie rozmowa"/>         
