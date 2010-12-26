@@ -452,7 +452,8 @@ public class ContactBook extends ExpandableListActivity{
 	    		String[] menuItems = {"Edytuj","Usun","Lokalizuj","Lokalizuj mnie"};
 	    		if(!pobrany.GGNumber.equals(""))
 	    		{
-	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj"};
+	    			//menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj"};
+	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj","Wyslij plik"};
 		    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
 		    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
 		    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
@@ -770,7 +771,23 @@ public class ContactBook extends ExpandableListActivity{
 	    	    					excMsg.getMessage());
 	    	    		}
 					}
-					break;				
+					break;
+					//akcja wyslij plik
+					case 5:
+						//wyslanie do serwisu informacji o checi wyslania pliku na na podany numer GG
+		        		Message msg3 = Message.obtain(null,Common.CLIENT_SEND_FILE, 0, 0);	        
+	    	    		try
+	    	    		{
+	    		    		Bundle wysylany = new Bundle();
+	    					wysylany.putString("numerGG", pobrany.GGNumber);
+	    					msg3.setData(wysylany);
+	    	    			mService.send(msg3);
+	    	    		}catch(Exception excMsg)
+	    	    		{
+	    	    			Log.e("ContactBook","Blad wyslania info do serwisu o wysylaniu pliku:\n"+
+	    	    					excMsg.getMessage());
+	    	    		}
+						break;
 			}
 		}
 		//akcja dla grupy

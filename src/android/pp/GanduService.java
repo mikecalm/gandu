@@ -71,6 +71,9 @@ public class GanduService extends Service {
     
     ArrayList<String> numerShowName;
     ArrayList<String> numerIndex;    
+    
+    public Files incomingFileTransfer;
+    public Files outcomingFileTransfer;
   
    public Boolean getContactbook()
    {
@@ -774,16 +777,16 @@ public class GanduService extends Service {
                 case Common.CLIENT_GET_INITIAL_INFO:
                 	try
                 	{
-                	String zalogowanyNumer = ggnum;
-                	String ustawionyOpis = descriptionLast;
-                	String ustawionyStatus = statusLast;
-                	Message msg4 = Message.obtain(null,Common.CLIENT_SET_INITIAL_INFO, 0, 0);
-                	Bundle initialInfo = new Bundle();
-                	initialInfo.putString("mojNumer", zalogowanyNumer);
-                	initialInfo.putString("description", ustawionyOpis);
-                	initialInfo.putString("status", ustawionyStatus);
-                	msg4.setData(initialInfo);
-                	msg.replyTo.send(msg4);
+	                	String zalogowanyNumer = ggnum;
+	                	String ustawionyOpis = descriptionLast;
+	                	String ustawionyStatus = statusLast;
+	                	Message msg4 = Message.obtain(null,Common.CLIENT_SET_INITIAL_INFO, 0, 0);
+	                	Bundle initialInfo = new Bundle();
+	                	initialInfo.putString("mojNumer", zalogowanyNumer);
+	                	initialInfo.putString("description", ustawionyOpis);
+	                	initialInfo.putString("status", ustawionyStatus);
+	                	msg4.setData(initialInfo);
+	                	msg.replyTo.send(msg4);
                 	}catch(Exception excInitial)
                 	{
                 		Log.e("[GanduService]Common.CLIENT_GET_INITIAL_INFO", excInitial.getMessage());
@@ -793,6 +796,23 @@ public class GanduService extends Service {
                 	odebrany = msg.getData();
                 	String opisPoWylogowaniu = odebrany.getString("opisStatusu");
                 	wylogujIZakoncz(opisPoWylogowaniu);
+                	break;
+                case Common.CLIENT_SEND_FILE:
+                	try
+                	{
+	                	odebrany = msg.getData();
+	                	String wyslijPlikDo = odebrany.getString("numerGG");
+	                	outcomingFileTransfer = new Files();
+	                	outcomingFileTransfer.ggReceiverNumber = Integer.parseInt(wyslijPlikDo);
+	                	//wyslanie do serwera GG zadania o 8-bajtowy (Long) identyfikator
+	                	//potrzebny do wymiany plikow
+	                	byte[] zadanieID = outcomingFileTransfer.prepareIDRequest();
+	                	out.write(zadanieID);
+	                	out.flush();
+                	}catch(Exception excSendFile)
+                	{
+                		Log.e("[GanduService]CLIENT_SEND_FILE","Blad wysylania zadania o id: "+excSendFile.getMessage());
+                	}
                 	break;
                 default:
                     super.handleMessage(msg);
@@ -1230,6 +1250,44 @@ public class GanduService extends Service {
 						}
 							//pobraneBajty += in.read(smiec, pobraneBajty, dlugosc-pobraneBajty);
 						
+						break;
+						
+					case Common.GG_DCC7_ID_REPLY:
+						int dlugoscFile = Integer.reverseBytes(in.readInt());
+						int transferType = Integer.reverseBytes(in.readInt());
+						Long transferID = Long.reverseBytes(in.readLong());
+						//outcomingFileTransfer nie powinno byc null,
+						//bo ten obiekt jest inicjowany w momencie odebrania
+						//od ContactBook polecenia wyslania pliku
+						if(outcomingFileTransfer == null)
+						{
+							outcomingFileTransfer = new Files();
+							Log.e("[GanduService]GG_DCC7_ID_REPLY","outcomingFileTransfer byl null, a nie powinien");
+						}
+						outcomingFileTransfer.id = transferID;
+						Log.i("[GanduService]outcomingFileID",""+outcomingFileTransfer.id);
+						//teraz rozpocznij procedure wysylania pliku pod numer GG
+						//zapisany w outcomingFileTransfer.ggReceiverNumber
+						byte[] wyslijPlik = outcomingFileTransfer.prepareSendFileRequest(Integer.parseInt(ggnum), outcomingFileTransfer.ggReceiverNumber, "data/data/android.pp/files/slij.txt", "slij.txt");
+						try
+						{
+							out.write(wyslijPlik);
+							out.flush();
+						}catch(Exception excSend)
+						{
+							Log.e("[GanduService]GG_DCC7_NEW", "Blad wyslania powiadomienia o checi przeslania pliku: "+excSend.getMessage());
+						}
+						break;
+						
+					//odbiorca pliku zgodzil sie na odebranie
+					case Common.GG_DCC7_ACCEPT:
+						int dlugoscAccept = Integer.reverseBytes(in.readInt());
+						int numerPrzyjmujacego = Integer.reverseBytes(in.readInt());
+						Long idFile = Long.reverseBytes(in.readLong());
+						Long offset = Long.reverseBytes(in.readLong());
+						//jesli offset jest liczba rozna od 0, to wysylamy plik nie
+						//od poczatku, tylko od bajtu numer offset
+						//if(offset != 0)
 						break;
 						
 					default:
