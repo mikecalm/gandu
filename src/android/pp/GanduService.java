@@ -340,7 +340,14 @@ public class GanduService extends Service {
 	    	int numergg = Integer.parseInt(numerGG);
 	    	//Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, "http://code.google.com/p/gandu/");
 	    	//Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, descriptionLast);
-	    	Logowanie logowanie = new Logowanie(ziarno, hasloGG, numergg, kodStatusuNaPodstawieStringa(statusLast, descriptionLast), (byte)0xff, descriptionLast);	    	
+	    	Logowanie logowanie;
+	    	if(statusLast.equals("Niedostepny"))
+	    	{
+	    		statusLast = "Dostepny";
+	    		logowanie = new Logowanie(ziarno, hasloGG, numergg, Common.GG_STATUS_AVAIL_DESCR, (byte)0xff, descriptionLast);
+	    	}
+	    	else	    
+	    		logowanie = new Logowanie(ziarno, hasloGG, numergg, kodStatusuNaPodstawieStringa(statusLast, descriptionLast), (byte)0xff, descriptionLast);
 	    	byte[] paczkalogowania = logowanie.pobraniePaczkiBajtow();
 	    	out.write(paczkalogowania);
 	    	out.flush();
