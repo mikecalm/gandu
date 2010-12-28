@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.lang.reflect.Array;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,14 +67,15 @@ public class GanduService extends Service {
     ArchiveSQLite archiveSQL;
     //variable which controls the ping thread
     private ConditionVariable mCondition;
+    private ConditionVariable mTransfer;
     //private ConditionVariable mConditionPingExit;
     //private ConditionVariable mConditionGGExit;
     
     ArrayList<String> numerShowName;
     ArrayList<String> numerIndex;    
     
-    public Files incomingFileTransfer;
-    public Files outcomingFileTransfer;
+    public Files incomingFileTransfer = null;
+    public Files outcomingFileTransfer = null;
   
    public Boolean getContactbook()
    {
@@ -809,8 +811,12 @@ public class GanduService extends Service {
                 	{
 	                	odebrany = msg.getData();
 	                	String wyslijPlikDo = odebrany.getString("numerGG");
+	                	String nazwaPliku = odebrany.getString("fileName");
+	                	String sciezkaPliku = odebrany.getString("filePath");
 	                	outcomingFileTransfer = new Files();
 	                	outcomingFileTransfer.ggReceiverNumber = Integer.parseInt(wyslijPlikDo);
+	                	outcomingFileTransfer.sendingFileName = nazwaPliku;
+	                	outcomingFileTransfer.sendingFilePath = sciezkaPliku;
 	                	//wyslanie do serwera GG zadania o 8-bajtowy (Long) identyfikator
 	                	//potrzebny do wymiany plikow
 	                	byte[] zadanieID = outcomingFileTransfer.prepareIDRequest();
@@ -1275,7 +1281,8 @@ public class GanduService extends Service {
 						Log.i("[GanduService]outcomingFileID",""+outcomingFileTransfer.id);
 						//teraz rozpocznij procedure wysylania pliku pod numer GG
 						//zapisany w outcomingFileTransfer.ggReceiverNumber
-						byte[] wyslijPlik = outcomingFileTransfer.prepareSendFileRequest(Integer.parseInt(ggnum), outcomingFileTransfer.ggReceiverNumber, "data/data/android.pp/files/slij.txt", "slij.txt");
+						//byte[] wyslijPlik = outcomingFileTransfer.prepareSendFileRequest(Integer.parseInt(ggnum), outcomingFileTransfer.ggReceiverNumber, "data/data/android.pp/files/slij.txt", "slij.txt");
+						byte[] wyslijPlik = outcomingFileTransfer.prepareSendFileRequest(Integer.parseInt(ggnum), outcomingFileTransfer.ggReceiverNumber);
 						try
 						{
 							out.write(wyslijPlik);
@@ -1292,9 +1299,25 @@ public class GanduService extends Service {
 						int numerPrzyjmujacego = Integer.reverseBytes(in.readInt());
 						Long idFile = Long.reverseBytes(in.readLong());
 						Long offset = Long.reverseBytes(in.readLong());
+						Log.i("[GanduService]GG_DCC7_ACCEPT",""+numerPrzyjmujacego+" zaakceptowal plik");
+						Log.i("[GanduService]GG_DCC7_ACCEPT","ma juz: "+offset+" bajt(ow)");
 						//jesli offset jest liczba rozna od 0, to wysylamy plik nie
 						//od poczatku, tylko od bajtu numer offset
 						//if(offset != 0)
+						//uruchom watek wysylajacy plik do odbiorcy
+						Thread fileThread = new Thread(new sendFileTask());
+						fileThread.start();						
+						Log.i("[GanduService]GG_DCC7_ACCEPT","Uruchomilem watek wysylania pliku sendFileTask");
+						break;
+						
+					case Common.GG_DCC7_REJECT:
+						int dlugoscReject = Integer.reverseBytes(in.readInt());
+						int numerOdrzucajacego = Integer.reverseBytes(in.readInt());
+						Long idRejectedFile = Long.reverseBytes(in.readLong());
+						int powodOdrzucenia = Integer.reverseBytes(in.readInt());
+						if(outcomingFileTransfer != null)
+							outcomingFileTransfer = null;
+						Log.i("[GanduService]GG_DCC7_REJECT","Odbiorca odrzucil plik. Powod: "+powodOdrzucenia);
 						break;
 						
 					default:
@@ -1367,4 +1390,210 @@ public class GanduService extends Service {
         	//mConditionPingExit.open();
         }
     };
+    
+    //watek wyslania pliku
+    public class sendFileTask implements Runnable {
+        public void run() 
+        {
+        	Log.i("[GanduService]sendFileTask", "1. Start watku");
+        	Socket socketRelay = null;
+        	DataInputStream inRealy = null;
+        	DataOutputStream outRealy = null;
+			//wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80
+        	try
+        	{
+        		Log.i("[GanduService]sendFileTask", "2. GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80");
+        		socketRelay = new Socket("relay.gadu-gadu.pl", 80);
+    			inRealy = new DataInputStream(socketRelay.getInputStream());
+    			outRealy = new DataOutputStream(socketRelay.getOutputStream());
+    			byte[] request1 = outcomingFileTransfer.prepareSendRelayRequest(Common.GG_DCC7_RELAY_TYPE_SERVER);
+    			outRealy.write(request1);
+    			outRealy.flush();
+    			Log.i("[GanduService]sendFileTask", "3. GG_DCC7_RELAY_REQUEST wyslalem GG_DCC7_RELAY_TYPE_SERVER");
+    			
+    			//proba odebrania odpowiedzi z adresem serwera proxy
+    			//jesli serwer nie odpowie, to sie rozlaczy, zostanie wywolany 
+    			//catch i watek sie zakonczy
+    			int typWiadomosci = Integer.reverseBytes(inRealy.readInt());
+    			int packetSize = Integer.reverseBytes(inRealy.readInt());
+				int count = Integer.reverseBytes(inRealy.readInt());
+				//struktur jest:
+				//(packetSize-(type(int4) + packetSize(int4) + count(int4) = 12))/(ip(int4)+port(short2)+family(bajt1)=7)
+				int liczbaStrukturZAdresamiProxy = (packetSize - 12)/7;
+				for(int iProxy = 0; iProxy<liczbaStrukturZAdresamiProxy; iProxy++)
+				{
+					int ip = inRealy.readInt();
+					short port = Short.reverseBytes(inRealy.readShort());
+					byte family = inRealy.readByte();
+					//tu najczesciej podawane sa dwa razy te same adresy proxy
+					//tylko z dwoma roznymi portami (najczesciej 80 i 443).
+					//Nam wystarczy pierwszy adres proxy z pierwszym portem
+					if(iProxy == 0)
+					{
+						outcomingFileTransfer.proxyIP1 = ip;
+						outcomingFileTransfer.proxyPort1 = port;
+					}
+				}
+				Log.i("[GanduService]sendFileTask", "3(1). GG_DCC7_RELAY_REQUEST odebralem Proxy: "+outcomingFileTransfer.proxyIP1+":"+outcomingFileTransfer.proxyPort1);
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]GG_DCC7_RELAY_REQUEST", "GG_DCC7_RELAY_REQUEST nie odpowiedzial adresem proxy");
+        	}
+        	finally
+        	{
+				try {
+	        		if(socketRelay != null)
+							socketRelay.close();
+	        		if(inRealy != null)
+	        			inRealy.close();
+	        		if(outRealy != null)
+	        			outRealy.close();
+				} 
+				catch (IOException e) 
+				{
+					Log.e("[GanduService]GG_DCC7_RELAY_REQUEST","Blad zamykania socketRelay, inRealy, outRealy");
+				}
+        	}
+        	
+        	//wys³anie GG_DCC_INFO z typem GG_DCC7_TYPE_P2P
+        	try
+        	{
+        		Log.i("[GanduService]sendFileTask", "4. wys³anie GG_DCC_INFO z typem GG_DCC7_TYPE_P2P");
+        		//byte[] gg_dcc_info = outcomingFileTransfer.prepareSendDCCInfo(Integer.parseInt(ggnum), Common.GG_DCC7_TYPE_P2P);
+        		byte[] gg_dcc_info = outcomingFileTransfer.prepareSendDCCInfo(Common.GG_DCC7_TYPE_P2P);
+        		out.write(gg_dcc_info);
+        		out.flush();
+        		Log.i("[GanduService]sendFileTask", "4(1). wyslalem GG_DCC_INFO z typem GG_DCC7_TYPE_P2P");
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]GG_DCC_INFO", "GG_DCC_INFO z typem GG_DCC7_TYPE_P2P");
+        	}
+        	
+        	//wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY 
+        	//na adres serwera otrzymany w pierwszym GG_DCC7_RELAY_REQUEST
+        	//(Mo¿e siê zdarzyæ, ¿e ¿aden z serwerów nie odpowie na pierwsze ¿¹danie, 
+        	//wtedy jako adres drugiego ¿¹dania bierzemy znowu relay.gadu-gadu.pl)
+        	try
+        	{
+        		Log.i("[GanduService]sendFileTask", "5. wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
+        		if(outcomingFileTransfer.proxyIP1 != -1)
+        			socketRelay = new Socket(InetAddress.getByName(""+outcomingFileTransfer.proxyIP1), outcomingFileTransfer.proxyPort1);
+        		else
+        			socketRelay = new Socket("relay.gadu-gadu.pl", 80);
+    			inRealy = new DataInputStream(socketRelay.getInputStream());
+    			outRealy = new DataOutputStream(socketRelay.getOutputStream());
+    			byte[] request1 = outcomingFileTransfer.prepareSendRelayRequest(Common.GG_DCC7_RELAY_TYPE_PROXY);
+    			outRealy.write(request1);
+    			outRealy.flush();
+    			Log.i("[GanduService]sendFileTask", "6. wyslalem GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
+    			
+    			//proba odebrania odpowiedzi z adresem serwera proxy
+    			//jesli serwer nie odpowie, to sie rozlaczy, zostanie wywolany 
+    			//catch i watek sie zakonczy
+    			int typWiadomosci = Integer.reverseBytes(inRealy.readInt());
+    			int packetSize = Integer.reverseBytes(inRealy.readInt());
+				int count = Integer.reverseBytes(inRealy.readInt());
+				//struktur jest:
+				//(packetSize-(type(int4) + packetSize(int4) + count(int4) = 12))/(ip(int4)+port(short2)+family(bajt1)=7)
+				int liczbaStrukturZAdresamiProxy = (packetSize - 12)/7;
+				for(int iProxy = 0; iProxy<liczbaStrukturZAdresamiProxy; iProxy++)
+				{
+					int ip = inRealy.readInt();
+					short port = Short.reverseBytes(inRealy.readShort());
+					byte family = inRealy.readByte();
+					if(iProxy == 0)
+					{
+						outcomingFileTransfer.proxyIP2 = ip;
+						outcomingFileTransfer.proxyPort2 = port;
+					}
+				}
+				Log.i("[GanduService]sendFileTask", "6(1). Odebralem proxy: "+outcomingFileTransfer.proxyIP2+":"+outcomingFileTransfer.proxyPort2);
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]proxyIPRequest1Task", "GG_DCC7_RELAY_REQUEST nie odpowiedzial adresem proxy");
+        	}
+
+        	finally
+        	{
+				try {
+	        		if(socketRelay != null)
+							socketRelay.close();
+	        		if(inRealy != null)
+	        			inRealy.close();
+	        		if(outRealy != null)
+	        			outRealy.close();
+				} 
+				catch (IOException e) 
+				{
+					Log.e("[GanduService]GG_DCC7_RELAY_REQUEST","Blad zamykania socketRelay, inRealy, outRealy");
+				}
+        	}
+        	
+        	//wyslanie pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER
+        	//i polem info w postaci: GGidCHrand
+        	//oraz wyslanie powitania i pliku przez serer proxy
+        	try
+        	{
+        		Log.i("[GanduService]sendFileTask", "7. wyslanie pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
+        		if(outcomingFileTransfer.proxyIP2 != -1)
+        		{
+        			//byte[] gg_dcc_info = outcomingFileTransfer.prepareSendDCCInfo(Integer.parseInt(ggnum), Common.GG_DCC7_TYPE_SERVER);
+        			byte[] gg_dcc_info = outcomingFileTransfer.prepareSendDCCInfo(Common.GG_DCC7_TYPE_SERVER);
+            		out.write(gg_dcc_info);
+            		out.flush();
+            		Log.i("[GanduService]sendFileTask", "8. wyslalem pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
+        		}
+        		else
+        		{
+        			Log.e("[GanduService]GG_DCC7_INFO","Adres proxy2 jest -1, a nie powinien byc!");
+        			return;
+        		}
+        		
+        		socketRelay = new Socket(InetAddress.getByName(""+outcomingFileTransfer.proxyIP2), outcomingFileTransfer.proxyPort2);
+    			inRealy = new DataInputStream(socketRelay.getInputStream());
+    			outRealy = new DataOutputStream(socketRelay.getOutputStream());
+    			
+    			//wyslanie pakietu powitalnego do serwera posredniczacego
+    			Log.i("[GanduService]sendFileTask", "9. wyslanie pakietu powitalnego do serwera posredniczacego");
+    			byte[] welcome = outcomingFileTransfer.prepareWelcomeProxy(); 
+    			outRealy.write(welcome);
+    			outRealy.flush();
+    			Log.i("[GanduService]sendFileTask", "10. wyslalem pakiet powitalnego do serwera posredniczacego");
+    			//serwer proxy powinien odpowiedziec tym samym powitaniem
+    			int reWelcome = Integer.reverseBytes(inRealy.readInt());
+    			Long reID = Long.reverseBytes(inRealy.readLong());
+    			Log.i("[GanduService]sendFileTask", "11. odebralem pakiet powitalny: "+reWelcome+" ID:"+reID);
+    			//wyslanie bajtow pliku
+    			Log.i("[GanduService]sendFileTask", "12. wyslanie bajtow pliku");
+    			byte[] plik = outcomingFileTransfer.prepareFileBytes();
+    			outRealy.write(plik);
+    			outRealy.flush();
+    			Log.i("[GanduService]sendFileTask", "13. wyslalem bajty pliku");
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]proxy2", "cos z polaczeniem do proxy2");
+        	}
+
+        	finally
+        	{
+				try {
+	        		if(socketRelay != null)
+							socketRelay.close();
+	        		if(inRealy != null)
+	        			inRealy.close();
+	        		if(outRealy != null)
+	        			outRealy.close();
+				} 
+				catch (IOException e) 
+				{
+					Log.e("[GanduService]GG_DCC7_RELAY_REQUEST","Blad zamykania socketRelay, inRealy, outRealy");
+				}
+        	}
+        	Log.i("[GanduService]sendFileTask", "14. Koniec watku");
+        }
+    }
 }
