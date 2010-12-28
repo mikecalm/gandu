@@ -22,6 +22,25 @@ public class Common {
     static final int GG_DCC7_ACCEPT = 0x0021;
     
     /**
+     * REQUESTS TO relay.gadu-gadu.pl SERVER
+    */
+    static final int GG_DCC7_RELAY_REQUEST = 0x0a;
+    static final int GG_DCC7_INFO = 0x001f;
+    
+    /**
+     * GG_DCC7_RELAY_REQUEST req_type
+     */
+    static final short GG_DCC7_RELAY_TYPE_PROXY = 0x01; /* adresy proxy, na które sie ³¹czyæ */
+    static final short GG_DCC7_RELAY_TYPE_SERVER = 0x08; /* adres serwera, na który spytaæ o proxy */
+    
+    /**
+     * GG_DCC7_INFO type
+     */
+    static final int GG_DCC7_TYPE_P2P = 0x00000001;	/* po³¹czenie bezpoœrednie */
+    static final int GG_DCC7_TYPE_SERVER = 0x00000002;	/* po³¹czenie przez serwer */
+
+    
+    /**
      * STATES 
      */
     static final int GG_STATUS_AVAIL = 0x0002;
@@ -44,6 +63,12 @@ public class Common {
     static final int GG_STATUS80 = 0x0036;
     static final int GG_NOTIFY_REPLY80 = 0x0037;
     static final int GG_DCC7_ID_REPLY = 0x0023;
+    
+    /**
+     * REPLIES FROM relay.gadu-gadu.pl SERVER
+    */
+    static final int GG_DCC7_RELAY_REPLY = 0x0b;
+
     /**
      * CONTACT TYPES
      */

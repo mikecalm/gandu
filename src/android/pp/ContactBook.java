@@ -82,6 +82,7 @@ public class ContactBook extends ExpandableListActivity{
 	ImageButton statusButton;
 	int ustawionyStatus = 0;
 	static final private int NEW_CONTACT_ACTIVITY_RESULT = 0;
+	static final private int NEW_ANDROID_EXPLORER_ACTIVITY_RESULT = 1;
 	public GetStatuses gs = new GetStatuses();
 	ArrayList<String> itemsy = new ArrayList();
 	
@@ -443,6 +444,43 @@ public class ContactBook extends ExpandableListActivity{
     				}
                 }
             }
+        }
+        else if (requestCode == NEW_ANDROID_EXPLORER_ACTIVITY_RESULT) {
+        	if (resultCode == RESULT_CANCELED) {
+                Log.i("NewAndroidExplorerResult", "RESULT_CANCELED");
+        	}
+        	else if(resultCode == RESULT_OK)
+        	{
+        		if (data != null) 
+        		{
+        			if(data.hasExtra("fileName") && data.hasExtra("filePath") && data.hasExtra("fileTo"))
+        			{
+	                    //text.append(data.getAction());
+	                	String fileName = data.getStringExtra("fileName");
+	                	String filePath = data.getStringExtra("filePath");
+	                	String fileTo = data.getStringExtra("fileTo");
+	                	Boolean readable = data.getBooleanExtra("readable", false);
+	                	if(readable)
+	                	{
+		                	//wyslanie do serwisu informacji o checi wyslania pliku na na podany numer GG
+			        		Message msg3 = Message.obtain(null,Common.CLIENT_SEND_FILE, 0, 0);	        
+		    	    		try
+		    	    		{
+		    		    		Bundle wysylany = new Bundle();
+		    					wysylany.putString("numerGG", fileTo);
+		    					wysylany.putString("fileName", fileName);
+		    					wysylany.putString("filePath", filePath);
+		    					msg3.setData(wysylany);
+		    	    			mService.send(msg3);
+		    	    		}catch(Exception excMsg)
+		    	    		{
+		    	    			Log.e("ContactBook","Blad wyslania info do serwisu o wysylaniu pliku:\n"+
+		    	    					excMsg.getMessage());
+		    	    		}
+	                	}
+        			}
+        		}
+        	}
         }
     }
     
@@ -814,19 +852,27 @@ public class ContactBook extends ExpandableListActivity{
 					break;
 					//akcja wyslij plik
 					case 6:
+						Intent intentExplorer = new Intent(this.getApplicationContext(), AndroidExplorer.class);
+						intentExplorer.putExtra("fileTo", pobrany.GGNumber);
+						startActivityForResult(intentExplorer,NEW_ANDROID_EXPLORER_ACTIVITY_RESULT);
 						//wyslanie do serwisu informacji o checi wyslania pliku na na podany numer GG
-		        		Message msg3 = Message.obtain(null,Common.CLIENT_SEND_FILE, 0, 0);	        
+		        		/*Message msg3 = Message.obtain(null,Common.CLIENT_SEND_FILE, 0, 0);	        
 	    	    		try
 	    	    		{
 	    		    		Bundle wysylany = new Bundle();
 	    					wysylany.putString("numerGG", pobrany.GGNumber);
+	    					//"data/data/android.pp/files/slij.txt", "slij.txt"
+	    					//wysylany.putString("fileName", "slij.txt");
+	    					wysylany.putString("fileName", "SSH.apk");
+	    					//wysylany.putString("filePath", "data/data/android.pp/files/slij.txt");
+	    					wysylany.putString("filePath", "sdcard/SSH.apk");
 	    					msg3.setData(wysylany);
 	    	    			mService.send(msg3);
 	    	    		}catch(Exception excMsg)
 	    	    		{
 	    	    			Log.e("ContactBook","Blad wyslania info do serwisu o wysylaniu pliku:\n"+
 	    	    					excMsg.getMessage());
-	    	    		}
+	    	    		}*/
 						break;
 			}
 		}
