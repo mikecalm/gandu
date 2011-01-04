@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"  
+  android:orientation="vertical"
+  android:layout_height="wrap_content" 
+  android:layout_width="fill_parent">  
+  <ScrollView   
+   android:id="@+id/RegisterScrollView" 
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"> 
+
+	<LinearLayout android:id="@+id/RegisterInsideScroolLayout" 
+	android:orientation="vertical"
+	android:layout_width="fill_parent" 
+	android:layout_height="wrap_content">
+	
+		<EditText 
+		android:id="@+id/RegisterEmail" 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent" 
+		android:singleLine="true" 
+		android:hint="E-mail" 
+		android:inputType="textEmailAddress">
+		</EditText>
+	
+		<EditText 
+		android:id="@+id/RegisterPassword1" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:hint="Hasło"
+		android:password="true">
+		</EditText>
+		
+		<EditText 
+		android:id="@+id/RegisterPassword2" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:hint="Powtórz hasło"
+		android:password="true">
+		</EditText>
+		
+		<ImageView 
+		android:id="@+id/RegisterToken" 
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" 
+		android:layout_gravity="center_horizontal">
+		</ImageView>
+		
+		<EditText 
+		android:id="@+id/RegisterTokenValue" 
+		android:layout_height="wrap_content" 
+		android:layout_width="fill_parent" 
+		android:singleLine="true" 
+		android:hint="Kod z obrazka" 
+		android:inputType="text">
+		</EditText>
+		
+		<Button 
+		android:text="Rejestruj" 
+		android:id="@+id/RegisterButton" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+		</Button>
+	</LinearLayout>
+  </ScrollView>
+
+</LinearLayout>

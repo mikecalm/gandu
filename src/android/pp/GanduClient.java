@@ -1,5 +1,8 @@
 package android.pp;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.NotificationManager;
@@ -16,6 +19,9 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -45,6 +51,7 @@ public class GanduClient extends Activity {
 	public NotificationManager mNM;
 	ProgressDialog mDialog1;
 	private static final int DIALOG1_KEY = 0;
+	static final private int NEW_ACCOUNT = 0;
 	// ------------------> OnCreate()
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +122,75 @@ public class GanduClient extends Activity {
 		{
 			;
 		}
+	}
+	
+	/**
+     * This method is called when the sending activity has finished, with the
+     * result it supplied.
+     * 
+     * @param requestCode The original request code as given to
+     *                    startActivity().
+     * @param resultCode From sending activity as per setResult().
+     * @param data From sending activity as per setResult().
+     */
+    @Override
+	protected void onActivityResult(int requestCode, int resultCode,
+		Intent data) {
+        // You can use the requestCode to select between multiple child
+        // activities you may have started.  Here there is only one thing
+        // we launch.
+        if (requestCode == NEW_ACCOUNT) {
+
+            // This is a standard resultCode that is sent back if the
+            // activity doesn't supply an explicit result.  It will also
+            // be returned if the activity failed to launch.
+            if (resultCode == RESULT_CANCELED) {
+                Log.i("NewContactResult", "RESULT_CANCELED");
+
+            // Our protocol with the sending activity is that it will send
+            // text in 'data' as its result.
+            }
+            //RESULT_OK
+            else 
+            {
+            	Log.i("NewContactResult", Integer.toString(resultCode));
+                if (data != null) {
+                    //text.append(data.getAction());
+                	String new_numerGG = data.getStringExtra("numerGG");
+                	String new_haslo = data.getStringExtra("haslo");
+                	String new_email = data.getStringExtra("email");
+                	Toast.makeText(getApplicationContext(), "Numer: "+new_numerGG
+                			+"\nEmail: "+new_email
+                			+"\nHaslo: "+new_haslo, Toast.LENGTH_LONG).show();
+                	ggNumberEdit.setText(new_numerGG);
+                	ggPasswordEdit.setText(new_haslo);
+                }
+            }
+        }
+    }
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu){
+		super.onCreateOptionsMenu(menu);
+		MenuInflater inflater=getMenuInflater();
+		inflater.inflate(R.menu.ganduclientmenu, menu);
+		return true;
+	}
+	
+	//zdarzenia zwiazane z wyborem opcji menu
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+		switch (item.getItemId())
+		{
+			case R.id.RegisterAccount01:	
+				//Long nowa = new Long("4294967296") - 111;
+				//Toast.makeText(getApplicationContext(), ""+nowa, Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent(this.getApplicationContext(), RegisterAccount.class);
+				startActivityForResult(intent,NEW_ACCOUNT);
+				return true;
+			//Moreitemsgohere(ifany)...
+		}
+		return false;
 	}
 
 

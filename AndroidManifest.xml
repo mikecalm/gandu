@@ -28,6 +28,9 @@
 	<activity android:name=".AddNewContact" 
 	android:theme="@android:style/Theme.Dialog">
 	</activity>
+	<activity android:name=".RegisterAccount" 
+	android:theme="@android:style/Theme.Dialog">
+	</activity>
 	<activity android:name=".Maps">
 	</activity>
 	<activity android:name=".WWW"
