@@ -42,6 +42,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -454,12 +455,21 @@ public class GanduService extends Service {
                 	ggnum = odebrany.getString("numerGG");
                 	ggpass = odebrany.getString("hasloGG");
                 	
-                	if(inicjujLogowanie(ggnum))
+                	//w przypadku nieudanej proby zainicjowania logowania.
+                	//Najprawdopodobniej brak polaczenia z internetem
+                	if(!inicjujLogowanie(ggnum))
                 	{
+                		Message msg3 = Message.obtain(null, Common.CLIENT_INITIALIZE_FAILED, 0 ,0 );
+                        try {
+							msg.replyTo.send(msg3);
+						} catch (RemoteException e) {
+							// TODO Auto-generated catch block
+							Log.e("[GanduService]", "Blad odsylania wiadomosci o nieudanym inicjowaniu logowania: "+e.getMessage());
+						}
                 		//showNotification("Zalogowany "+ggnum);
-                		showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
+                		/*showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
                         		GanduClient.class, -1, false);
-                		mNM.cancel(-1);
+                		mNM.cancel(-1);*/
                 	}
                 	break;
                 case Common.CLIENT_GET_CONTACTBOOK:
@@ -954,6 +964,7 @@ public class GanduService extends Service {
 		public void run() {
 			Log.i("ReplyInterpreter", "Watek wystartowal");
 			Bundle wysylany;
+			Boolean zalogowany = false;
 			while(connected)
 			{
 				try
@@ -977,6 +988,12 @@ public class GanduService extends Service {
 						while(pobraneBajtyOK != dlugoscOK)
 							pobraneBajtyOK += in.read(zawartoscOK, pobraneBajtyOK, dlugoscOK-pobraneBajtyOK);
 						Log.i("GanduService received: ", ""+typWiadomosci);
+						
+						showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
+                        		GanduClient.class, -1, false);
+                		mNM.cancel(-1);
+                		zalogowany = true;
+                		
 						wyslijWiadomoscOPustejLiscieKontaktow();
 						Message msg = Message.obtain(null, Common.CLIENT_START_INTENT_CONTACTBOOK, 0 ,0 );
 						//mClients.get(0).send(msg);
@@ -1347,8 +1364,28 @@ public class GanduService extends Service {
 				if(socket != null)
 					socket.close();
 				mNM.cancel(-1);
-				showNotification("Nastapilo rozlaczenie z serwerem", "Gandu", "Nastapilo rozlaczenie z serwerem", R.drawable.icon, 
-                		GanduClient.class, -1, false);
+				if(zalogowany)
+					showNotification("Nastapilo rozlaczenie z serwerem", "Gandu", "Nastapilo rozlaczenie z serwerem", R.drawable.icon, 
+	                		GanduClient.class, -1, false);
+				else
+				{
+					showNotification("Nieudana próba logowania", "Gandu", "Nieudana próba logowania", R.drawable.icon, 
+	                		GanduClient.class, -1, false);
+					//wyslanie do informacji o nieudanej probie logowania.
+					//ganduClient po tej informacji bedzie wiadzialo, zeby zamknac
+					//okno z progress barem logowania
+					Message msg3 = Message.obtain(null, Common.CLIENT_LOGIN_FAILED, 0 ,0 );
+					for(int i=0; i<mClients.size(); i++)
+                    {
+                    	try
+                    	{
+                    		mClients.get(i).send(msg3);
+                    	}catch(Exception e)
+                    	{
+                    		Log.e("GanduService", ""+e.getMessage());
+                    	}
+                    }
+				}
 			} 
 			catch (IOException e) 
 			{

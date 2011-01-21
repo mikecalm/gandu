@@ -32,7 +32,7 @@
 			android:id="@+id/EditText01" 
 			android:layout_height="wrap_content" 
 			android:hint="@string/login" 
-			android:layout_width="fill_parent">
+			android:layout_width="fill_parent" android:inputType="phone">
 		</EditText>
 	</TableRow>
 	<TableRow 

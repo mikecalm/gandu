@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
@@ -202,6 +203,7 @@ public class GanduClient extends Activity {
 			editor.putString("mojeHaslo", ggPasswordEdit.getText().toString());
 			editor.commit();
 			Message msg = Message.obtain(null,Common.CLIENT_LOGIN, 0, 0);
+			msg.replyTo = mMessenger;
 			Bundle wysylany = new Bundle();
 			//wysylany.putString("numerGG", ggNumberEdit.getText().toString());
 			wysylany.putString("numerGG", mojNumer);
@@ -258,6 +260,14 @@ public class GanduClient extends Activity {
                 	break;
                 case Common.FLAG_ACTIVITY_REGISTER:
                 	Log.i("GanduClient","Zarejestrowany przez serwis.");
+                	break;
+                case Common.CLIENT_LOGIN_FAILED:
+                	mDialog1.cancel();
+                	Toast.makeText(getApplicationContext(), "SprawdŸ poprawnoœæ numeru GG oraz has³a", Toast.LENGTH_SHORT).show();
+                	break;
+                case Common.CLIENT_INITIALIZE_FAILED:
+                	mDialog1.cancel();
+                	Toast.makeText(getApplicationContext(), "Nieudana próba po³¹czenia.\nSprawdŸ po³¹czenie z internetem.", Toast.LENGTH_LONG).show();
                 	break;
                 default:
                     super.handleMessage(msg);
