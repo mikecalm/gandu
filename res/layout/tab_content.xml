@@ -12,7 +12,7 @@
         android:layout_alignParentBottom="true" 
         android:singleLine="true"   
         android:layout_alignWithParentIfMissing="true"
-        android:text="Send"/>        
+        android:text="Wyślij"/>        
     <EditText
         android:id="@+id/entry"
         android:layout_width="fill_parent"
