@@ -77,6 +77,15 @@ public class GanduService extends Service {
     
     public Files incomingFileTransfer = null;
     public Files outcomingFileTransfer = null;
+    
+    Handler someHandler = new Handler(){
+        
+        //this method will handle the calls from other threads.      
+        public void handleMessage(Message msg) {
+               
+             Toast.makeText(getBaseContext(), msg.getData().getString("SOMETHING"), Toast.LENGTH_SHORT).show();
+        }
+   };
   
    public Boolean getContactbook()
    {
@@ -166,6 +175,45 @@ public class GanduService extends Service {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+   }
+   
+   public void saveOnSDCardBytes(byte[] tmp, String folder, String nazwaPliku)
+   {
+	   boolean mExternalStorageAvailable = false;
+	   boolean mExternalStorageWriteable = false;
+	   String state = Environment.getExternalStorageState();
+
+	   if (Environment.MEDIA_MOUNTED.equals(state)) {
+	       // We can read and write the media
+	       mExternalStorageAvailable = mExternalStorageWriteable = true;
+	   } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+	       // We can only read the media
+	       mExternalStorageAvailable = true;
+	       mExternalStorageWriteable = false;
+	   } else {
+	       // Something else is wrong. It may be one of many other states, but all we need
+	       //  to know is we can neither read nor write
+	       mExternalStorageAvailable = mExternalStorageWriteable = false;
+	      
+		
+	   }
+	   String extStorageDirectory = Environment.getExternalStorageDirectory().toString() ;
+	   //File file = new File(extStorageDirectory, "tmp.xml");
+	   //File file = new File(extStorageDirectory+"/"+folder, nazwaPliku);
+	   File file = new File(extStorageDirectory, nazwaPliku);
+	   
+	   try {
+		FileOutputStream fos = new FileOutputStream(file);
+		//byte [] buffer = tmp.clone();
+		//fos.write(buffer);
+		fos.write(tmp);
+		fos.flush();
+		fos.close();
+		
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
    }
    
    public void saveOnSDCard(String tmp)
@@ -837,6 +885,51 @@ public class GanduService extends Service {
                 		Log.e("[GanduService]CLIENT_SEND_FILE","Blad wysylania zadania o id: "+excSendFile.getMessage());
                 	}
                 	break;
+                case Common.CLIENT_FILE_YES:
+                	Log.i("[GanduService]CLIENT_FILE_YES","1");
+                	if(incomingFileTransfer != null)
+                	{
+                		Log.i("[GanduService]CLIENT_FILE_YES","2");
+                		try
+                		{
+                			Log.i("[GanduService]CLIENT_FILE_YES","3");
+                			/*
+	                		byte[] komunikatOdrzuceniaPliku = incomingFileTransfer.rejectByReceiverRequest(incomingFileTransfer.id,Integer.parseInt(ggnum));
+	                		out.write(komunikatOdrzuceniaPliku);
+	                		out.flush();
+	                		*/
+                			byte[] komunikatAkceptacjiPliku = incomingFileTransfer.acceptByReceiver(incomingFileTransfer.id, incomingFileTransfer.ggSenderNumber);
+                			out.write(komunikatAkceptacjiPliku);
+	                		out.flush();
+	                		
+                			Thread fileThread = new Thread(new receiveFileTask());
+    						fileThread.start();						
+    						Log.i("[GanduService]CLIENT_FILE_YES","Uruchomilem watek odierania pliku receiveFileTask");
+	                		Log.i("[GanduService]CLIENT_FILE_YES","4");
+                		}catch(Exception excRej)
+                		{
+                			Log.e("[GanduService]RejectFileError",excRej.getMessage());
+                		}
+                	}
+                	break;
+                case Common.CLIENT_FILE_NO:
+                	Log.i("[GanduService]CLIENT_FILE_NO","1");
+                	if(incomingFileTransfer != null)
+                	{
+                		Log.i("[GanduService]CLIENT_FILE_NO","2");
+                		try
+                		{
+                			Log.i("[GanduService]CLIENT_FILE_NO","3");
+	                		byte[] komunikatOdrzuceniaPliku = incomingFileTransfer.rejectByReceiverRequest(incomingFileTransfer.id,incomingFileTransfer.ggSenderNumber);
+	                		out.write(komunikatOdrzuceniaPliku);
+	                		out.flush();
+	                		Log.i("[GanduService]CLIENT_FILE_NO","4");
+                		}catch(Exception excRej)
+                		{
+                			Log.e("[GanduService]RejectFileError",excRej.getMessage());
+                		}
+                	}
+                	break;
                 default:
                     super.handleMessage(msg);
             }
@@ -1321,7 +1414,14 @@ public class GanduService extends Service {
 						//jesli offset jest liczba rozna od 0, to wysylamy plik nie
 						//od poczatku, tylko od bajtu numer offset
 						//if(offset != 0)
-						//uruchom watek wysylajacy plik do odbiorcy
+						//Toast.makeText(GanduService.this, "Odbiorca zgodzi³ siê na odebranie pliku.\nWysy³am plik.", Toast.LENGTH_SHORT).show();
+						//create the message for the handler
+						   Message statuss = someHandler.obtainMessage();
+						   Bundle data = new Bundle();
+						   data.putString("SOMETHING", "Odbiorca zgodzi³ siê na odebranie pliku.\nWysy³am plik.");
+						   statuss.setData(data);
+						   someHandler.sendMessage(statuss);
+						//uruchom watek wysylajacy plik do odbiorcy					
 						Thread fileThread = new Thread(new sendFileTask());
 						fileThread.start();						
 						Log.i("[GanduService]GG_DCC7_ACCEPT","Uruchomilem watek wysylania pliku sendFileTask");
@@ -1334,7 +1434,88 @@ public class GanduService extends Service {
 						int powodOdrzucenia = Integer.reverseBytes(in.readInt());
 						if(outcomingFileTransfer != null)
 							outcomingFileTransfer = null;
+						//Toast.makeText(GanduService.this, "Odbiorca nie zgodzi³ siê na odebranie pliku", Toast.LENGTH_SHORT).show();
+						Message statuss2 = someHandler.obtainMessage();
+					   Bundle data2 = new Bundle();
+					   data2.putString("SOMETHING", "Odbiorca nie zgodzi³ siê na odebranie pliku");
+					   statuss2.setData(data2);
+					   someHandler.sendMessage(statuss2);
+					   
 						Log.i("[GanduService]GG_DCC7_REJECT","Odbiorca odrzucil plik. Powod: "+powodOdrzucenia);
+						break;
+						
+					case Common.GG_DCC7_NEW:
+						int dlugoscDccNew = Integer.reverseBytes(in.readInt());
+						Long idpolaczenia = Long.reverseBytes(in.readLong());
+						int numerNad = Integer.reverseBytes(in.readInt());
+						int numerOdbior = Integer.reverseBytes(in.readInt());
+						int typPol = Integer.reverseBytes(in.readInt());
+						//jesli ktos chce nam przeslac plik
+						if(typPol == 4)
+						{
+							int nazwaPlik = 255;
+							int pobraneBajtyFN=0;
+							byte[] nazwaPlikuByte = new byte[255];
+							while(pobraneBajtyFN != nazwaPlik)
+								pobraneBajtyFN += in.read(nazwaPlikuByte, pobraneBajtyFN, nazwaPlik-pobraneBajtyFN);
+							int znakZeroWNazwie = 255;
+							for(int szukZZ=0; szukZZ<nazwaPlikuByte.length; szukZZ++)
+							{
+								if(nazwaPlikuByte[szukZZ]==0)
+								{
+									znakZeroWNazwie = szukZZ;
+									break;
+								}
+							}
+							String  nazwaPliku = new String(nazwaPlikuByte, 0, znakZeroWNazwie, "UTF-8");
+							Long rozmiarPliku = Long.reverseBytes(in.readLong());
+							byte[] nieuzywanyHash = new byte[20];
+							pobraneBajtyFN=0;
+							while(pobraneBajtyFN != 20)
+								pobraneBajtyFN += in.read(nieuzywanyHash, pobraneBajtyFN, 20-pobraneBajtyFN);
+							Log.i("[GanduService]Przyszedl plik", "nieuzywanyHash wczytany");
+							incomingFileTransfer = new Files();
+							incomingFileTransfer.id = idpolaczenia;
+							incomingFileTransfer.ggReceiverNumber = numerOdbior;
+							incomingFileTransfer.ggSenderNumber = numerNad;
+							incomingFileTransfer.sendingFileName = nazwaPliku;
+							incomingFileTransfer.sendingFilePath = "Gandu/IncomingFiles/";
+							incomingFileTransfer.fileSize = rozmiarPliku;
+							//wyslanie pytania do uzytkownika, czy chce odebrac plik
+							try
+							{
+								Message msg3 = Message.obtain(null, Common.CLIENT_FILE_QUESTION, 0 ,0 );
+								wysylany = new Bundle();
+								wysylany.putString("nazwaPliku", incomingFileTransfer.sendingFileName);
+								wysylany.putInt("plikOd", numerNad);
+								wysylany.putLong("rozmiarPliku", rozmiarPliku);
+								msg3.setData(wysylany);
+								for(int i=0; i<mClients.size(); i++)
+			                    {
+			                    	try
+			                    	{
+			                    		mClients.get(i).send(msg3);
+			                    	}catch(Exception e)
+			                    	{
+			                    		Log.e("GanduService", ""+e.getMessage());
+			                    	}
+			                    }
+							}
+							catch(Exception e)
+							{
+								;
+							}
+						}
+						//np rozmowa audio, ktorej nie obslugujemy 
+						else 
+						{
+							//- 20, bo idpolaczenia(1xLong(8B)) numerNad,numerOdbior,typPol(3xInt(4B)) = 20
+							int pozostaleDlugosc = dlugoscDccNew - 20;
+							int pobraneB=0;
+							byte[] reszta = new byte[pozostaleDlugosc];
+							while(pobraneB != pozostaleDlugosc)
+								pobraneB += in.read(reszta, pobraneB, pozostaleDlugosc-pobraneB);
+						}
 						break;
 						
 					default:
@@ -1609,10 +1790,22 @@ public class GanduService extends Service {
     			outRealy.write(plik);
     			outRealy.flush();
     			Log.i("[GanduService]sendFileTask", "13. wyslalem bajty pliku");
+    			//Toast.makeText(GanduService.this, "Plik zosta³ wys³any", Toast.LENGTH_SHORT).show();
+    			Message statuss2 = someHandler.obtainMessage();
+			   Bundle data2 = new Bundle();
+			   data2.putString("SOMETHING", "Plik zosta³ wys³any");
+			   statuss2.setData(data2);
+			   someHandler.sendMessage(statuss2);
         	}
         	catch(Exception excRequest1)
         	{
         		Log.e("[GanduService]proxy2", "cos z polaczeniem do proxy2");
+        		//Toast.makeText(GanduService.this, "Wyst¹pi³ b³¹d podczas wysy³ania pliku", Toast.LENGTH_SHORT).show();
+        		Message statuss2 = someHandler.obtainMessage();
+ 			   Bundle data2 = new Bundle();
+ 			   data2.putString("SOMETHING", "Wyst¹pi³ b³¹d podczas wysy³ania pliku");
+ 			   statuss2.setData(data2);
+ 			   someHandler.sendMessage(statuss2);
         	}
 
         	finally
@@ -1631,6 +1824,231 @@ public class GanduService extends Service {
 				}
         	}
         	Log.i("[GanduService]sendFileTask", "14. Koniec watku");
+        }
+    }
+    
+    //watek odbierania pliku
+    public class receiveFileTask implements Runnable {
+        public void run() 
+        {
+        	Log.i("[GanduService]receiveFileTask", "1. Start watku");
+        	Socket socketRelay = null;
+        	DataInputStream inRealy = null;
+        	DataOutputStream outRealy = null;
+			//wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80
+        	try
+        	{
+        		Log.i("[GanduService]receiveFileTask", "2. GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80");
+        		socketRelay = new Socket("relay.gadu-gadu.pl", 80);
+    			inRealy = new DataInputStream(socketRelay.getInputStream());
+    			outRealy = new DataOutputStream(socketRelay.getOutputStream());
+    			byte[] request1 = incomingFileTransfer.prepareSendRelayRequest(Common.GG_DCC7_RELAY_TYPE_SERVER);
+    			outRealy.write(request1);
+    			outRealy.flush();
+    			Log.i("[GanduService]receiveFileTask", "3. GG_DCC7_RELAY_REQUEST wyslalem GG_DCC7_RELAY_TYPE_SERVER");
+    			
+    			//proba odebrania odpowiedzi z adresem serwera proxy
+    			//jesli serwer nie odpowie, to sie rozlaczy, zostanie wywolany 
+    			//catch i watek sie zakonczy
+    			int typWiadomosci = Integer.reverseBytes(inRealy.readInt());
+    			int packetSize = Integer.reverseBytes(inRealy.readInt());
+				int count = Integer.reverseBytes(inRealy.readInt());
+				//struktur jest:
+				//(packetSize-(type(int4) + packetSize(int4) + count(int4) = 12))/(ip(int4)+port(short2)+family(bajt1)=7)
+				int liczbaStrukturZAdresamiProxy = (packetSize - 12)/7;
+				for(int iProxy = 0; iProxy<liczbaStrukturZAdresamiProxy; iProxy++)
+				{
+					int ip = inRealy.readInt();
+					short port = Short.reverseBytes(inRealy.readShort());
+					byte family = inRealy.readByte();
+					//tu najczesciej podawane sa dwa razy te same adresy proxy
+					//tylko z dwoma roznymi portami (najczesciej 80 i 443).
+					//Nam wystarczy pierwszy adres proxy z pierwszym portem
+					if(iProxy == 0)
+					{
+						incomingFileTransfer.proxyIP1 = ip;
+						incomingFileTransfer.proxyPort1 = port;
+					}
+				}
+				Log.i("[GanduService]receiveFileTask", "3(1). GG_DCC7_RELAY_REQUEST odebralem Proxy: "+incomingFileTransfer.proxyIP1+":"+outcomingFileTransfer.proxyPort1);
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]GG_DCC7_RELAY_REQUEST", "GG_DCC7_RELAY_REQUEST nie odpowiedzial adresem proxy");
+        	}
+        	finally
+        	{
+				try {
+	        		if(socketRelay != null)
+							socketRelay.close();
+	        		if(inRealy != null)
+	        			inRealy.close();
+	        		if(outRealy != null)
+	        			outRealy.close();
+				} 
+				catch (IOException e) 
+				{
+					Log.e("[GanduService]GG_DCC7_RELAY_REQUEST","Blad zamykania socketRelay, inRealy, outRealy");
+				}
+        	}
+        	
+        	//wys³anie GG_DCC_INFO z typem GG_DCC7_TYPE_P2P
+        	try
+        	{
+        		Log.i("[GanduService]receiveFileTask", "4. wys³anie GG_DCC_INFO z typem GG_DCC7_TYPE_P2P");
+        		//byte[] gg_dcc_info = outcomingFileTransfer.prepareSendDCCInfo(Integer.parseInt(ggnum), Common.GG_DCC7_TYPE_P2P);
+        		byte[] gg_dcc_info = incomingFileTransfer.prepareSendDCCInfo(Common.GG_DCC7_TYPE_P2P);
+        		out.write(gg_dcc_info);
+        		out.flush();
+        		Log.i("[GanduService]receiveFileTask", "4(1). wyslalem GG_DCC_INFO z typem GG_DCC7_TYPE_P2P");
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]GG_DCC_INFO", "GG_DCC_INFO z typem GG_DCC7_TYPE_P2P");
+        	}
+        	
+        	//wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY 
+        	//na adres serwera otrzymany w pierwszym GG_DCC7_RELAY_REQUEST
+        	//(Mo¿e siê zdarzyæ, ¿e ¿aden z serwerów nie odpowie na pierwsze ¿¹danie, 
+        	//wtedy jako adres drugiego ¿¹dania bierzemy znowu relay.gadu-gadu.pl)
+        	try
+        	{
+        		Log.i("[GanduService]receiveFileTask", "5. wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
+        		if(incomingFileTransfer.proxyIP1 != -1)
+        			socketRelay = new Socket(InetAddress.getByName(""+incomingFileTransfer.proxyIP1), incomingFileTransfer.proxyPort1);
+        		else
+        			socketRelay = new Socket("relay.gadu-gadu.pl", 80);
+    			inRealy = new DataInputStream(socketRelay.getInputStream());
+    			outRealy = new DataOutputStream(socketRelay.getOutputStream());
+    			byte[] request1 = incomingFileTransfer.prepareSendRelayRequest(Common.GG_DCC7_RELAY_TYPE_PROXY);
+    			outRealy.write(request1);
+    			outRealy.flush();
+    			Log.i("[GanduService]receiveFileTask", "6. wyslalem GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
+    			
+    			//proba odebrania odpowiedzi z adresem serwera proxy
+    			//jesli serwer nie odpowie, to sie rozlaczy, zostanie wywolany 
+    			//catch i watek sie zakonczy
+    			int typWiadomosci = Integer.reverseBytes(inRealy.readInt());
+    			int packetSize = Integer.reverseBytes(inRealy.readInt());
+				int count = Integer.reverseBytes(inRealy.readInt());
+				//struktur jest:
+				//(packetSize-(type(int4) + packetSize(int4) + count(int4) = 12))/(ip(int4)+port(short2)+family(bajt1)=7)
+				int liczbaStrukturZAdresamiProxy = (packetSize - 12)/7;
+				for(int iProxy = 0; iProxy<liczbaStrukturZAdresamiProxy; iProxy++)
+				{
+					int ip = inRealy.readInt();
+					short port = Short.reverseBytes(inRealy.readShort());
+					byte family = inRealy.readByte();
+					if(iProxy == 0)
+					{
+						incomingFileTransfer.proxyIP2 = ip;
+						incomingFileTransfer.proxyPort2 = port;
+					}
+				}
+				Log.i("[GanduService]receiveFileTask", "6(1). Odebralem proxy: "+incomingFileTransfer.proxyIP2+":"+incomingFileTransfer.proxyPort2);
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]proxyIPRequest1Task", "GG_DCC7_RELAY_REQUEST nie odpowiedzial adresem proxy");
+        	}
+
+        	finally
+        	{
+				try {
+	        		if(socketRelay != null)
+							socketRelay.close();
+	        		if(inRealy != null)
+	        			inRealy.close();
+	        		if(outRealy != null)
+	        			outRealy.close();
+				} 
+				catch (IOException e) 
+				{
+					Log.e("[GanduService]GG_DCC7_RELAY_REQUEST","Blad zamykania socketRelay, inRealy, outRealy");
+				}
+        	}
+        	
+        	//wyslanie pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER
+        	//i polem info w postaci: GGidCHrand
+        	//oraz wyslanie powitania i pliku przez serer proxy
+        	try
+        	{
+        		Log.i("[GanduService]receiveFileTask", "7. wyslanie pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
+        		if(incomingFileTransfer.proxyIP2 != -1)
+        		{
+        			//byte[] gg_dcc_info = outcomingFileTransfer.prepareSendDCCInfo(Integer.parseInt(ggnum), Common.GG_DCC7_TYPE_SERVER);
+        			byte[] gg_dcc_info = incomingFileTransfer.prepareSendDCCInfo(Common.GG_DCC7_TYPE_SERVER);
+            		out.write(gg_dcc_info);
+            		out.flush();
+            		Log.i("[GanduService]receiveFileTask", "8. wyslalem pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
+        		}
+        		else
+        		{
+        			Log.e("[GanduService]GG_DCC7_INFO","Adres proxy2 jest -1, a nie powinien byc!");
+        			return;
+        		}
+        		
+        		socketRelay = new Socket(InetAddress.getByName(""+incomingFileTransfer.proxyIP2), incomingFileTransfer.proxyPort2);
+    			inRealy = new DataInputStream(socketRelay.getInputStream());
+    			outRealy = new DataOutputStream(socketRelay.getOutputStream());
+    			
+    			//wyslanie pakietu powitalnego do serwera posredniczacego
+    			Log.i("[GanduService]receiveFileTask", "9. wyslanie pakietu powitalnego do serwera posredniczacego");
+    			byte[] welcome = incomingFileTransfer.prepareWelcomeProxy(); 
+    			outRealy.write(welcome);
+    			outRealy.flush();
+    			Log.i("[GanduService]receiveFileTask", "10. wyslalem pakiet powitalnego do serwera posredniczacego");
+    			//serwer proxy powinien odpowiedziec tym samym powitaniem
+    			int reWelcome = Integer.reverseBytes(inRealy.readInt());
+    			Long reID = Long.reverseBytes(inRealy.readLong());
+    			Log.i("[GanduService]receiveFileTask", "11. odebralem pakiet powitalny: "+reWelcome+" ID:"+reID);
+    			//oderanie bajtow pliku
+    			Log.i("[GanduService]receiveFileTask", "12. odebranie bajtow pliku");
+    			int dlugoscPliku = (int)incomingFileTransfer.fileSize.intValue();
+    			byte[] plik = new byte[incomingFileTransfer.fileSize.intValue()];
+				int pobraneBajty=0;
+				while(pobraneBajty != dlugoscPliku)
+					pobraneBajty += inRealy.read(plik, pobraneBajty, dlugoscPliku-pobraneBajty);
+				Log.i("[GanduService]receiveFileTask", "13. odebralem bajty pliku");
+				saveOnSDCardBytes(plik, "gandu/download/", incomingFileTransfer.sendingFileName);
+				//Toast.makeText(GanduService.this, "Plik zosta³ zapisany na karcie pamiêci", Toast.LENGTH_SHORT).show();
+				Message statuss2 = someHandler.obtainMessage();
+ 			   Bundle data2 = new Bundle();
+ 			   data2.putString("SOMETHING", "Plik zosta³ zapisany na karcie pamiêci");
+ 			   statuss2.setData(data2);
+ 			   someHandler.sendMessage(statuss2);
+				Log.i("[GanduService]receiveFileTask", "14. zapisalem plik na karcie");
+    			//outRealy.write(plik);
+    			//outRealy.flush();
+    			//Log.i("[GanduService]receiveFileTask", "15. wyslalem bajty pliku");
+        	}
+        	catch(Exception excRequest1)
+        	{
+        		Log.e("[GanduService]proxy2", "cos z polaczeniem do proxy2");
+        		//Toast.makeText(GanduService.this, "Wyst¹pi³ b³¹d podczas odbierania pliku", Toast.LENGTH_SHORT).show();
+        		Message statuss2 = someHandler.obtainMessage();
+  			   Bundle data2 = new Bundle();
+  			   data2.putString("SOMETHING", "Wyst¹pi³ b³¹d podczas odbierania pliku");
+  			   statuss2.setData(data2);
+  			   someHandler.sendMessage(statuss2);
+        	}
+
+        	finally
+        	{
+				try {
+	        		if(socketRelay != null)
+							socketRelay.close();
+	        		if(inRealy != null)
+	        			inRealy.close();
+	        		if(outRealy != null)
+	        			outRealy.close();
+				} 
+				catch (IOException e) 
+				{
+					Log.e("[GanduService]GG_DCC7_RELAY_REQUEST","Blad zamykania socketRelay, inRealy, outRealy");
+				}
+        	}
+        	Log.i("[GanduService]receiveFileTask", "15. Koniec watku");
         }
     }
 }

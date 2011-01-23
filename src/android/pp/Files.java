@@ -15,6 +15,8 @@ public class Files {
 	public String sendingFilePath;
 	public String sendingFileName;
 	public int ggReceiverNumber;
+	public int ggSenderNumber;
+	public Long fileSize;
 	public int proxyIP1 = -1;
 	public short proxyPort1 = -1;
 	public int proxyIP2 = -1;
@@ -261,6 +263,29 @@ public class Files {
 			dos.writeInt(Integer.reverseBytes(myGGNumber));
 			dos.writeLong(Long.reverseBytes(id));
 			dos.writeInt(Integer.reverseBytes(Common.GG_DCC7_REJECT_USER));
+			
+			wynik = baos.toByteArray(); 
+			return wynik;
+		}catch(Exception excAbort)
+		{
+			return null;
+		}
+	}
+	
+	public byte[] acceptByReceiver(Long id, int myGGNumber)
+	{
+		byte[] wynik;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		try
+		{
+			dos.writeInt(Integer.reverseBytes(Common.GG_DCC7_ACCEPT));
+			//dlugosc paczki
+			//2*long(8) + int(4) = 20
+			dos.writeInt(Integer.reverseBytes(20));
+			dos.writeInt(Integer.reverseBytes(myGGNumber));
+			dos.writeLong(Long.reverseBytes(id));
+			dos.writeLong(Long.reverseBytes(0));
 			
 			wynik = baos.toByteArray(); 
 			return wynik;

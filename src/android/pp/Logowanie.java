@@ -97,7 +97,9 @@ public class Logowanie {
 			
 			this.status = Integer.reverseBytes(status);
 			//0x00000001	Nieznane, zawsze wystepuje
-			this.flags = Integer.reverseBytes(1);
+			//this.flags = Integer.reverseBytes(1);
+			//0x00800000 Klient chce otrzymywaæ linki od nieznajomych
+			this.flags = Integer.reverseBytes(0x00800000);			
 			//Do minimalnej zgodnosci z protokolem Nowego Gadu-Gadu niezbedna jest co najmniej wartosc 0x00000007
 			this.features = Integer.reverseBytes(0x00000007);
 			this.image_size = rozmiarGrafiki;

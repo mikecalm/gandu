@@ -35,6 +35,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
@@ -78,6 +79,7 @@ public class ContactBook extends ExpandableListActivity{
 	public SharedPreferences prefs;
 	public SharedPreferences.Editor editor;
 	private static final int DIALOG_STATUS = 1;
+	private static final int DIALOG_FILE_YES_NO = 2;
 	EditText statusDescription;
 	ImageButton statusButton;
 	int ustawionyStatus = 0;
@@ -85,8 +87,13 @@ public class ContactBook extends ExpandableListActivity{
 	static final private int NEW_ANDROID_EXPLORER_ACTIVITY_RESULT = 1;
 	public GetStatuses gs = new GetStatuses();
 	ArrayList<String> itemsy = new ArrayList();
+	String nazwaPliku = "";
+	float rozmWypisany = 0;
+	String jednostka = "";
+	int plikOd = 0;
 	
 	AlertDialog alertDialog;
+	AlertDialog alertFile;
 	
 	public NotificationManager mNM;
 
@@ -501,12 +508,12 @@ public class ContactBook extends ExpandableListActivity{
 	    		menu.setHeaderTitle(pobrany.showName);
 	    		SIMPLEContact szukanyPrzytrzymany = new SIMPLEContact();
 	    		szukanyPrzytrzymany.AA3ShowName = pobrany.showName;
-	    		String[] menuItems = {"Edytuj","Usun","Lokalizuj","Lokalizuj mnie"};
+	    		String[] menuItems = {"Edytuj","Usuñ","Lokalizuj","Lokalizuj mnie"};
 	    		if(!pobrany.GGNumber.equals(""))
 	    		{
 	    			//menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj"};
 	    			//menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj","Wyslij plik"};
-	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Otwórz link z opisu","Ignoruj","Wyslij plik"};
+	    			menuItems = new String[]{"Edytuj","Usuñ","Lokalizuj","Lokalizuj mnie","Otwórz link z opisu","Ignoruj","Wyœlij plik"};
 		    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
 		    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
 		    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)
@@ -977,10 +984,35 @@ public class ContactBook extends ExpandableListActivity{
 		return false;
 	}
 	
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog)
+	{
+		super.onPrepareDialog(id, dialog);
+		switch(id){
+		case DIALOG_FILE_YES_NO:
+			((AlertDialog)dialog).setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd);
+			/*alertFile = new AlertDialog.Builder(ContactBook.this)
+        	.setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd)
+        			.setPositiveButton("Tak", dialogClickListener)
+        			.setNegativeButton("Nie", dialogClickListener)
+        			.create();*/
+		}
+	}
+	
 	//zdarzenia realizowane po wywolaniu metody showDialog(id); 
 	@Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
+        case DIALOG_FILE_YES_NO:
+        	//AlertDialog.Builder builder = new AlertDialog.Builder(ContactBook.this);
+        	//Toast.makeText(getApplicationContext(), nazwaPliku, Toast.LENGTH_SHORT).show();
+        	return alertFile = new AlertDialog.Builder(ContactBook.this)
+        	//return new AlertDialog.Builder(ContactBook.this)
+        	.setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd)
+        	//.setMessage("Chcesz odebraæ plik?")
+        			.setPositiveButton("Tak", dialogClickListener)
+        			.setNegativeButton("Nie", dialogClickListener)
+        			.create();
         //metoda uruchamiana po wybraniu przycisku zmiany statusu
         case DIALOG_STATUS:
         	ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -1085,6 +1117,35 @@ public class ContactBook extends ExpandableListActivity{
 		}
 		return false;
     }
+	
+	//dialogbox yes, no z pytaniem o odbior pliku
+	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+	    @Override
+	    public void onClick(DialogInterface dialog, int which) {
+	        switch (which){
+	        case DialogInterface.BUTTON_POSITIVE:
+	            //Yes button clicked	        	
+	        	try {
+	        		Message msg1 = Message.obtain(null,Common.CLIENT_FILE_YES, 0, 0);
+					mService.send(msg1);
+				} catch (Exception exc1) {
+					// TODO Auto-generated catch block
+					Log.e("[ContactBook]FileDialogBoxYesError",exc1.getMessage());
+				}
+	            break;
+
+	        case DialogInterface.BUTTON_NEGATIVE:
+	            //No button clicked
+	        	try{
+	        		Message msg2 = Message.obtain(null,Common.CLIENT_FILE_NO, 0, 0);
+	        		mService.send(msg2);
+	        	} catch(Exception exc2) {
+	        		Log.e("[ContactBook]FileDialogBoxYesError",exc2.getMessage());
+	        	}
+	            break;	         
+	        }
+	    }
+	};
 	
 	public void prepareGGNumShowNameForIntent(Intent intent, Bundle bundle)
 	{
@@ -1321,6 +1382,36 @@ public class ContactBook extends ExpandableListActivity{
             	    	for(int parent=0; parent<groupsExpandableList.size(); parent++)
             				getExpandableListView().expandGroup(parent);
                     }
+                	break;
+                case Common.CLIENT_FILE_QUESTION:
+                	odebrany = msg.getData();
+                	nazwaPliku = odebrany.getString("nazwaPliku");
+                	//Toast.makeText(getApplicationContext(), "Odebrany FileName od uslugi:\n"+nazwaPliku, Toast.LENGTH_LONG).show();
+                	plikOd = odebrany.getInt("plikOd");
+                	Long rozmiarPliku = odebrany.getLong("rozmiarPliku");
+                	rozmWypisany = rozmiarPliku; 
+                	jednostka = "[B]";
+                	if(rozmiarPliku > 1000 && rozmiarPliku <= 1000000)
+                	{
+                		rozmWypisany = rozmiarPliku/1000;
+                		jednostka = "[KB]";
+                	}
+                	else if(rozmiarPliku > 1000000)
+                	{
+                		rozmWypisany = rozmiarPliku/1000000;
+                		jednostka = "[MB]";
+                	}
+                	showDialog(DIALOG_FILE_YES_NO);
+                	//Toast.makeText(getApplicationContext(), "FileName po showDialog:\n"+nazwaPliku, Toast.LENGTH_LONG).show();
+                	/*AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                	builder.setMessage("Chcesz odebraæ plik:"
+                			+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"
+                			+"\nod numeru:\n"+plikOd).setPositiveButton("Tak", dialogClickListener)
+                	    .setNegativeButton("Nie", dialogClickListener).show();*/
+
+                	/*Toast.makeText(getApplicationContext(), "Pobraæ plik "+nazwaPliku
+                			+"\nod "+plikOd
+                			+"\nrozmiar pliku "+rozmiarPliku+"[Bajtow]", Toast.LENGTH_LONG).show();*/
                 	break;
                 default:
                     super.handleMessage(msg);
