@@ -28,6 +28,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -91,6 +92,8 @@ public class ContactBook extends ExpandableListActivity{
 	float rozmWypisany = 0;
 	String jednostka = "";
 	int plikOd = 0;
+	ProgressDialog mDialog1;
+	private static final int DIALOG1_KEY = 0;
 	
 	AlertDialog alertDialog;
 	AlertDialog alertFile;
@@ -919,6 +922,7 @@ public class ContactBook extends ExpandableListActivity{
 	        	Message msg2 = Message.obtain(null,Common.CLIENT_GET_CONTACTBOOK, 0, 0);
 	    		try
 	    		{
+	    			showDialog(DIALOG1_KEY);
 	    			mService.send(msg2);
 	    		}catch(Exception excMsg)
 	    		{
@@ -1003,6 +1007,14 @@ public class ContactBook extends ExpandableListActivity{
 	@Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
+        case DIALOG1_KEY:
+        	mDialog1 = new ProgressDialog(this);
+        	mDialog1.setTitle("Lista kontaktów");
+        	mDialog1.setMessage("Trwa ³adowanie...");
+        	mDialog1.setIndeterminate(true);
+        	//mDialog1.setCancelable(false);
+        	mDialog1.setCancelable(true);
+            return mDialog1;
         case DIALOG_FILE_YES_NO:
         	//AlertDialog.Builder builder = new AlertDialog.Builder(ContactBook.this);
         	//Toast.makeText(getApplicationContext(), nazwaPliku, Toast.LENGTH_SHORT).show();
@@ -1341,6 +1353,7 @@ public class ContactBook extends ExpandableListActivity{
                 	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
                 	for(int parent=0; parent<groupsExpandableList.size(); parent++)
         				getExpandableListView().expandGroup(parent);
+                	mDialog1.cancel();
                 	break;
                 case Common.CLIENT_SET_STATUSES:
                 	odebrany = msg.getData();
@@ -1377,10 +1390,12 @@ public class ContactBook extends ExpandableListActivity{
                 	gglista = readFromInternalMemory("Kontakty_"+mojNumer+".xml");
                     if(!gglista.equals(""))
                     {
+                    	showDialog(DIALOG1_KEY);
             	    	prepareContactBook(gglista);
             	    	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
             	    	for(int parent=0; parent<groupsExpandableList.size(); parent++)
             				getExpandableListView().expandGroup(parent);
+            	    	mDialog1.cancel();
                     }
                 	break;
                 case Common.CLIENT_FILE_QUESTION:
