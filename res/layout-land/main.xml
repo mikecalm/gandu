@@ -17,7 +17,8 @@
 			android:layout_width="wrap_content" 
 			android:layout_height="wrap_content"
 			android:gravity="center"	>
-			<TextView 				
+			<TextView 	
+				android:textSize="15sp"			
 				android:id="@+id/TextView01"
 				android:layout_width="wrap_content" 
 				android:layout_height="wrap_content"
@@ -27,9 +28,12 @@
 				android:paddingRight="10px"/>			
 			<EditText
 				android:id="@+id/EditText01" 
-				android:layout_width="wrap_content" 
+				android:layout_width="150px" 
 				android:layout_height="wrap_content" 
-				android:hint="@string/login" android:inputType="phone"/>						
+				android:hint="@string/login"
+				android:maxLines="1"
+				android:maxLength="10"						
+				android:inputType="phone"/>						
 		</TableRow>
 		<TableRow 
 			android:id="@+id/TableRow02" 
@@ -37,6 +41,7 @@
 			android:layout_height="wrap_content"
 			android:gravity="center">
 			<TextView 
+				android:textSize="15sp"
 				android:text="@string/haslo" 
 				android:id="@+id/TextView02" 
 				android:layout_width="wrap_content" 
@@ -45,10 +50,12 @@
 				android:paddingRight="10px"/>
 			<EditText 
 				android:id="@+id/EditText02" 
-				android:layout_width="wrap_content" 
+				android:layout_width="fill_parent" 
 				android:layout_height="wrap_content" 
 				android:hint="@string/haslo"
-				android:password="true"/>	
+				android:password="true"
+				android:maxLines="1"
+				android:maxLength="20"/>	
 		</TableRow>
 		<TableRow 
 			android:id="@+id/TableRow03" 
@@ -57,6 +64,7 @@
 			android:gravity="center">
 			<TextView></TextView>
 			<Button 
+				android:textSize="15sp"
 				android:layout_height="wrap_content" 
 				android:id="@+id/Button01" 
 				android:text="@string/zaloguj" 

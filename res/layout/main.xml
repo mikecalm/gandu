@@ -22,17 +22,22 @@
 		android:gravity="center">
 		<TextView 
 			android:paddingRight="10px"
+			android:textSize="15sp"
 			android:text="@string/login"
 			android:textColor="@color/black"
 			android:id="@+id/TextView01" 
-			android:layout_width="wrap_content" 
+			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content">
 		</TextView>
 		<EditText 
 			android:id="@+id/EditText01" 
 			android:layout_height="wrap_content" 
 			android:hint="@string/login" 
-			android:layout_width="fill_parent" android:inputType="phone">
+			android:layout_width="fill_parent"
+			android:maxLines="1"
+			android:maxLength="10"
+			android:numeric="decimal"
+			android:inputType="phone">
 		</EditText>
 	</TableRow>
 	<TableRow 
@@ -41,11 +46,12 @@
 		android:layout_height="wrap_content"
 		android:gravity="center">
 		<TextView 
+			android:textSize="15sp"
 			android:textColor="@color/black"
 			android:paddingRight="10px"
 			android:text="@string/haslo" 
 			android:id="@+id/TextView02" 
-			android:layout_width="wrap_content" 
+			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content">
 		</TextView>
 		<EditText 
@@ -53,7 +59,10 @@
 			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content"
 			android:hint="@string/haslo"
-			android:password="true">
+			android:password="true"
+			android:maxLines="1"
+			android:maxLength="20"
+			>
 			
 		</EditText>
 	</TableRow>
@@ -64,6 +73,7 @@
 		android:paddingTop="20px"
 		android:gravity="center">
 		<Button 
+			android:textSize="15sp"
 			android:text="@string/zaloguj" 
 			android:id="@+id/Button01" 
 			android:layout_width="fill_parent" 

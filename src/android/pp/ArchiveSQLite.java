@@ -416,12 +416,12 @@ public class ArchiveSQLite {
 			if(_cursor.getInt(senderCol) == ggNum)
 			{
 				builder += messagetimestamp+";";
-				builder += "[LAST]"+message;
+				builder += message;
 			}
 			else
 			{
 				builder += "X"+messagetimestamp+";";
-				builder += "[LAST]"+message;
+				builder += message;
 			}
 			wiadomosci.add(builder);
 			Log.i("ArchiveSQLite showUnreadMessage:", builder);
@@ -442,7 +442,7 @@ public class ArchiveSQLite {
 			String sender = _cursor.getString(senderCol);
 			//String message = _cursor.getString(2);
 			builder += messagetimestamp+";";
-			builder += "[LAST]"+message+";";
+			builder += message+";";
 			builder += sender;
 			wiadomosci.add(builder);
 			Log.i("ArchiveSQLite showUnreadMessage:", builder);

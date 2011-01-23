@@ -10,6 +10,5 @@
         android:enabled="true"
         android:clickable="true"
         android:apiKey="0fwLhF406wY9WgNPEgyJRLKZP-uVvxg_t7OuJ_w"
-        />
- 
+        /> 
 </RelativeLayout>

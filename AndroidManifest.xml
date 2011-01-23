@@ -11,6 +11,13 @@
     
     <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon">
 	
+	<receiver android:name=".GanduWidgetProvider" android:label="@string/app_name">
+		<intent-filter>
+			<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+		</intent-filter>
+		<meta-data android:name="android.appwidget.provider" android:resource="@xml/gandu_appwidget_provider" />	
+	</receiver>	
+		
 	<uses-library android:name="com.google.android.maps" />
 	
 	<activity android:name=".GanduClient" android:label="@string/app_name">
@@ -36,9 +43,7 @@
 	<activity android:name=".WWW"
 	></activity>
 	<activity android:name=".AndroidExplorer"
-	></activity>
-
-    
+	></activity>    
     
 <service android:name="GanduService" android:process=":GanduUsluga">
 	<intent-filter>
