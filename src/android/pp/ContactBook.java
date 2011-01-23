@@ -506,7 +506,7 @@ public class ContactBook extends ExpandableListActivity{
 	    		{
 	    			//menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj"};
 	    			//menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Ignoruj","Wyslij plik"};
-	    			menuItems = new String[]{"Edytuj","Usun","Lokalizuj","Lokalizuj mnie","Otwórz link z opisu","Ignoruj","Wyslij plik"};
+	    			menuItems = new String[]{"Edytuj","Usuñ","Lokalizuj","Lokalizuj mnie","Otwórz link z opisu","Ignoruj","Wyslij plik"};
 		    		//sprawdzenie, czy przytrzymany kontakt jest ignorowany	    	
 		    		int indeksSzukanegoPrzytrzymanego = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, szukanyPrzytrzymany, null);
 		    		if(this.contactBookFull.A2Contactsy.Contacts.get(indeksSzukanegoPrzytrzymanego).AC3FlagIgnored != null)

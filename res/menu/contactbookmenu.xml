@@ -2,9 +2,9 @@
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-<item android:title="Przejdź do rozmów" android:id="@+id/GoToConversations05"></item>
-<item android:title="Import" android:id="@+id/Import01"></item>
-<item android:title="Export" android:id="@+id/Export03"></item>
-<item android:title="Dodaj kontakt" android:id="@+id/AddContact04"></item>
-<item android:title="Wyloguj i zakończ" android:id="@+id/End02"></item>
+<item android:title="Przejdź do rozmów" android:id="@+id/GoToConversations05" android:icon="@drawable/conversation"></item>
+<item android:title="Import" android:id="@+id/Import01" android:icon="@drawable/import_list_icon"></item>
+<item android:title="Export" android:id="@+id/Export03"  android:icon="@drawable/export_list_icon"></item>
+<item android:title="Dodaj kontakt" android:id="@+id/AddContact04" android:icon="@drawable/add_contact"></item>
+<item android:title="Wyloguj i zakończ" android:id="@+id/End02" android:icon="@drawable/logout_exit"></item>
 </menu>
