@@ -17,7 +17,9 @@ public class StatusChangeMessage {
 		byte[] wynik = null;
 		try
 		{
-			this.flags = Integer.reverseBytes(1);
+			//this.flags = Integer.reverseBytes(1);
+			//0x00800000 Klient chce otrzymywaæ linki od nieznajomych
+			this.flags = Integer.reverseBytes(0x00800000);			
 			if(opis != "")
 			{
 				//START operacje niezbedne do obciecia opisu do maks 255 bajtow

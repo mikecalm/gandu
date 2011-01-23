@@ -146,4 +146,7 @@ public class Common {
    static final int CLIENT_SEND_FILE = 23;
    static final int CLIENT_LOGIN_FAILED = 24;
    static final int CLIENT_INITIALIZE_FAILED = 25;
+   static final int CLIENT_FILE_QUESTION = 26;
+   static final int CLIENT_FILE_YES = 27;
+   static final int CLIENT_FILE_NO = 28;
 }
