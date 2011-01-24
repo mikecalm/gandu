@@ -588,14 +588,18 @@ public class GanduService extends Service {
                 	odebrany = msg.getData();
                 	String textConference = odebrany.getString("text");
                 	ArrayList<String> konferenciGG = odebrany.getStringArrayList("konferenciGG");
-                	//String konferenciDoBazy = odebrany.getString("konferenci");
-                	//Object[] tablicaKonf = konferenciGG.toArray();
-                	//int[] tablicaKonferentow = new int[tablicaKonf.length];
-                	int[] tablicaKonferentow = new int[konferenciGG.size()];
-                	//for(int i=0;i<tablicaKonf.length;i++)
-                	for(int i=0;i<konferenciGG.size();i++)
-                		//tablicaKonferentow[i] = ((Integer)tablicaKonf[i]).intValue();
-                		tablicaKonferentow[i] = Integer.parseInt(konferenciGG.get(i));
+                	//int[] tablicaKonferentow = new int[konferenciGG.size()];
+                	int[] tablicaKonferentow = new int[konferenciGG.size()-1];
+                	ArrayList<String> konferenciBezSiebie = new ArrayList<String>();
+                	for(int ii=0; ii<konferenciGG.size(); ii++)
+                	{
+                		if(!konferenciGG.get(ii).equals(ggnum))
+                			konferenciBezSiebie.add(konferenciGG.get(ii));
+                	}
+                	//for(int i=0;i<konferenciGG.size();i++)
+                	//	tablicaKonferentow[i] = Integer.parseInt(konferenciGG.get(i));
+                	for(int i=0;i<konferenciBezSiebie.size();i++)
+                		tablicaKonferentow[i] = Integer.parseInt(konferenciBezSiebie.get(i));
                 	//START test wyslania wiadomosci konferencyjnej z gandu2 do gandu3 i do mnie
                 	int currentTime1 = (int)(System.currentTimeMillis() / 1000L);
                 	ChatMessage cm = new ChatMessage();
