@@ -469,6 +469,11 @@ public class GanduService extends Service {
 		//int pid = android.os.Process.myPid();
 		//android.os.Process.killProcess(pid);
     }
+    
+    String getInitialList()
+    {
+    	return "<ContactBook><Groups><Group><Id>00000000-0000-0000-0000-000000000000</Id><Name>Moje kontakty</Name><IsExpanded>true</IsExpanded><IsRemovable>false</IsRemovable></Group><Group><Id>00000000-0000-0000-0000-000000000001</Id><Name>Ignorowani</Name><IsExpanded>false</IsExpanded><IsRemovable>false</IsRemovable></Group></Groups><Contacts><Contact><Guid>00000000-0000-0000-0000-000000000000</Guid><GGNumber>100</GGNumber><ShowName>Infobot</ShowName><Groups><GroupId>00000000-0000-0000-0000-000000000000</GroupId></Groups><Avatars/><FlagNormal>true</FlagNormal></Contact></Contacts></ContactBook>";
+    }
 
     /**
      * Handler of incoming messages from clients.
@@ -1140,6 +1145,9 @@ public class GanduService extends Service {
 						while(pobraneBajtyZeStosu != dlugoscSpakowana)
 							pobraneBajtyZeStosu += in.read(spakowanaSkompresowana, pobraneBajtyZeStosu, dlugoscSpakowana-pobraneBajtyZeStosu);
 						String lista = inflateContactBook(spakowanaSkompresowana);
+						
+						if(!lista.contains("<Contact>"))
+							lista = getInitialList();
 						
 						//saveOnSDCard(lista);
 						//saveOnInternalMemory(lista);
