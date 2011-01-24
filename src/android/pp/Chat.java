@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.pp.ContactBook.IncomingHandler;
 import android.provider.Contacts.Intents;
 import android.util.Log;
@@ -51,7 +52,6 @@ public class Chat extends TabActivity{
     //HashMap<String, String> numerShowName;
     ArrayList<String> numerShowName;
     ArrayList<String> numerIndex;
-	
     ArchiveSQLite archiveSQL;
     public ArrayList<String> hiddenTabs;
     public ArrayList<String> openedTabs;
@@ -356,6 +356,7 @@ public class Chat extends TabActivity{
                 	break;
                 
                 case Common.CLIENT_RECV_MESSAGE:
+                	
                 	Bundle odebrany = msg.getData();
                 	String tresc = odebrany.getString("tresc");
                 	String wiadomoscOd = odebrany.getString("wiadomoscOd");

@@ -1197,14 +1197,24 @@ public class ContactBook extends ExpandableListActivity{
 		//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
 		//ktore ma zadeklarowane w klasie z lista kontaktow.
 		try {
-			this.contactBookFull = serializer.read(SIMPLEContactBookList.class, xmlList, false);
-			sortContactListSIMPLE(this.contactBookFull);
-			this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
-			this.groupsExpandableList = new ArrayList<ViewableGroups>();
-			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
-			statusDescription.setSelection(0, statusDescription.getText().length());
+			if(serializer.validate(SIMPLEContactBookList.class, xmlList))
+			{
+				this.contactBookFull = serializer.read(SIMPLEContactBookList.class, xmlList, false);
+				if(this.contactBookFull.A2Contactsy.Contacts != null)
+				{
+					sortContactListSIMPLE(this.contactBookFull);
+					this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
+					this.groupsExpandableList = new ArrayList<ViewableGroups>();
+					createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
+					statusDescription.setSelection(0, statusDescription.getText().length());
+				}
+				else
+				{
+					Toast.makeText(getApplicationContext(),"Brak wpisów na liœcie kontaktów", Toast.LENGTH_SHORT).show();
+				}
+			}
 		} catch (Exception excSimp) {
-			Log.e("SIMPLE Error",excSimp.getMessage());
+			Log.e("SIMPLE Error","B£AD");
 		}
     }
 	

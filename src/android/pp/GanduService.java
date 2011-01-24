@@ -43,6 +43,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -50,6 +51,7 @@ public class GanduService extends Service {
 	String[] ip = null;
 	private boolean connected = false;
 	Thread cThread;
+	
 	Thread pingingThread;
 	Socket socket;
 	DataInputStream in;
@@ -1292,13 +1294,21 @@ public class GanduService extends Service {
 						//START show notification
 						String senderName = pobierzShowName(""+sender);
 						if(konferenci.size() == 0)
+						{
 							//showNotification(tresc, ""+sender, ""+sender+": "+tresc, R.drawable.icon, 
 							showNotification(tresc, ""+senderName, ""+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
+							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
+						
+						}
 						else
+						{
 							//showNotification(tresc, ""+sender, "[Konferencja]"+sender+": "+tresc, R.drawable.icon, 
 							showNotification(tresc, ""+senderName, "[Konferencja]"+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
+							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
+						
+						}
 						//KONIEC show notification
 						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
 						message_recived.setData(wysylany);
