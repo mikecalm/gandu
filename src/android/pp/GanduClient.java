@@ -227,7 +227,7 @@ public class GanduClient extends Activity {
             case DIALOG1_KEY: {
             	mDialog1 = new ProgressDialog(this);
             	mDialog1.setTitle("Logowanie");
-            	mDialog1.setMessage("Prosze czekac...");
+            	mDialog1.setMessage("Proszê czekaæ...");
             	mDialog1.setIndeterminate(true);
             	//mDialog1.setCancelable(false);
             	mDialog1.setCancelable(true);
