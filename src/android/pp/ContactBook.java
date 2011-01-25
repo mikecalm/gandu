@@ -1189,7 +1189,8 @@ public class ContactBook extends ExpandableListActivity{
 		}
 	}
 	
-	public void prepareContactBook(String xmlList)
+	//public void prepareContactBook(String xmlList)
+	public Boolean prepareContactBook(String xmlList)
     {
     	Serializer serializer = new Persister();
 		//false na koï¿½cu odpowiada za ignorowanie elementow w pliku XML ktorych
@@ -1197,7 +1198,8 @@ public class ContactBook extends ExpandableListActivity{
 		//jakies pole do listy kontaktow, to Gandu je zignoruje i wczyta te pola,
 		//ktore ma zadeklarowane w klasie z lista kontaktow.
 		try {
-			if(serializer.validate(SIMPLEContactBookList.class, xmlList))
+			//if(serializer.validate(SIMPLEContactBookList.class, xmlList))
+			if(serializer.validate(SIMPLEContactBookList.class, xmlList, false))
 			{
 				this.contactBookFull = serializer.read(SIMPLEContactBookList.class, xmlList, false);
 				if(this.contactBookFull.A2Contactsy.Contacts != null)
@@ -1206,16 +1208,25 @@ public class ContactBook extends ExpandableListActivity{
 					this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
 					this.groupsExpandableList = new ArrayList<ViewableGroups>();
 					createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
-					statusDescription.setSelection(0, statusDescription.getText().length());
+					statusDescription.setSelection(0, statusDescription.getText().length());					
 				}
 				else
 				{
 					Toast.makeText(getApplicationContext(),"Brak wpisów na liœcie kontaktów", Toast.LENGTH_SHORT).show();
+					return false;
 				}
+			}
+			else
+			{
+				Toast.makeText(getApplicationContext(),"Niepoprawny format listy kontaktów", Toast.LENGTH_SHORT).show();
+				return false;
 			}
 		} catch (Exception excSimp) {
 			Log.e("SIMPLE Error","B£AD");
+			Toast.makeText(getApplicationContext(),"Niepoprawny format listy kontaktów", Toast.LENGTH_SHORT).show();
+			return false;
 		}
+		return true;
     }
 	
 	public void addContactToContactBook(SIMPLEContact addedContact)
@@ -1347,23 +1358,26 @@ public class ContactBook extends ExpandableListActivity{
                 case Common.FLAG_CONTACTBOOK:
                 	odebrany = msg.getData();
                 	gglista = odebrany.getString("listaGG");
-                	prepareContactBook(gglista);
-                	Message msg3 = Message.obtain(null,Common.CLIENT_GG_NUM_SHOW_NAME, 0, 0);	        
-    	    		try
-    	    		{
-    		    		Bundle wysylany = new Bundle();
-    					prepareGGNumShowNameForIntent(null, wysylany);
-    					msg3.setData(wysylany);
-    	    			mService.send(msg3);
-    	    		}catch(Exception excMsg)
-    	    		{
-    	    			Log.e("ContactBook","gg num -> show name:\n"+
-    	    					excMsg.getMessage());
-    	    		}
-                	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
-                	for(int parent=0; parent<groupsExpandableList.size(); parent++)
-        				getExpandableListView().expandGroup(parent);
-                	mDialog1.cancel();
+                	//prepareContactBook(gglista);
+                	if(prepareContactBook(gglista))
+                	{
+	                	Message msg3 = Message.obtain(null,Common.CLIENT_GG_NUM_SHOW_NAME, 0, 0);	        
+	    	    		try
+	    	    		{
+	    		    		Bundle wysylany = new Bundle();
+	    					prepareGGNumShowNameForIntent(null, wysylany);
+	    					msg3.setData(wysylany);
+	    	    			mService.send(msg3);
+	    	    		}catch(Exception excMsg)
+	    	    		{
+	    	    			Log.e("ContactBook","gg num -> show name:\n"+
+	    	    					excMsg.getMessage());
+	    	    		}
+	                	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
+	                	for(int parent=0; parent<groupsExpandableList.size(); parent++)
+	        				getExpandableListView().expandGroup(parent);
+                	}
+	                mDialog1.cancel();
                 	break;
                 case Common.CLIENT_SET_STATUSES:
                 	odebrany = msg.getData();
@@ -1401,10 +1415,13 @@ public class ContactBook extends ExpandableListActivity{
                     if(!gglista.equals(""))
                     {
                     	showDialog(DIALOG1_KEY);
-            	    	prepareContactBook(gglista);
-            	    	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
-            	    	for(int parent=0; parent<groupsExpandableList.size(); parent++)
-            				getExpandableListView().expandGroup(parent);
+            	    	//prepareContactBook(gglista);
+                    	if(prepareContactBook(gglista))
+                    	{
+	            	    	mAdapter.setAdapterData(groupsExpandableList, contactsExpandableList);
+	            	    	for(int parent=0; parent<groupsExpandableList.size(); parent++)
+	            				getExpandableListView().expandGroup(parent);
+                    	}
             	    	mDialog1.cancel();
                     }
                 	break;

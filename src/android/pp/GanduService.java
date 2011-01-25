@@ -59,7 +59,8 @@ public class GanduService extends Service {
 	String ggnum;
 	String ggpass;
 	String descriptionLast = "http://code.google.com/p/gandu/";
-	String statusLast = "Dostepny";
+	//String statusLast = "Dostepny";
+	String statusLast = "Niewidoczny";
 	byte[] skompresowanaLista = null;
     /** For showing and hiding our notification. */
     NotificationManager mNM;
