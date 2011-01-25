@@ -994,7 +994,7 @@ public class ContactBook extends ExpandableListActivity{
 		super.onPrepareDialog(id, dialog);
 		switch(id){
 		case DIALOG_FILE_YES_NO:
-			((AlertDialog)dialog).setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd);
+			((AlertDialog)dialog).setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd+"?");
 			/*alertFile = new AlertDialog.Builder(ContactBook.this)
         	.setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd)
         			.setPositiveButton("Tak", dialogClickListener)
@@ -1020,7 +1020,7 @@ public class ContactBook extends ExpandableListActivity{
         	//Toast.makeText(getApplicationContext(), nazwaPliku, Toast.LENGTH_SHORT).show();
         	return alertFile = new AlertDialog.Builder(ContactBook.this)
         	//return new AlertDialog.Builder(ContactBook.this)
-        	.setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd)
+        	.setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd+"?")
         	//.setMessage("Chcesz odebraæ plik?")
         			.setPositiveButton("Tak", dialogClickListener)
         			.setNegativeButton("Nie", dialogClickListener)
