@@ -510,6 +510,9 @@ public class GanduService extends Service {
                 	odebrany = msg.getData();
                 	ggnum = odebrany.getString("numerGG");
                 	ggpass = odebrany.getString("hasloGG");
+                	//pobranie opisu i statusu do logowania z preferencji
+                	descriptionLast = Prefs.getLoginDescriptionPref(getApplicationContext());
+                	statusLast = Prefs.getLoginStatusPref(getApplicationContext());
                 	
                 	//w przypadku nieudanej proby zainicjowania logowania.
                 	//Najprawdopodobniej brak polaczenia z internetem
@@ -662,8 +665,8 @@ public class GanduService extends Service {
 	                		if(inicjujLogowanie(ggnum))
 	                    	{
 	                    		//showNotification("Zalogowany "+ggnum);
-	                    		showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
-	                            		GanduClient.class, -1, false);
+	                    		//showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
+	                            //		GanduClient.class, -1, false);
 	                    		mNM.cancel(-1);
 	                    	}
                 		}
@@ -958,6 +961,10 @@ public class GanduService extends Service {
     	
     	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
     	mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+    	
+    	//pobranie opisu i statusu do logowania z preferencji
+    	descriptionLast = Prefs.getLoginDescriptionPref(getApplicationContext());
+    	statusLast = Prefs.getLoginStatusPref(getApplicationContext());
 
         // Display a notification about us starting.
         //showNotification("Witaj w Gandu");
@@ -1299,7 +1306,7 @@ public class GanduService extends Service {
 							//showNotification(tresc, ""+sender, ""+sender+": "+tresc, R.drawable.icon, 
 							showNotification(tresc, ""+senderName, ""+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
-							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
+							//((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 						
 						}
 						else
@@ -1307,9 +1314,12 @@ public class GanduService extends Service {
 							//showNotification(tresc, ""+sender, "[Konferencja]"+sender+": "+tresc, R.drawable.icon, 
 							showNotification(tresc, ""+senderName, "[Konferencja]"+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
-							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
+							//((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 						
 						}
+						//jesli w ustawieniach jest, ze ma vibrowac, to niech wibruje;)
+						if(Prefs.getMessageVibrationPref(getApplicationContext()))
+							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 						//KONIEC show notification
 						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
 						message_recived.setData(wysylany);

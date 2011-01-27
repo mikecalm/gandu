@@ -968,6 +968,10 @@ public class ContactBook extends ExpandableListActivity{
 				Intent intent = new Intent(this.getApplicationContext(), AddNewContact.class);
 				startActivityForResult(intent,NEW_CONTACT_ACTIVITY_RESULT);
 			 	break;
+			case R.id.Prefs05:
+				Intent intent2 = new Intent(this.getApplicationContext(), Prefs.class);
+				startActivity(intent2);
+			 	break;
 			case R.id.GoToConversations05:
 				Intent intent1 = new Intent(this.getApplicationContext(), Chat.class);
 				intent1.putExtra("mojNumer", this.mojNumer);
