@@ -50,12 +50,12 @@
 				android:paddingRight="10px"/>
 			<EditText 
 				android:id="@+id/EditText02" 
-				android:layout_width="fill_parent" 
+				android:layout_width="150px" 
 				android:layout_height="wrap_content" 
 				android:hint="@string/haslo"
-				android:password="true"
-				android:maxLines="1"
-				android:maxLength="20"/>	
+				android:password="true"				
+				android:maxLength="20"
+				android:singleLine="true"/>	
 		</TableRow>
 		<TableRow 
 			android:id="@+id/TableRow03" 

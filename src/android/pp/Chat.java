@@ -29,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TabHost;
@@ -278,6 +279,7 @@ public class Chat extends TabActivity{
         for (int i = (tabHost.getTabWidget().getChildCount()-1) ; i>=0 ; i--)
         {
         	tabHost.setCurrentTab(i);
+        	tabHost.getTabWidget().getChildAt(i).getLayoutParams().height = 35;
         }
         
 	}
@@ -423,6 +425,7 @@ public class Chat extends TabActivity{
     			            //tescik
     			            openedTabs.add(tytulTaba);
     		            	tabHost.addTab(firstTabSpec);
+    		            	tabHost.getTabWidget().getChildAt(tabHost.getTabWidget().getChildCount()-1).getLayoutParams().height = 35;
     		            	int aktualnaZakladka = tabHost.getCurrentTab();
     		            	if(konferenciGG == null)
     		            		tabHost.setCurrentTabByTag(wiadomoscOd);
