@@ -10,7 +10,7 @@
       <uses-sdk android:minSdkVersion="3"></uses-sdk>
       
     
-    <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon">
+    <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon" android:theme="@android:style/Theme.NoTitleBar">
 	
 	<!-- 
 	<receiver android:name=".GanduWidgetProvider" android:label="@string/app_name">
@@ -46,6 +46,9 @@
 	<activity android:name=".WWW"
 	></activity>
 	<activity android:name=".AndroidExplorer"
+	></activity>
+	<activity android:name=".Prefs"
+		android:label="Ustawienia"
 	></activity>    
     
 <service android:name="GanduService" android:process=":GanduUsluga">
