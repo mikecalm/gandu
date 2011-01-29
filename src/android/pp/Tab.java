@@ -333,6 +333,17 @@ public class Tab extends Activity{
 				//else
 				//	finish();		
 				break;
+			case R.id.photo:
+				try
+				{
+					Intent i =  new Intent(this,CameraSurface.class);
+					i.putExtra("GGNumber",this.ggnumber);
+					startActivity(i);
+				}catch(Exception e)
+				{
+					Log.e("Tab z Photo",""+e.getMessage());
+				}
+				break;
 		}
 		return false;
 	}

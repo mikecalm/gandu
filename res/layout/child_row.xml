@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="fill_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight">
+    android:layout_height="wrap_content">
 	
 	<ImageView 
 		android:id="@+id/ImageView01" 
@@ -15,7 +15,7 @@
 	<LinearLayout
 		android:orientation="vertical"
 		android:layout_width="fill_parent"
-		android:layout_height="?android:attr/listPreferredItemHeight">
+		android:layout_height="wrap_content">
    		<TextView android:id="@+id/username"
 	        android:textSize="14px"
 	        android:textStyle="bold"
@@ -26,7 +26,9 @@
 	        android:textSize="14px"
 	        android:textStyle="italic"
 	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"/>
+	        android:layout_height="wrap_content"
+	        android:minLines ="2"
+	        />
    	</LinearLayout>
          
 </LinearLayout>

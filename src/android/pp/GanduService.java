@@ -59,9 +59,10 @@ public class GanduService extends Service {
 	String ggnum;
 	String ggpass;
 	String descriptionLast = "http://code.google.com/p/gandu/";
-	//String statusLast = "Dostepny";
-	String statusLast = "Niewidoczny";
-	byte[] skompresowanaLista = null;
+	String statusLast = "Dostepny";
+	//String statusLast = "Niewidoczny";
+	public byte[] skompresowanaLista = null;
+	int licznik_serii_listy = 0;
     /** For showing and hiding our notification. */
     NotificationManager mNM;
     /** Keeps track of all current registered clients. */
@@ -92,7 +93,7 @@ public class GanduService extends Service {
   
    public Boolean getContactbook()
    {
-	   int type = Integer.reverseBytes(Common.GG_USERLIST_REQUEST80);
+	  int type = Integer.reverseBytes(Common.GG_USERLIST_REQUEST80);
 	  byte contactbook_frame_type = Common.GG_USERLIST_GET;
 	  //byte [] request ;
 	  byte [] paczkaBajtow = null;
@@ -260,7 +261,7 @@ public class GanduService extends Service {
 	   Inflater inf = new Inflater();
 	   inf.setInput(paczkaBajtow,0,paczkaBajtow.length);
 	   Log.i("GanduService", "Dlugosc skompresowana = "+paczkaBajtow.length);
-	   byte [] result  = new byte [100000];
+	   byte [] result  = new byte [1000000];
 	   int resultLength;
 	   String str = null;
 	   try {
@@ -510,9 +511,6 @@ public class GanduService extends Service {
                 	odebrany = msg.getData();
                 	ggnum = odebrany.getString("numerGG");
                 	ggpass = odebrany.getString("hasloGG");
-                	//pobranie opisu i statusu do logowania z preferencji
-                	descriptionLast = Prefs.getLoginDescriptionPref(getApplicationContext());
-                	statusLast = Prefs.getLoginStatusPref(getApplicationContext());
                 	
                 	//w przypadku nieudanej proby zainicjowania logowania.
                 	//Najprawdopodobniej brak polaczenia z internetem
@@ -665,8 +663,8 @@ public class GanduService extends Service {
 	                		if(inicjujLogowanie(ggnum))
 	                    	{
 	                    		//showNotification("Zalogowany "+ggnum);
-	                    		//showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
-	                            //		GanduClient.class, -1, false);
+	                    		showNotification("Lista kontaktow", "Gandu", "Zalogowany "+ggnum, R.drawable.icon, 
+	                            		GanduClient.class, -1, false);
 	                    		mNM.cancel(-1);
 	                    	}
                 		}
@@ -884,8 +882,11 @@ public class GanduService extends Service {
                 	{
 	                	odebrany = msg.getData();
 	                	String wyslijPlikDo = odebrany.getString("numerGG");
+	                	Log.i("Przesylanie pliku do ",wyslijPlikDo);
 	                	String nazwaPliku = odebrany.getString("fileName");
+	                	Log.i("Nazwa pliku",nazwaPliku);
 	                	String sciezkaPliku = odebrany.getString("filePath");
+	                	Log.i("Sciezka",sciezkaPliku);
 	                	outcomingFileTransfer = new Files();
 	                	outcomingFileTransfer.ggReceiverNumber = Integer.parseInt(wyslijPlikDo);
 	                	outcomingFileTransfer.sendingFileName = nazwaPliku;
@@ -961,10 +962,6 @@ public class GanduService extends Service {
     	
     	Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
     	mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-    	
-    	//pobranie opisu i statusu do logowania z preferencji
-    	descriptionLast = Prefs.getLoginDescriptionPref(getApplicationContext());
-    	statusLast = Prefs.getLoginStatusPref(getApplicationContext());
 
         // Display a notification about us starting.
         //showNotification("Witaj w Gandu");
@@ -1132,9 +1129,9 @@ public class GanduService extends Service {
 						int dlugoscListy = Integer.reverseBytes(in.readInt());
 						int dlugoscSpakowana = dlugoscListy-1;
 						byte typListaKont = in.readByte();
-						if(typListaKont == 0x06)
-							Log.i("typ replay import","0x06");
-						else if(typListaKont == 0x00) //GG_USERLIST_PUT_REPLY 0x00/* pocz�tek eksportu listy */
+						String lista = null;
+						
+						if(typListaKont == 0x00) //GG_USERLIST_PUT_REPLY 0x00/* pocz�tek eksportu listy */
 						{
 							Log.i("typ replay import","0x00");
 							break;
@@ -1144,28 +1141,82 @@ public class GanduService extends Service {
 							Log.i("typ replay import","0x02");
 							break;
 						}
-						else
+						
+						else if (typListaKont == 0x04 && licznik_serii_listy == 0) 
 						{
-							Log.i("INNY!! typ replay import",""+typListaKont);
-							break;
+							Log.i("typ replay import","Kontynuacja");
+							skompresowanaLista = new byte [dlugoscSpakowana];
+							licznik_serii_listy++;
+							
+							//byte[] spakowanaSkompresowana = new byte[dlugoscSpakowana];
+							int pobraneBajtyZeStosu = 0;
+							while (pobraneBajtyZeStosu != dlugoscSpakowana)
+								pobraneBajtyZeStosu += in.read(
+										skompresowanaLista,
+										pobraneBajtyZeStosu, dlugoscSpakowana
+												- pobraneBajtyZeStosu);
+							
+							licznik_serii_listy++;
+						}
+						else if (typListaKont == 0x04 && licznik_serii_listy != 0)
+						{
+							Log.i("typ replay import","Kontynuacja juz z jednym przebiegiem");
+							byte [] bufor = skompresowanaLista;
+							skompresowanaLista = new byte[skompresowanaLista.length+dlugoscSpakowana];
+							skompresowanaLista = bufor;
+							
+							int pobraneBajtyZeStosu = 0;
+							while (pobraneBajtyZeStosu != dlugoscSpakowana)
+								pobraneBajtyZeStosu += in.read(
+										skompresowanaLista,
+										pobraneBajtyZeStosu, dlugoscSpakowana
+												- pobraneBajtyZeStosu);
+							
+							licznik_serii_listy++;
+						}
+						else if (typListaKont == 0x06)
+						{
+							Log.i("typ replay import","Ostatnia seria");
+							if (skompresowanaLista != null) {
+								byte[] bufor = skompresowanaLista;
+								skompresowanaLista = new byte[skompresowanaLista.length
+										+ dlugoscListy];
+								skompresowanaLista = bufor;
+							}
+							else 
+							{
+								skompresowanaLista = new byte[dlugoscSpakowana];							}
+							
+							
+							int pobraneBajtyZeStosu = 0;
+							while (pobraneBajtyZeStosu != dlugoscSpakowana)
+								pobraneBajtyZeStosu += in.read(
+										skompresowanaLista,
+										pobraneBajtyZeStosu, dlugoscSpakowana
+												- pobraneBajtyZeStosu);
+							
+							licznik_serii_listy=0;
+							lista = inflateContactBook(skompresowanaLista);
+							skompresowanaLista = null;
 						}
 						
-						byte[] spakowanaSkompresowana = new byte[dlugoscSpakowana];
-						int pobraneBajtyZeStosu=0;
-						while(pobraneBajtyZeStosu != dlugoscSpakowana)
-							pobraneBajtyZeStosu += in.read(spakowanaSkompresowana, pobraneBajtyZeStosu, dlugoscSpakowana-pobraneBajtyZeStosu);
-						String lista = inflateContactBook(spakowanaSkompresowana);
+
+							
+
+							if (!lista.contains("<Contact>"))
+								lista = getInitialList();
+
+							// saveOnSDCard(lista);
+							// saveOnInternalMemory(lista);
+							saveOnInternalMemory(lista, ggnum);
+							Message msg2 = Message.obtain(null,
+									Common.FLAG_CONTACTBOOK, 0, 0);
+							wysylany = new Bundle();
+							wysylany.putString("listaGG", lista);
+							msg2.setData(wysylany);
 						
-						if(!lista.contains("<Contact>"))
-							lista = getInitialList();
+					
 						
-						//saveOnSDCard(lista);
-						//saveOnInternalMemory(lista);
-						saveOnInternalMemory(lista,ggnum);
-						Message msg2 = Message.obtain(null,Common.FLAG_CONTACTBOOK, 0, 0);
-						wysylany = new Bundle();
-						wysylany.putString("listaGG", lista);
-						msg2.setData(wysylany);
 						for(int i=0; i<mClients.size(); i++)
 	                    {
 	                    	try
@@ -1306,7 +1357,7 @@ public class GanduService extends Service {
 							//showNotification(tresc, ""+sender, ""+sender+": "+tresc, R.drawable.icon, 
 							showNotification(tresc, ""+senderName, ""+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
-							//((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
+							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 						
 						}
 						else
@@ -1314,12 +1365,9 @@ public class GanduService extends Service {
 							//showNotification(tresc, ""+sender, "[Konferencja]"+sender+": "+tresc, R.drawable.icon, 
 							showNotification(tresc, ""+senderName, "[Konferencja]"+senderName+": "+tresc, R.drawable.icon,
 	                        		Chat.class, Integer.parseInt(""+idWiadomosci), true);
-							//((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
+							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 						
 						}
-						//jesli w ustawieniach jest, ze ma vibrowac, to niech wibruje;)
-						if(Prefs.getMessageVibrationPref(getApplicationContext()))
-							((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 						//KONIEC show notification
 						Message message_recived = Message.obtain(null, Common.CLIENT_RECV_MESSAGE, 0 ,0 );
 						message_recived.setData(wysylany);
