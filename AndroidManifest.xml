@@ -7,19 +7,18 @@
       <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
       <uses-permission android:name="android.permission.INTERNET" />
        <uses-permission android:name="android.permission.VIBRATE"/>
+       <uses-permission android:name="android.permission.CAMERA"/>
       <uses-sdk android:minSdkVersion="3"></uses-sdk>
       
     
     <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon" android:theme="@android:style/Theme.NoTitleBar">
 	
-	<!-- 
-	<receiver android:name=".GanduWidgetProvider" android:label="@string/app_name">
+	<!--<receiver android:name=".GanduWidgetProvider" android:label="@string/app_name">
 		<intent-filter>
 			<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 		</intent-filter>
 		<meta-data android:name="android.appwidget.provider" android:resource="@xml/gandu_appwidget_provider" />	
-	</receiver>	
-	-->
+	</receiver>	-->
 		
 	<uses-library android:name="com.google.android.maps" />
 	
@@ -29,6 +28,8 @@
 			<category android:name="android.intent.category.LAUNCHER"></category>
 		</intent-filter>	
 	</activity>
+	<activity android:name=".CameraSurface">
+	</activity> 
 	<activity android:name=".ContactBook">
 	</activity> 
 	<activity android:name=".Chat">

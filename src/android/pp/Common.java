@@ -86,6 +86,8 @@ public class Common {
      * IMPORT/EXPORT CONTACTBOOK TYPES
     */
     static final byte GG_USERLIST_GET=  0x02; 	//import listy
+    static final byte GG_USERLIST_GET_MORE_REPLY = 0x04;
+    static final byte GG_USERLIST_GET_REPLY = 0x06;
     static final byte GG_USERLIST_PUT= 0x00; 	//poczatek eksportu listy
     
     /**
