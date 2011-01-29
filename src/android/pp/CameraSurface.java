@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 public class CameraSurface extends Activity implements SurfaceHolder.Callback,OnClickListener
 {
@@ -51,7 +53,7 @@ public class CameraSurface extends Activity implements SurfaceHolder.Callback,On
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		mCondition = new ConditionVariable(false);
 	    mInitial = new ConditionVariable(false);
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
@@ -70,6 +72,7 @@ public class CameraSurface extends Activity implements SurfaceHolder.Callback,On
 		mSurfaceHolder = mSurfaceView.getHolder();
 		mSurfaceHolder.addCallback(this);
 		mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		Toast.makeText(getApplicationContext(), "Kliknij w ekran, aby zrobiæ\ni wys³aæ zdjêcie", Toast.LENGTH_SHORT).show();
 	}
 	
 	@Override
