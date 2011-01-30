@@ -93,6 +93,25 @@ public class CameraSurface extends Activity implements SurfaceHolder.Callback,On
 					
 					FileUtilities.StoreByteImage(mContext, imageData, 50, "Obraz"+seed);
 					c.startPreview();				
+
+					//po zapisaniu zdjecia nastepuje
+					//wyslanie do uslugi zadania przeslania zdjecia
+					Message msg3 = Message.obtain(null,Common.CLIENT_SEND_FILE, 0, 0);	        
+					try
+					{
+			    		Bundle wysylany = new Bundle();
+						wysylany.putString("numerGG", numerGG);
+						wysylany.putString("fileName", "Obraz"+seed+".jpg");
+						wysylany.putString("filePath", "/sdcard/Obraz"+seed+".jpg");
+						wysylany.putString("klasa", "photo");
+						msg3.setData(wysylany);
+						mService.send(msg3);
+					}catch(Exception excMsg)
+					{
+						Log.e("Camera","Blad wyslania info do serwisu o wysylaniu pliku:\n"+
+								excMsg.getMessage());
+					}
+					
 					setResult(0,mIntent);
 					finish();
 				}catch(Exception e)
@@ -148,23 +167,7 @@ public class CameraSurface extends Activity implements SurfaceHolder.Callback,On
 	@Override
 	public void onClick(View arg0) {
 		// TODO Auto-generated method stub
-		mCamera.takePicture(null, mPictureCallback, mPictureCallback);
-		Message msg3 = Message.obtain(null,Common.CLIENT_SEND_FILE, 0, 0);	        
-		try
-		{
-    		Bundle wysylany = new Bundle();
-			wysylany.putString("numerGG", this.numerGG);
-			wysylany.putString("fileName", "Obraz"+seed+".jpg");
-			wysylany.putString("filePath", "/sdcard/Obraz"+seed+".jpg");
-			wysylany.putString("klasa", "photo");
-			msg3.setData(wysylany);
-			mService.send(msg3);
-		}catch(Exception excMsg)
-		{
-			Log.e("Camera","Blad wyslania info do serwisu o wysylaniu pliku:\n"+
-					excMsg.getMessage());
-		}
-		
+		mCamera.takePicture(null, null, mPictureCallback);		
 	}
 	/**
      * Target we publish for clients to send messages to IncomingHandler.
