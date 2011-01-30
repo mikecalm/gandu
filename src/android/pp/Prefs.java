@@ -34,5 +34,10 @@ public class Prefs extends PreferenceActivity{
 	{
 		return PreferenceManager.getDefaultSharedPreferences(context).getString("opis_po_zalogowaniu", "http://code.google.com/p/gandu/");
 	}
+	
+	public static Boolean getLongDescritpionState(Context context)
+	{
+		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("krotkie_opisy", false);
+	}
 
 }
