@@ -86,6 +86,7 @@ public class ContactBook extends ExpandableListActivity{
 	int ustawionyStatus = 0;
 	static final private int NEW_CONTACT_ACTIVITY_RESULT = 0;
 	static final private int NEW_ANDROID_EXPLORER_ACTIVITY_RESULT = 1;
+	static final private int PREFERENCE_ACTIVITY_RESULT = 2;
 	public GetStatuses gs = new GetStatuses();
 	ArrayList<String> itemsy = new ArrayList();
 	String nazwaPliku = "";
@@ -491,6 +492,10 @@ public class ContactBook extends ExpandableListActivity{
         			}
         		}
         	}
+        }
+        else if (requestCode == PREFERENCE_ACTIVITY_RESULT) {
+        	//odswiezenie listy kontaktow
+        	this.mAdapter.notifyDataSetChanged();
         }
     }
     
@@ -970,7 +975,8 @@ public class ContactBook extends ExpandableListActivity{
 			 	break;
 			case R.id.Prefs05:
 				Intent intent2 = new Intent(this.getApplicationContext(), Prefs.class);
-				startActivity(intent2);
+				//startActivity(intent2);
+				startActivityForResult(intent2,PREFERENCE_ACTIVITY_RESULT);				
 			 	break;
 			case R.id.GoToConversations05:
 				Intent intent1 = new Intent(this.getApplicationContext(), Chat.class);

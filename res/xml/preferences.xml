@@ -38,5 +38,15 @@
 			android:dialogTitle="Ustaw opis" />                        
 		
 	</PreferenceCategory>
-	"
+	
+	<PreferenceCategory
+		android:title="Lista kontaktów">
+		
+		<CheckBoxPreference
+			android:key="krotkie_opisy"
+			android:title="Krótkie opisy"
+			android:summary="Nie wyświetlaj długich opisów" />
+		
+	</PreferenceCategory>
+	
 </PreferenceScreen>

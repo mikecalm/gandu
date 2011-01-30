@@ -7,6 +7,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -60,9 +61,14 @@ import android.widget.TextView;
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
                 View convertView, ViewGroup parent) 
         {
-	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);
+	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);	        		        	
 	            ((TextView)convertView.findViewById(R.id.username)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).showName);
 	            ((TextView)convertView.findViewById(R.id.description)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).description);
+	            
+	            //pobranie z ustawien wartosci, czy wyswietlac dlugie opisy
+	            if(Prefs.getLongDescritpionState(mContext))
+	            	((TextView)convertView.findViewById(R.id.description)).setLines(2);
+	            
 	            //if(((ViewableContacts)(getChild(groupPosition, childPosition))).showName.equals("Blip.pl"))
 	            //	((ImageView)convertView.findViewById(R.id.ImageView01)).setImageResource(R.drawable.notavailable);
 	            if(((ViewableContacts)(getChild(groupPosition, childPosition))).blocked)
