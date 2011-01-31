@@ -4,24 +4,14 @@ import java.util.Hashtable;
 
 public class Common {
 	
+	static final String[] ogonkiC2 = {"π","Ê","Í","≥","Ò","Û","ú","ü","ø","•","∆"," ","£","—","”","å","è","Ø"};
+	static final String[] bezogonkowC2 = {"a","c","e","l","n","o","s","z","z","A","C","E","L","N","O","S","Z","Z"};
+	
 	public static String wyciecieOgonkow(String str)
-	{
-		Hashtable<String, String> odpowiedniki = new Hashtable<String, String>();
-		odpowiedniki.put("π", "a");odpowiedniki.put("Ê", "c");odpowiedniki.put("Í", "e");odpowiedniki.put("≥", "l");
-		odpowiedniki.put("Ò", "n");odpowiedniki.put("Û", "o");odpowiedniki.put("ú", "s");odpowiedniki.put("ü", "z");
-		odpowiedniki.put("ø", "z");
-		odpowiedniki.put("•", "a");odpowiedniki.put("∆", "c");odpowiedniki.put(" ", "e");odpowiedniki.put("£", "l");
-		odpowiedniki.put("—", "n");odpowiedniki.put("”", "o");odpowiedniki.put("å", "s");odpowiedniki.put("è", "z");
-		odpowiedniki.put("Ø", "z");
-		
+	{	
 		String wynik = str;
-		char[] znaki = str.toCharArray();
-		for(int i=0; i<znaki.length; i++)
-		{
-			if(odpowiedniki.containsKey(""+znaki[i]))
-				znaki[i] = odpowiedniki.get(""+znaki[i]).charAt(0);
-		}
-		wynik = new String(znaki);
+		for(int i=0; i<ogonkiC2.length; i++)
+			wynik = wynik.replace(ogonkiC2[i],bezogonkowC2[i]);
 		return wynik;
 	}
 	
