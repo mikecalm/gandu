@@ -1,6 +1,29 @@
 package android.pp;
 
+import java.util.Hashtable;
+
 public class Common {
+	
+	public static String wyciecieOgonkow(String str)
+	{
+		Hashtable<String, String> odpowiedniki = new Hashtable<String, String>();
+		odpowiedniki.put("π", "a");odpowiedniki.put("Ê", "c");odpowiedniki.put("Í", "e");odpowiedniki.put("≥", "l");
+		odpowiedniki.put("Ò", "n");odpowiedniki.put("Û", "o");odpowiedniki.put("ú", "s");odpowiedniki.put("ü", "z");
+		odpowiedniki.put("ø", "z");
+		odpowiedniki.put("•", "a");odpowiedniki.put("∆", "c");odpowiedniki.put(" ", "e");odpowiedniki.put("£", "l");
+		odpowiedniki.put("—", "n");odpowiedniki.put("”", "o");odpowiedniki.put("å", "s");odpowiedniki.put("è", "z");
+		odpowiedniki.put("Ø", "z");
+		
+		String wynik = str;
+		char[] znaki = str.toCharArray();
+		for(int i=0; i<znaki.length; i++)
+		{
+			if(odpowiedniki.containsKey(""+znaki[i]))
+				znaki[i] = odpowiedniki.get(""+znaki[i]).charAt(0);
+		}
+		wynik = new String(znaki);
+		return wynik;
+	}
 	
 	/**
      * REQUESTS TO SERVER GG
