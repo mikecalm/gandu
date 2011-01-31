@@ -426,7 +426,7 @@ public class ContactBook extends ExpandableListActivity{
     				//GG_ADD_NOTIFY
     				//z informacja o nowo dodanym kontakcie, aby serwer
     				//informowal nas o dostepnosci kontaktu
-    				if(!new_numerGG.equals(""))
+    				/*if(!new_numerGG.equals(""))
     				{
     					//jesli kontakt po wyedytowaniu ma ten sam numer GG co przed edycja,
     					//to nie trzeba wysylac do serwera GG informacji o nowym kontakcie
@@ -452,7 +452,7 @@ public class ContactBook extends ExpandableListActivity{
 	    	    			Log.e("ContactBook","Blad wyslania info do serwisu o nowo dodanym kontakcie:\n"+
 	    	    					excMsg.getMessage());
 	    	    		}
-    				}
+    				}*/
                 }
             }
         }
@@ -778,6 +778,7 @@ public class ContactBook extends ExpandableListActivity{
 		        		szukanaIgnorowani.groupid = "00000000-0000-0000-0000-000000000001";
 		        		int indeksGrupyIgnorowani = Collections.binarySearch(this.groupsExpandableList, szukanaIgnorowani, null);
 		        		//wyznaczenie indeksu pod jakim powinien zostac dodany kontakt w grupie Ignorowani
+		        		pobrany.status = 6;
 		        		int indeksKontaktuWIgnorowanych = Collections.binarySearch(this.contactsExpandableList.get(indeksGrupyIgnorowani), pobrany, null);
 		        		indeksKontaktuWIgnorowanych = -(indeksKontaktuWIgnorowanych+1);
 		        		this.contactsExpandableList.get(indeksGrupyIgnorowani).add(indeksKontaktuWIgnorowanych, pobrany);
@@ -792,6 +793,8 @@ public class ContactBook extends ExpandableListActivity{
 						}
 			        	saveOnInternalMemory(this.gglista,mojNumer);
 		        		this.mAdapter.notifyDataSetChanged();
+						for(int a=0; a<this.contactsExpandableList.size(); a++)
+				    		Collections.sort(this.contactsExpandableList.get(a),null);
 		        		//wyslanie do serwisu informacji, zeby powiadomij serwer GG o ignorowaniu kontaktu
 		        		Message msg3 = Message.obtain(null,Common.CLIENT_IGNORE_CONTACT, 0, 0);	        
 	    	    		try
@@ -812,6 +815,7 @@ public class ContactBook extends ExpandableListActivity{
 						SIMPLEContact wyszukiwanyKontakt = new SIMPLEContact();
 		        		wyszukiwanyKontakt.AA3ShowName = pobrany.showName;
 		        		pobrany.blocked = false;
+		        		pobrany.status = 1;
 		        		int indeksKontaktu = Collections.binarySearch(this.contactBookFull.A2Contactsy.Contacts, wyszukiwanyKontakt, null);
 		        		SIMPLEContact kopiaKontaktu = this.contactBookFull.A2Contactsy.Contacts.get(indeksKontaktu);
 		        		kopiaKontaktu.AC3FlagIgnored = null;
@@ -836,6 +840,7 @@ public class ContactBook extends ExpandableListActivity{
 		        		int indeksGrupyIgnorowani = Collections.binarySearch(this.groupsExpandableList, szukanaIgnorowani, null);
 		        		ViewableContacts kontaktWIgnorowanych = new ViewableContacts();
 		        		kontaktWIgnorowanych.showName = pobrany.showName;
+		        		kontaktWIgnorowanych.status = 6;
 		        		int indeksKontaktuWIgnorowanych = Collections.binarySearch(this.contactsExpandableList.get(indeksGrupyIgnorowani), kontaktWIgnorowanych, null);
 		        		this.contactsExpandableList.get(indeksGrupyIgnorowani).remove(indeksKontaktuWIgnorowanych);
 		        		
@@ -850,6 +855,8 @@ public class ContactBook extends ExpandableListActivity{
 						}
 						saveOnInternalMemory(this.gglista,mojNumer);
 		        		this.mAdapter.notifyDataSetChanged();
+						for(int a=0; a<this.contactsExpandableList.size(); a++)
+				    		Collections.sort(this.contactsExpandableList.get(a),null);
 		        		//wyslanie do serwisu informacji, zeby powiadomij serwer GG o ignorowaniu kontaktu
 		        		Message msg3 = Message.obtain(null,Common.CLIENT_UNIGNORE_CONTACT, 0, 0);	        
 	    	    		try
@@ -1217,6 +1224,7 @@ public class ContactBook extends ExpandableListActivity{
 					sortContactListSIMPLE(this.contactBookFull);
 					this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
 					this.groupsExpandableList = new ArrayList<ViewableGroups>();
+					//createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 					createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 					statusDescription.setSelection(0, statusDescription.getText().length());					
 				}
@@ -1267,6 +1275,7 @@ public class ContactBook extends ExpandableListActivity{
 			saveOnInternalMemory(this.gglista,mojNumer);
 			this.contactsExpandableList = new ArrayList<List<ViewableContacts>>();
 			this.groupsExpandableList = new ArrayList<ViewableGroups>();
+			//createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 			createExpandableAdapter(this.contactBookFull, this.contactsExpandableList, this.groupsExpandableList);
 			mAdapter.setAdapterData(this.groupsExpandableList, this.contactsExpandableList);
         	for(int parent=0; parent<this.groupsExpandableList.size(); parent++)
@@ -1333,6 +1342,7 @@ public class ContactBook extends ExpandableListActivity{
 						Log.e("ExcAdd1", ExcAdd1.getMessage());
 					}
 				}
+				dodawany.status = 1;
 				if(gcl.A2Contactsy.Contacts.get(i).AA4MobilePhone != null)
 					dodawany.MobilePhone = gcl.A2Contactsy.Contacts.get(i).AA4MobilePhone;
 				if(gcl.A2Contactsy.Contacts.get(i).AA5HomePhone != null)
@@ -1340,13 +1350,16 @@ public class ContactBook extends ExpandableListActivity{
 				if(gcl.A2Contactsy.Contacts.get(i).AA6Email != null)
 					dodawany.Email = gcl.A2Contactsy.Contacts.get(i).AA6Email;
 				if(gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored != null)
-					dodawany.blocked = gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored;				
-				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;
+				{
+					dodawany.blocked = gcl.A2Contactsy.Contacts.get(i).AC3FlagIgnored;
+					if(dodawany.blocked)
+						dodawany.status = 6;
+				}
+				dodawany.showName = gcl.A2Contactsy.Contacts.get(i).AA3ShowName;				
 				kontaktyExp.get(indeksTab_kontaktyExp).add(dodawany);
 			}
 		}
-		//uruchom watek oczekujacy na , 
-		//podtrzymujaca polaczenie z serwerem GG
+		//uruchom watek pobierajacy statusy kontaktow z list 
 		Thread statusesThread = new Thread(null, statusesTask, "statusesService");
         mCondition = new ConditionVariable(false);
         statusesThread.start();
@@ -1679,13 +1692,15 @@ public class ContactBook extends ExpandableListActivity{
 			    			{
 				    			this.contactsExpandableList.get(i).get(j).description = description;
 				    			this.contactsExpandableList.get(i).get(j).status = status;
+				    			break;
 			    			}
 	    				}
 	    			}
 	    			
-	    		}
-	    
+	    		}	    
 	    	}
+	    	for(int a=0; a<this.contactsExpandableList.size(); a++)
+	    		Collections.sort(this.contactsExpandableList.get(a),null);
 	    	mAdapter.notifyDataSetChanged();
     	}
     }

@@ -289,6 +289,7 @@ public class Chat extends TabActivity{
 		//Toast.makeText(getApplicationContext(), "[Chat]onPause()", Toast.LENGTH_SHORT).show();
 		// TODO Auto-generated method stub
 		super.onPause();
+		finish();
 	}
 
 	@Override
