@@ -995,8 +995,7 @@ public class GanduService extends Service {
 	@Override
 	public void onCreate() {
 
-		Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT)
-				.show();
+		//Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		//START instrukcje potrzebne do setForeground/startForeground
 		try {
@@ -1044,7 +1043,7 @@ public class GanduService extends Service {
 		// Tell the user we stopped.
 		// Toast.makeText(this, R.string.remote_service_stopped,
 		// Toast.LENGTH_SHORT).show();
-		Toast.makeText(this, "Gandu Service - Stop", Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, "Gandu Service - Stop", Toast.LENGTH_SHORT).show();
 	}
 
 	/**
@@ -2116,10 +2115,8 @@ public class GanduService extends Service {
 			// wys³anie GG_DCC7_RELAY_REQUEST z req_type równym
 			// GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80
 			try {
-				Log
-						.i(
-								"[GanduService]receiveFileTask",
-								"2. GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80");
+				Log.i("[GanduService]receiveFileTask",
+						"2. GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_SERVER na relay.gadu-gadu.pl:80");
 				socketRelay = new Socket("relay.gadu-gadu.pl", 80);
 				inRealy = new DataInputStream(socketRelay.getInputStream());
 				outRealy = new DataOutputStream(socketRelay.getOutputStream());
@@ -2127,9 +2124,8 @@ public class GanduService extends Service {
 						.prepareSendRelayRequest(Common.GG_DCC7_RELAY_TYPE_SERVER);
 				outRealy.write(request1);
 				outRealy.flush();
-				Log
-						.i("[GanduService]receiveFileTask",
-								"3. GG_DCC7_RELAY_REQUEST wyslalem GG_DCC7_RELAY_TYPE_SERVER");
+				Log.i("[GanduService]receiveFileTask",
+						"3. GG_DCC7_RELAY_REQUEST wyslalem GG_DCC7_RELAY_TYPE_SERVER");
 
 				// proba odebrania odpowiedzi z adresem serwera proxy
 				// jesli serwer nie odpowie, to sie rozlaczy, zostanie wywolany
@@ -2200,9 +2196,8 @@ public class GanduService extends Service {
 			// wtedy jako adres drugiego ¿¹dania bierzemy znowu
 			// relay.gadu-gadu.pl)
 			try {
-				Log
-						.i("[GanduService]receiveFileTask",
-								"5. wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
+				Log.i("[GanduService]receiveFileTask",
+						"5. wys³anie GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
 				if (incomingFileTransfer.proxyIP1 != -1)
 					socketRelay = new Socket(InetAddress.getByName(""
 							+ incomingFileTransfer.proxyIP1),
@@ -2215,9 +2210,8 @@ public class GanduService extends Service {
 						.prepareSendRelayRequest(Common.GG_DCC7_RELAY_TYPE_PROXY);
 				outRealy.write(request1);
 				outRealy.flush();
-				Log
-						.i("[GanduService]receiveFileTask",
-								"6. wyslalem GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
+				Log.i("[GanduService]receiveFileTask",
+						"6. wyslalem GG_DCC7_RELAY_REQUEST z req_type równym GG_DCC7_RELAY_TYPE_PROXY");
 
 				// proba odebrania odpowiedzi z adresem serwera proxy
 				// jesli serwer nie odpowie, to sie rozlaczy, zostanie wywolany
@@ -2266,9 +2260,8 @@ public class GanduService extends Service {
 			// i polem info w postaci: GGidCHrand
 			// oraz wyslanie powitania i pliku przez serer proxy
 			try {
-				Log
-						.i("[GanduService]receiveFileTask",
-								"7. wyslanie pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
+				Log.i("[GanduService]receiveFileTask",
+						"7. wyslanie pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
 				if (incomingFileTransfer.proxyIP2 != -1) {
 					// byte[] gg_dcc_info =
 					// outcomingFileTransfer.prepareSendDCCInfo(Integer.parseInt(ggnum),
@@ -2277,9 +2270,8 @@ public class GanduService extends Service {
 							.prepareSendDCCInfo(Common.GG_DCC7_TYPE_SERVER);
 					out.write(gg_dcc_info);
 					out.flush();
-					Log
-							.i("[GanduService]receiveFileTask",
-									"8. wyslalem pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
+					Log.i("[GanduService]receiveFileTask",
+							"8. wyslalem pakietu GG_DCC7_INFO z polem type równym GG_DCC7_TYPE_SERVER");
 				} else {
 					Log.e("[GanduService]GG_DCC7_INFO",
 							"Adres proxy2 jest -1, a nie powinien byc!");
@@ -2293,15 +2285,13 @@ public class GanduService extends Service {
 				outRealy = new DataOutputStream(socketRelay.getOutputStream());
 
 				// wyslanie pakietu powitalnego do serwera posredniczacego
-				Log
-						.i("[GanduService]receiveFileTask",
-								"9. wyslanie pakietu powitalnego do serwera posredniczacego");
+				Log.i("[GanduService]receiveFileTask",
+						"9. wyslanie pakietu powitalnego do serwera posredniczacego");
 				byte[] welcome = incomingFileTransfer.prepareWelcomeProxy();
 				outRealy.write(welcome);
 				outRealy.flush();
-				Log
-						.i("[GanduService]receiveFileTask",
-								"10. wyslalem pakiet powitalnego do serwera posredniczacego");
+				Log.i("[GanduService]receiveFileTask",
+						"10. wyslalem pakiet powitalnego do serwera posredniczacego");
 				// serwer proxy powinien odpowiedziec tym samym powitaniem
 				int reWelcome = Integer.reverseBytes(inRealy.readInt());
 				Long reID = Long.reverseBytes(inRealy.readLong());

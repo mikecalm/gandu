@@ -268,7 +268,7 @@ public class Chat extends TabActivity{
         //nie bedzie zadnych rozmow do otworzenia.
         if(tabHost.getTabWidget().getChildCount() == 0)
         {
-        	Toast.makeText(getApplicationContext(), "Nie prowadzisz zadnej rozmowy", Toast.LENGTH_SHORT).show();
+        	Toast.makeText(getApplicationContext(), "Nie prowadzisz ¿adnej rozmowy", Toast.LENGTH_SHORT).show();
         	finish();
         }
         	
