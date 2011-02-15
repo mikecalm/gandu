@@ -2,6 +2,8 @@ package android.pp;
 
 import java.util.Hashtable;
 
+import android.graphics.Bitmap;
+
 public class ViewableContacts implements Comparable{
 	
 	public String showName;
@@ -12,7 +14,7 @@ public class ViewableContacts implements Comparable{
 	public String description;
 	//prawdopodobnie pole avatar bedzie musialo byc typu bitmap.
 	//Poki co jest String jako np URL do avatara
-	public String avatar;
+	public Bitmap avatar;
 	public int status = 1;
 	public Boolean blocked = false;
 	

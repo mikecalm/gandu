@@ -35,6 +35,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
@@ -64,6 +65,7 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
@@ -93,6 +95,7 @@ public class ContactBook extends ExpandableListActivity{
 	float rozmWypisany = 0;
 	String jednostka = "";
 	int plikOd = 0;
+	public ImageView avatar;
 	ProgressDialog mDialog1;
 	private static final int DIALOG1_KEY = 0;
 	
@@ -143,6 +146,7 @@ public class ContactBook extends ExpandableListActivity{
 		mAdapter = new MyExpandableListAdapter(getApplicationContext());
         setListAdapter(mAdapter);
         
+        
         registerForContextMenu(this.getExpandableListView());
         
         //prefs = getPreferences(0);
@@ -153,7 +157,7 @@ public class ContactBook extends ExpandableListActivity{
 		statusDescription = (EditText) findViewById(R.id.EditText01);
 		
 		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
-		
+		avatar = (ImageView) findViewById(R.id.ImageView02);
 		//dodanie akcji na wcisniecie przycisku "Done" po wpisaniu tekstu
 		//w pole opisu
 		statusDescription.setOnEditorActionListener(new OnEditorActionListener() {
@@ -206,6 +210,11 @@ public class ContactBook extends ExpandableListActivity{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		if (Prefs.getAvatarsState(getApplicationContext()))
+        {
+        	 Thread avatarsThread = new Thread(null, avatarsTask, "avatarsService");
+             avatarsThread.start();
+        }
 	}
 	
 	@Override
@@ -1363,6 +1372,12 @@ public class ContactBook extends ExpandableListActivity{
 		Thread statusesThread = new Thread(null, statusesTask, "statusesService");
         mCondition = new ConditionVariable(false);
         statusesThread.start();
+        if (Prefs.getAvatarsState(getApplicationContext()))
+        {
+        	 Thread avatarsThread = new Thread(null, avatarsTask, "avatarsService");
+             avatarsThread.start();
+        }
+       
     }
 	
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
@@ -1595,6 +1610,35 @@ public class ContactBook extends ExpandableListActivity{
 		return result;
     }
     
+    public void getAvatars()
+    {
+    	Avatars a = new Avatars();
+    	/*for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
+		{
+			this.contactsExpandableList.get(i).a.getImageBitmap(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+		}*/
+    	if(this.contactsExpandableList != null)
+    	{
+	    	for (int i =0 ; i<=(this.contactsExpandableList.size()-1); i++)
+	    	{
+	    		for (int j =0; j<=(this.contactsExpandableList.get(i).size()-1); j++)
+	    		{
+	    			if(this.contactsExpandableList.get(i).get(j).GGNumber != null)
+	    			{
+	    				if(!this.contactsExpandableList.get(i).get(j).GGNumber.equals(""))
+	    				{
+	    					//this.contactsExpandableList.get(i).get(j).
+			    			this.contactsExpandableList.get(i).get(j).avatar = a.getImageBitmap(this.contactsExpandableList.get(i).get(j).GGNumber) ;
+			    		
+	    				}
+	    			}
+	    			
+	    		}	    
+	    	}
+    	}
+    }
+    
+    
     public void sendStatusesInfoToService()
     {
     	Message m =  Message.obtain(null,Common.CLIENT_GET_STATUSES, 0, 0);
@@ -1674,6 +1718,18 @@ public class ContactBook extends ExpandableListActivity{
         	Log.i("[ContactBook]statusesTask", "Stop watku statusesTask");
         }
     };
+    private Runnable avatarsTask = new Runnable() {
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			if(mService == null)
+			{
+				while(!mCondition.block(4*60*1000));
+			}
+			getAvatars();
+		}
+	};
     
     public void updateSD(int ggnumber, int status , String description) //aktualizuje status, opis kontaktu na liscie kontaktow
     {

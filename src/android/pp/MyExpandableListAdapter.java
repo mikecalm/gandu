@@ -64,7 +64,7 @@ import android.widget.TextView;
 	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);	        		        	
 	            ((TextView)convertView.findViewById(R.id.username)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).showName);
 	            ((TextView)convertView.findViewById(R.id.description)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).description);
-	            
+	            ((ImageView)convertView.findViewById(R.id.ImageView02)).setImageBitmap(((ViewableContacts)(getChild(groupPosition, childPosition))).avatar);
 	            //pobranie z ustawien wartosci, czy wyswietlac dlugie opisy
 	            if(Prefs.getLongDescritpionState(mContext))
 	            	((TextView)convertView.findViewById(R.id.description)).setLines(2);

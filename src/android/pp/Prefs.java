@@ -39,5 +39,10 @@ public class Prefs extends PreferenceActivity{
 	{
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("krotkie_opisy", false);
 	}
+	
+	public static Boolean getAvatarsState(Context context)
+	{
+		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("awatary", false);
+	}
 
 }
