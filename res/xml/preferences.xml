@@ -46,6 +46,10 @@
 			android:key="krotkie_opisy"
 			android:title="Krótkie opisy"
 			android:summary="Nie wyświetlaj długich opisów" />
+		<CheckBoxPreference
+			android:key="awatary"
+			android:title="Awatary"
+			android:summary="Pobieraj awatary" />
 		
 	</PreferenceCategory>
 	
