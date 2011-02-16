@@ -46,6 +46,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.test.UiThreadTest;
 import android.text.Html;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
@@ -1635,6 +1636,10 @@ public class ContactBook extends ExpandableListActivity{
 	    			
 	    		}	    
 	    	}
+	    	ContactBook.this.runOnUiThread(new Runnable(){
+	    		public void run() { ContactBook.this.mAdapter.notifyDataSetChanged(); }
+	    	});
+	    	//this.mAdapter.notifyDataSetChanged();
     	}
     }
     
