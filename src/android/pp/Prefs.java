@@ -1,6 +1,11 @@
 package android.pp;
 
+import java.net.URI;
+
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -43,6 +48,11 @@ public class Prefs extends PreferenceActivity{
 	public static Boolean getAvatarsState(Context context)
 	{
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean("awatary", false);
+	}
+	
+	public static String getRingtone(Context context)
+	{		
+		return PreferenceManager.getDefaultSharedPreferences(context).getString("wybierz_dzwiek", "DEFAULT_RINGTONE_URI" );
 	}
 
 }

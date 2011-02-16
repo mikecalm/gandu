@@ -33,7 +33,7 @@ android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         >
-        <ExpandableListView 
+        <ExpandableListView
         android:layout_width="fill_parent" 
         android:layout_height="fill_parent" 
         android:id="@+id/android:list">        

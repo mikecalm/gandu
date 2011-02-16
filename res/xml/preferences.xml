@@ -15,7 +15,12 @@
 			android:title="Dźwięk"
 			android:summary="Ustaw dźwięk po odebraniu wiadomości"
 			android:defaultValue="false" />
-			
+		<RingtonePreference
+            android:key="wybierz_dzwiek"
+            android:title="Dźwięk powiadomienia"
+            android:ringtoneType="notification"
+            android:showDefault="false"
+            android:summary="Wybierz dźwięk powiadomienia" />			
 	</PreferenceCategory>
 	
 	<PreferenceCategory

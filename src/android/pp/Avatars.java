@@ -20,7 +20,7 @@ public class Avatars {
 	            InputStream is = conn.getInputStream();
 	            BufferedInputStream bis = new BufferedInputStream(is);
 	            bm = BitmapFactory.decodeStream(bis);
-	            bm = Bitmap.createScaledBitmap(bm,(int)(bm.getWidth()*0.7),(int)(bm.getHeight()*0.7),false);
+	            //bm = Bitmap.createScaledBitmap(bm,(int)(bm.getWidth()*0.7),(int)(bm.getHeight()*0.7),false);
 	            bis.close();
 	            is.close();
 	       } catch (Exception e) {
