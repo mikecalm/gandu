@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="android.pp"
+      android:versionCode="1"
+      android:versionName="1.0">
+      <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+      <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+      <uses-permission android:name="android.permission.INTERNET" />
+       <uses-permission android:name="android.permission.VIBRATE"/>
+       <uses-permission android:name="android.permission.CAMERA"/>
+       <uses-permission android:name="android.permission.WAKE_LOCK"/>
+      <uses-sdk android:minSdkVersion="3"></uses-sdk>
+      
+    
+    <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/icon" android:theme="@android:style/Theme.NoTitleBar">
+	
+	<!--<receiver android:name=".GanduWidgetProvider" android:label="@string/app_name">
+		<intent-filter>
+			<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+		</intent-filter>
+		<meta-data android:name="android.appwidget.provider" android:resource="@xml/gandu_appwidget_provider" />	
+	</receiver>	-->
+		
+	<uses-library android:name="com.google.android.maps" />
+	
+	<activity android:name=".GanduClient" android:label="@string/app_name">
+		<intent-filter>
+			<action android:name="android.intent.action.MAIN"></action>
+			<category android:name="android.intent.category.LAUNCHER"></category>
+		</intent-filter>	
+	</activity>
+	<activity android:name=".CameraSurface">
+	</activity> 
+	<activity android:name=".ContactBook"
+	 android:configChanges="orientation|keyboardHidden">
+	</activity> 
+	<activity android:name=".Chat"
+	 android:configChanges="orientation|keyboardHidden">
+	</activity>
+	<activity android:name=".Tab">
+	</activity>
+	<activity android:name=".AddNewContact" 
+	android:theme="@android:style/Theme.Dialog">
+	</activity>
+	<activity android:name=".RegisterAccount" 
+	android:theme="@android:style/Theme.Dialog">
+	</activity>
+	<activity android:name=".Maps">
+	</activity>
+	<activity android:name=".WWW"
+	></activity>
+	<activity android:name=".AndroidExplorer"
+	></activity>
+	<activity android:name=".Prefs"
+		android:label="Ustawienia"
+	></activity>    
+    
+<service android:name="GanduService" android:process=":GanduUsluga">
+	<intent-filter>
+		<action android:name="android.pp.GanduS" /> 
+	</intent-filter>
+</service>
+</application>
+</manifest> 
