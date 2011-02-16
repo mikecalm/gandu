@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,15 @@ import android.widget.TextView;
 	        	convertView = (LinearLayout)mInflater.inflate(R.layout.child_row, parent, false);	        		        	
 	            ((TextView)convertView.findViewById(R.id.username)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).showName);
 	            ((TextView)convertView.findViewById(R.id.description)).setText(((ViewableContacts)(getChild(groupPosition, childPosition))).description);
-	            ((ImageView)convertView.findViewById(R.id.ImageView02)).setImageBitmap(((ViewableContacts)(getChild(groupPosition, childPosition))).avatar);
+	            if (Prefs.getAvatarsState(mContext))
+	            {
+		            Bitmap avat = ((ViewableContacts)(getChild(groupPosition, childPosition))).avatar;
+		            if(avat != null)
+		            	((ImageView)convertView.findViewById(R.id.ImageView02)).setImageBitmap(avat);
+	            }
+	            else
+	            	((ImageView)convertView.findViewById(R.id.ImageView02)).setVisibility(View.GONE);
+	            //((ImageView)convertView.findViewById(R.id.ImageView02)).setImageBitmap(((ViewableContacts)(getChild(groupPosition, childPosition))).avatar);
 	            //pobranie z ustawien wartosci, czy wyswietlac dlugie opisy
 	            if(Prefs.getLongDescritpionState(mContext))
 	            	((TextView)convertView.findViewById(R.id.description)).setLines(2);
