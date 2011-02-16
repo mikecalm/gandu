@@ -37,6 +37,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
 import android.os.Environment;
@@ -47,6 +50,7 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.Vibrator;
+import android.preference.RingtonePreference;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -1471,8 +1475,17 @@ public class GanduService extends Service {
 						// wibruje;)
 						if (Prefs
 								.getMessageVibrationPref(getApplicationContext()))
+						{
 							((Vibrator) getSystemService(VIBRATOR_SERVICE))
 									.vibrate(300);
+						}
+						if(Prefs.getMessageSoundPref(getApplicationContext()))
+							//Ringtone rt = RingtoneManager.setActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_NOTIFICATION, );
+						{
+							Uri u = Uri.parse(Prefs.getRingtone(getApplicationContext()));
+							Ringtone rt = RingtoneManager.getRingtone(getApplicationContext(), u);
+							rt.play();
+						}
 						// KONIEC show notification
 						Message message_recived = Message.obtain(null,
 								Common.CLIENT_RECV_MESSAGE, 0, 0);
