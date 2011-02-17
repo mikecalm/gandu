@@ -98,6 +98,8 @@ public class ContactBook extends ExpandableListActivity{
 	int plikOd = 0;
 	public ImageView avatar;
 	ProgressDialog mDialog1;
+	
+	    
 	private static final int DIALOG1_KEY = 0;
 	
 	AlertDialog alertDialog;
@@ -119,6 +121,7 @@ public class ContactBook extends ExpandableListActivity{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		
 		itemsy.add("Dostepny");
 		itemsy.add("Zaraz wracam");
 		itemsy.add("Niewidoczny");
@@ -158,8 +161,11 @@ public class ContactBook extends ExpandableListActivity{
 		statusDescription = (EditText) findViewById(R.id.EditText01);
 		
 		statusButton = (ImageButton) findViewById(R.id.ImageButton01);
-		avatar = (ImageView) findViewById(R.id.ImageView02);
+		avatar = (ImageView) findViewById(R.id.ImageView01);
 		//dodanie akcji na wcisniecie przycisku "Done" po wpisaniu tekstu
+		
+		
+		
 		//w pole opisu
 		statusDescription.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -1426,6 +1432,22 @@ public class ContactBook extends ExpandableListActivity{
                 case Common.CLIENT_SET_INITIAL_INFO:
                 	odebrany = msg.getData();
                 	mojNumer = odebrany.getString("mojNumer");
+                	Handler myAvatar = new Handler();
+            		myAvatar.post(new Runnable() {
+            			
+            			@Override
+            			public void run() {
+            				// TODO Auto-generated method stub
+            				Avatars ab = new Avatars();
+            				Bitmap bm = ab.getImageBitmap(mojNumer);
+            		    	if(bm != null)
+            		    	{
+            		    		avatar = (ImageView) findViewById(R.id.ImageView01);
+            		    		avatar.setImageBitmap(bm);
+               		    	}
+            				
+            			}
+            		});
                 	String opisOdSer = odebrany.getString("description");
                 	String statusOdSer = odebrany.getString("status");
                 	statusDescription.setText(opisOdSer);
@@ -1610,7 +1632,8 @@ public class ContactBook extends ExpandableListActivity{
     	}
 		return result;
     }
-    
+   
+
     public void getAvatars()
     {
     	Avatars a = new Avatars();
@@ -1618,6 +1641,10 @@ public class ContactBook extends ExpandableListActivity{
 		{
 			this.contactsExpandableList.get(i).a.getImageBitmap(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
 		}*/
+    	//this.avatar.
+    	//this.avatar.invalidate();
+    	
+    	
     	if(this.contactsExpandableList != null)
     	{
 	    	for (int i =0 ; i<=(this.contactsExpandableList.size()-1); i++)
