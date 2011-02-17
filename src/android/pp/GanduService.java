@@ -558,7 +558,7 @@ public class GanduService extends Service {
 					// showNotification("Pobieram liste kontaktow...");
 					showNotification("Lista kontaktow", "Gandu",
 							"Pobieram liste kontaktow...", R.drawable.icon,
-							GanduClient.class, -1, false, false);
+							GanduClient.class, -1, false, false, false);
 					mNM.cancel(-1);
 				}
 				Log.i("GanduService", "Pobieram liste kontaktow");
@@ -585,7 +585,7 @@ public class GanduService extends Service {
 					// showNotification("Wysylam liste kontaktow...");
 					showNotification("Lista kontaktow", "Gandu",
 							"Wysylam liste kontaktow...", R.drawable.icon,
-							GanduClient.class, -1, false, false);
+							GanduClient.class, -1, false, false, false);
 					mNM.cancel(-1);
 				}
 				Log.i("GanduService", "Wyslalem liste kontaktow");
@@ -1021,7 +1021,7 @@ public class GanduService extends Service {
 		// Display a notification about us starting.
 		// showNotification("Witaj w Gandu");
 		showNotification("Witaj w Gandu", "Gandu", "Witaj w Gandu",
-				R.drawable.icon, GanduClient.class, -1, false, false);
+				R.drawable.icon, GanduClient.class, -1, false, false, false);
 		mNM.cancel(-1);
 
 		archiveSQL = new ArchiveSQLite(this.getApplicationContext());
@@ -1073,7 +1073,7 @@ public class GanduService extends Service {
 	private Notification showNotification(String wiadomosc, String tytul,
 			String przeplywajacaWiadomosc, int ikona,
 			Class<?> uruchamianaAktywnosc, int idWiadomosci,
-			Boolean wstawNumerShowNameIMojNumer, Boolean setForeground) {
+			Boolean wstawNumerShowNameIMojNumer, Boolean setForeground, Boolean playSound) {
 		Notification notification = new Notification(ikona,
 				przeplywajacaWiadomosc, System.currentTimeMillis());
 
@@ -1099,6 +1099,22 @@ public class GanduService extends Service {
 				intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		notification.setLatestEventInfo(this, tytul, wiadomosc, contentIntent);
+		
+		if(playSound)
+		{
+			if(Prefs.getMessageSoundPref(getApplicationContext()))
+				//Ringtone rt = RingtoneManager.setActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_NOTIFICATION, );
+			{							
+				try
+				{
+					Uri u = Uri.parse(Prefs.getRingtone(getApplicationContext()));
+					notification.sound = u;
+				}catch(Exception excRingtone)
+				{
+					Log.e("[GanduService]Dzwonek","Blad dzwonka");
+				}
+			}
+		}
 
 		// jesli funkcja zostala wywolana w celu ustawienia uslugi jako
 		// foregroung
@@ -1131,7 +1147,7 @@ public class GanduService extends Service {
 			Notification notify = showNotification(""+ggnum,
 					"Gandu", "Zalogowany " + ggnum,
 					R.drawable.icon, ContactBook.class, -5, false,
-					true);
+					true, false);
 			startForegroundCompat(-5,notify);
 			mNM.cancel(-1);
 			//KONIEC zrobienie uslugi jako foreground
@@ -1454,7 +1470,7 @@ public class GanduService extends Service {
 									+ senderName + ": " + tresc,
 									R.drawable.icon, Chat.class, Integer
 											.parseInt("" + idWiadomosci), true,
-									false);
+									false, true);
 							// ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 
 						} else {
@@ -1467,7 +1483,7 @@ public class GanduService extends Service {
 									"[Konferencja]" + senderName + ": " + tresc,
 									R.drawable.icon, Chat.class, Integer
 											.parseInt("" + idWiadomosci), true,
-									false);
+									false, true);
 							// ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 
 						}
@@ -1478,13 +1494,6 @@ public class GanduService extends Service {
 						{
 							((Vibrator) getSystemService(VIBRATOR_SERVICE))
 									.vibrate(300);
-						}
-						if(Prefs.getMessageSoundPref(getApplicationContext()))
-							//Ringtone rt = RingtoneManager.setActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_NOTIFICATION, );
-						{
-							Uri u = Uri.parse(Prefs.getRingtone(getApplicationContext()));
-							Ringtone rt = RingtoneManager.getRingtone(getApplicationContext(), u);
-							rt.play();
 						}
 						// KONIEC show notification
 						Message message_recived = Message.obtain(null,
@@ -1784,11 +1793,11 @@ public class GanduService extends Service {
 					showNotification("Nast¹pi³o roz³¹czenie z serwerem",
 							"Gandu", "Nast¹pi³o roz³¹czenie z serwerem",
 							R.drawable.icon, GanduClient.class, -1, false,
-							false);
+							false, false);
 				else {
 					showNotification("Nieudana próba logowania", "Gandu",
 							"Nieudana próba logowania", R.drawable.icon,
-							GanduClient.class, -1, false, false);
+							GanduClient.class, -1, false, false,false);
 					// wyslanie do informacji o nieudanej probie logowania.
 					// ganduClient po tej informacji bedzie wiadzialo, zeby
 					// zamknac
@@ -1824,7 +1833,7 @@ public class GanduService extends Service {
 			int numerProby = 1;
 			mNM.cancel(-1);
 			showNotification("["+numerProby+". próba] Trwa logowanie "+ggnum+"..","Gandu", "Trwa logowanie " + ggnum,
-					R.drawable.icon, ContactBook.class, -5, false,false);
+					R.drawable.icon, ContactBook.class, -5, false,false,false);
 			//proba ponownego zalogowania co 5 sekund
 			while(!inicjujLogowanie(ggnum) && rozlaczenieNiePrzezUzytkownika)
 			{
@@ -1836,7 +1845,7 @@ public class GanduService extends Service {
 				}
 				numerProby++;
 				showNotification("["+numerProby+". próba] Trwa logowanie "+ggnum+"..","Gandu", "Trwa logowanie " + ggnum,
-						R.drawable.icon, ContactBook.class, -5, false,false);
+						R.drawable.icon, ContactBook.class, -5, false,false,false);
 			}
 			if(!rozlaczenieNiePrzezUzytkownika)
 				mNM.cancel(-5);
