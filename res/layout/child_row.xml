@@ -19,8 +19,9 @@
 		</ImageView>
 		<ImageView 
 			android:id="@+id/ImageView01" 
-			android:layout_width="wrap_content" 
-			android:layout_height="wrap_content"
+			android:layout_width="20px" 
+			android:layout_height="20px"
+			android:scaleType="centerInside"
 			android:layout_gravity="top|left" 
 			android:src="@drawable/avatar">
 		</ImageView>
