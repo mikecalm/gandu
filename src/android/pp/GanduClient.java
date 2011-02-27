@@ -74,13 +74,12 @@ public class GanduClient extends Activity {
 		connectPhones = (Button) findViewById(R.id.Button01);
 		connectPhones.setText("Zaloguj...");
 		connectPhones.setOnClickListener(connectListener);
-			
-		//uruchomienie serwisu Gandu
-		startService(new Intent("android.pp.GanduS"));
-		//zbindowanie aktywnosci do serwisu
-		//doBindService();
+
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
-		getApplicationContext().bindService(intent,mConnection,1);
+		//uruchomienie serwisu Gandu
+		startService(intent);
+		//zbindowanie aktywnosci do serwisu
+		bindService(intent,mConnection,BIND_AUTO_CREATE);
 		mIsBound = true;
 	}
 
@@ -283,7 +282,7 @@ public class GanduClient extends Activity {
     /**
      * Class for interacting with the main interface of the service.
      */
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection mConnection = new ServiceConnection() {    
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
             // This is called when the connection with the service has been

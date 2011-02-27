@@ -24,6 +24,7 @@ import java.util.zip.Inflater;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -373,7 +374,16 @@ public class GanduService extends Service {
 			// mConditionPingExit = new ConditionVariable(false);
 			// mConditionGGExit = new ConditionVariable(false);
 			pingingThread.start();
-		} catch (Exception excinit) {
+		}catch (ClientProtocolException cpexc){
+			Log.e("[GanduService]inicjujLogowanie","ClientProtocolException: "+cpexc.getMessage());
+		}
+		catch (IllegalStateException isexc){
+			Log.e("[GanduService]inicjujLogowanie","IllegalStateException: "+isexc.getMessage());
+		}
+		catch (IOException ioexc){
+			Log.e("[GanduService]inicjujLogowanie","IOException: "+ioexc.getMessage());
+		}
+		catch (Exception excinit) {
 			return false;
 		}
 		return true;
@@ -657,14 +667,17 @@ public class GanduService extends Service {
 					// sekcji catch ponizej
 					Log.i("[GanduService]START SQL",
 							"dodanie wysylanej wiadomosci do bazy");
+					//long idWiadomosciKonf = archiveSQL.addMessage(Integer
+					//		.parseInt(ggnum), -1, currentTime1, textConference,
+					//		-1, konferenciGG);
 					long idWiadomosciKonf = archiveSQL.addMessage(Integer
 							.parseInt(ggnum), -1, currentTime1, textConference,
-							-1, konferenciGG);
+							-1, konferenciBezSiebie);
 					Log.i("[GanduService]START SQL", "[" + idWiadomosciKonf
 							+ "]dodanie wysylanej wiadomosci do bazy");
 				} catch (IOException e) {
 					Log.e("[GanduService]Konferencja",
-							"Blad wysylania konferencji");
+							"Blad wysylania lub zapisania w archiwum konferencji");
 				}
 				// KONIEC test wyslania wiadomosci konferencyjnej z gandu2 do
 				// gandu i do mnie
