@@ -256,6 +256,19 @@ public class ContactBook extends ExpandableListActivity{
 		super.onStop();
 	}
 	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		//przechwycenie przycisku back i wywolanie metody moveTaskToBack.
+		//Po wcisnieciu back aplikacja zachowa sie tak, jakby wcisnieto 
+		//przycisk home. Dzieki temu lista kontaktow po ponownym
+		//uruchomieniu bedzie sie ladowala natychamiastowo. 
+	    if (keyCode == KeyEvent.KEYCODE_BACK) {
+	        moveTaskToBack(true);
+	        return true;
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
+	
 	 /**
      * This method is called when the sending activity has finished, with the
      * result it supplied.

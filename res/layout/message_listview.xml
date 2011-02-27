@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+ 	android:layout_height="fill_parent"
+ 	android:layout_width="fill_parent"
+ 	android:paddingBottom="5px"
+ 	android:paddingLeft="10px" 
+ 	android:paddingRight="10px">
+	 <TextView 
+		 android:id="@+id/MessageUserName" 
+		 android:layout_width="wrap_content"
+		 android:layout_height="wrap_content"
+		 android:layout_alignParentTop="true"
+		 android:singleLine="true"
+		 android:textColor="#FFFF00"
+		 android:textStyle="bold"
+		 android:text="author">
+	 </TextView>
+	 <TextView 
+		 android:id="@+id/MessageDateOverMessage" 
+		 android:layout_width="wrap_content"
+		 android:layout_height="wrap_content"
+		 android:layout_alignParentRight="true"
+		 android:singleLine="true" 
+		 android:textColor="#FFFFFF"
+		 android:text="date">
+	 </TextView>
+	 <TextView 
+		 android:id="@+id/MessageBody" 
+         android:linksClickable="true"
+         android:textColorLink="#0099FF"
+		 android:layout_height="wrap_content"
+		 android:textColor="#000000"		  
+		 android:layout_width="fill_parent" 
+		 android:layout_below="@+id/MessageUserName"
+		 android:text="Tutaj będzie rozmowa">
+	 </TextView>
+</RelativeLayout>

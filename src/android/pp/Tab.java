@@ -1,7 +1,7 @@
 package android.pp;
 
 import java.util.ArrayList;
-
+import java.util.Random;
 import android.app.Activity;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -23,24 +23,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class Tab extends Activity{
 	/** Messenger for communicating with service. */
     Messenger mService = null;
     boolean mIsBound;
     EditText et;
-    TextView tv;
     String ggnumber = "";
     String ggnumberShowName = "";
     ArrayList<String> konferenciGG = null;
     ArrayList<String> konferenciGGShowName = null;
     String konferenciWBazie = "";
     String mojNumer = "";
+    ListView l1;
+	MessagesAdapter efAdapter;
+	int lastMessageID = Integer.MAX_VALUE;
     
     ArchiveSQLite archiveSQL;
 	
@@ -49,12 +54,13 @@ public class Tab extends Activity{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.tab_content);
+		
+		l1 = (ListView) findViewById(R.id.MessagesListView01);
+		efAdapter = new MessagesAdapter(this);
+		l1.setAdapter(efAdapter);
+		
 		Button btn = (Button) findViewById(R.id.ok);
 		et = (EditText) findViewById(R.id.entry);
-		tv = (TextView) findViewById(R.id.lblComments);
-		//tv.setMovementMethod(ScrollingMovementMethod.getInstance());
-		tv.setText("");
-		tv.setTextSize(18);
 		btn.setOnClickListener(listener);
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
@@ -81,40 +87,16 @@ public class Tab extends Activity{
 			}
 		}
 		
-		archiveSQL = new ArchiveSQLite(this.getApplicationContext());
+		archiveSQL = new ArchiveSQLite(this.getApplicationContext());		
 		//zakladka z rozmowa konferencyjna
 		if(konferenciGG != null)
 		{
-			//TODO odczyt z bazy starych i nieprzeczytanych wiadomosci konferencyjnych
+			if((lastMessageID = archiveSQL.getLastMessageIDConference(konferenciWBazie)) == -1)
+				lastMessageID = archiveSQL.getLastArchiveMessageID();
+			lastMessageID++;
+			ArrayList<MessageClass> dod = new ArrayList<MessageClass>();
+			//odczyt z bazy nieprzeczytanych wiadomosci konferencyjnych
 			Log.i("[Tab"+ggnumber+"]START SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
-	    	Cursor wynikSQLLast = archiveSQL.readLastMessagesFromConference(konferenciWBazie, 3600);
-			ArrayList<String> ostatnie = archiveSQL.showLastMessagesConference(wynikSQLLast, konferenciWBazie);
-			for(int i=0; i<ostatnie.size(); i++)
-			{
-				String wiadomoscIData = ostatnie.get(i);
-				int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
-				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
-				int indeksOstatniegoSrednika = wiadomoscIData.lastIndexOf(";");
-				String nadawca = wiadomoscIData.substring(indeksOstatniegoSrednika+1,wiadomoscIData.length());
-				Long dataEpoch = Long.parseLong(data);
-				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1,indeksOstatniegoSrednika);
-				//jesli nasza wiadomosc
-				if(nadawca.equals(mojNumer))
-				{
-					tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-					tv.append(wiadomosc + "\n");
-				}
-				//wiadomosc od ktoregos z naszych konferentow
-				else
-				{
-					
-					//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+nadawca+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-					int indeksKonfShow = konferenciGG.indexOf(nadawca);
-					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+konferenciGGShowName.get(indeksKonfShow)+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-					tv.append(wiadomosc + "\n");
-					
-				}
-			}
 	    	
 			Cursor wynikSQL = archiveSQL.readUnreadMessagesFromConference(konferenciWBazie);
 			ArrayList<String> nieprzeczytane = archiveSQL.showUnreadMessagesConferece(wynikSQL, konferenciWBazie);
@@ -129,44 +111,21 @@ public class Tab extends Activity{
 				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1, indeksOstatniegoSrednika);
 				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+sender+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 				int indeksKonfShow = konferenciGG.indexOf(sender);
-				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+konferenciGGShowName.get(indeksKonfShow)+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-				tv.append(wiadomosc + "\n");
+				dod.add(new MessageClass(dataEpoch*1000L,ggnumber,konferenciGGShowName.get(indeksKonfShow),wiadomosc));
+				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+konferenciGGShowName.get(indeksKonfShow)+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				//tv.append(wiadomosc + "\n");
 			}
+			efAdapter.addItemsToBeginning(dod);
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
 		}
 		//zakladka z rozmowa niekonferencyjna
 		else
 		{
+			if((lastMessageID = archiveSQL.getLastMessageID(Integer.parseInt(ggnumber))) == -1)
+				lastMessageID = archiveSQL.getLastArchiveMessageID();
+			lastMessageID++;
+			ArrayList<MessageClass> dod = new ArrayList<MessageClass>();
 	    	Log.i("[Tab"+ggnumber+"]START SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
-	    	Cursor wynikSQLLast = archiveSQL.readLastMessagesFrom(Integer.parseInt(ggnumber),3600);
-			ArrayList<String> ostatnie = archiveSQL.showLastMessages(wynikSQLLast,Integer.parseInt(ggnumber));
-			for(int i=0; i<ostatnie.size(); i++)
-			{
-				if(ostatnie.get(i).startsWith("X"))
-				{
-					//wyciecie X oznaczajacego wiadomosc wyslana do kontaktu
-					String wiadomoscIData = ostatnie.get(i).substring(1);
-					int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
-					String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
-					Long dataEpoch = Long.parseLong(data);
-					String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
-					tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-					tv.append(wiadomosc + "\n");
-					
-				}
-				else
-				{
-					String wiadomoscIData = ostatnie.get(i);
-					int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
-					String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
-					Long dataEpoch = Long.parseLong(data);
-					String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
-					//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-					tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-					tv.append(wiadomosc + "\n");
-					
-				}
-			}
 	    	
 			Cursor wynikSQL = archiveSQL.readUnreadMessagesFrom(Integer.parseInt(ggnumber));
 			ArrayList<String> nieprzeczytane = archiveSQL.showUnreadMessages(wynikSQL,Integer.parseInt(ggnumber));
@@ -177,14 +136,133 @@ public class Tab extends Activity{
 				String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
 				Long dataEpoch = Long.parseLong(data);
 				String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
-				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumber+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-				tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
-				tv.append(wiadomosc + "\n");
+				dod.add(new MessageClass(dataEpoch*1000L,ggnumber,ggnumberShowName,wiadomosc));
+				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
+				//tv.append(wiadomosc + "\n");
 			}
+			efAdapter.addItemsToBeginning(dod);
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
 		}
-		Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
 		
+		efAdapter.notifyDataSetChanged();
+		l1.setSelection(0);
+		//Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);		
+
+		l1.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position,
+					long id) {		
+				//jesli wybrano element ze szczytu listy
+				if(position == 0)
+				{					
+					int maxLOstatDoPobra = 5;
+					//START Dodanie listy na poczatek (np po odczytaniu starszych wiadomosci z archiwum)
+					ArrayList<MessageClass> dod = new ArrayList<MessageClass>();
+					
+					Cursor wynikSQLLast;
+					ArrayList<String> ostatnie;
+					//zakladka z rozmowa konferencyjna
+					if(konferenciGG != null)
+					{
+						wynikSQLLast = archiveSQL.readLastXMessagesFromConference(konferenciWBazie,maxLOstatDoPobra,lastMessageID);
+						ostatnie = archiveSQL.showLastXMessagesConference(wynikSQLLast,konferenciWBazie);
+						if(ostatnie.size() > 0)
+						{
+							lastMessageID = Integer.parseInt(ostatnie.get(0));
+							ostatnie.remove(0);
+							for(int i=0; i<ostatnie.size(); i++)
+							{
+								String wiadomoscIData = ostatnie.get(i);
+								int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+								String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+								int indeksOstatniegoSrednika = wiadomoscIData.lastIndexOf(";");
+								String nadawca = wiadomoscIData.substring(indeksOstatniegoSrednika+1,wiadomoscIData.length());
+								Long dataEpoch = Long.parseLong(data);
+								String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1,indeksOstatniegoSrednika);
+								//jesli nasza wiadomosc
+								if(nadawca.equals(mojNumer))
+								{
+									dod.add(new MessageClass(dataEpoch*1000L,"-1","Ja",wiadomosc));
+								}
+								//wiadomosc od ktoregos z naszych konferentow
+								else
+								{
+									int indeksKonfShow = konferenciGG.indexOf(nadawca);
+									dod.add(new MessageClass(dataEpoch*1000L,ggnumber,konferenciGGShowName.get(indeksKonfShow),wiadomosc));
+									
+								}
+							}
+						}
+					}
+					//zaladka z rozmowa niekonferencyjna
+					else
+					{
+						wynikSQLLast = archiveSQL.readLastXMessagesFrom(Integer.parseInt(ggnumber),maxLOstatDoPobra,lastMessageID);
+						ostatnie = archiveSQL.showLastXMessages(wynikSQLLast,Integer.parseInt(ggnumber));
+						if(ostatnie.size() > 0)
+						{
+							lastMessageID = Integer.parseInt(ostatnie.get(0));
+							ostatnie.remove(0);
+							for(int i=0; i<ostatnie.size(); i++)
+							{
+								if(ostatnie.get(i).startsWith("X"))
+								{
+									//wyciecie X oznaczajacego wiadomosc wyslana do kontaktu
+									String wiadomoscIData = ostatnie.get(i).substring(1);
+									int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+									String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+									Long dataEpoch = Long.parseLong(data);
+									String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
+									dod.add(new MessageClass(dataEpoch*1000L,"-1","Ja",wiadomosc));								
+								}
+								else
+								{
+									String wiadomoscIData = ostatnie.get(i);
+									int indeksPierwszegoSrednika = wiadomoscIData.indexOf(";");
+									String data = wiadomoscIData.substring(0, indeksPierwszegoSrednika);
+									Long dataEpoch = Long.parseLong(data);
+									String wiadomosc = wiadomoscIData.substring(indeksPierwszegoSrednika+1);
+									dod.add(new MessageClass(dataEpoch*1000L,ggnumber,ggnumberShowName,wiadomosc));
+								}
+						}
+						}
+					}									
+					efAdapter.addItemsToBeginning(dod);
+					//KONIEC Dodanie listy na poczatek (np po odczytaniu starszych wiadomosci z archiwum)
+					efAdapter.notifyDataSetChanged();
+					l1.setSelection(ostatnie.size());
+				}
+				//jesli wybrano element nie ze szczytu listy
+				//if(position != 0)
+				/*
+				else
+				{
+					Toast.makeText(getApplicationContext(), efAdapter.messages.get(position).senderNum, Toast.LENGTH_SHORT).show();				
+					//START Dodanie jednego elementu na koniec listy
+					int val = new Random().nextInt(2)+100;
+					efAdapter.addItem(new MessageClass(System.currentTimeMillis(),""+val,"Sender: "+val,"Message: "+(val+1000)));
+					//KONIEC Dodanie jednego elementu na koniec listy
+				}		
+				*/
+				//efAdapter.notifyDataSetChanged();
+				/*
+				//jesli wybrano element nie ze szczytu listy
+				if(position != 0)
+				{
+					//przesuniecie listy na sam dol pod warunkiem, ze dotad lista
+					//ustawiona byla na samym dole.
+					//Jesli lista byla gdzie wyzej, to nie zostanie przewinieta
+					//na sam dol. To na wypadek, gdyby ktos przegladal rozmowe,
+					//a ktos by do niego pisal, to zeby lista caly czas mu nie zjezdzala
+					//na sam dol.
+					//ewentualnie w tym warunku bedzie mozna tez ustawic, zeby zjezdzal na
+					//sam dol listy, jesli to uzytkownik wysyla wiadomosc.
+					if(l1.getLastVisiblePosition() >= (efAdapter.getCount()-3))
+						l1.setSelection(efAdapter.getCount());
+				}
+				*/
+			}
+		});		
 	}
 	public void onResume(){
 		super.onResume();
@@ -259,15 +337,11 @@ public class Tab extends Activity{
 				wysylany.putInt("ggnumber", Integer.parseInt(ggnumber));
 			}
 			
-			//wysylany.putString("ggnumber",getNumber());
-			//Calendar c = Calendar.getInstance();
-			//tv.setBackgroundColor(R.color.conctactbookup);
-			//tv.append(c.getTime().toString() + "\n" + et.getText().toString() + "\n");
-		    //tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b><hr>"+"\n"));
-			//tv.append(new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(System.currentTimeMillis()) + "\n" + et.getText().toString() + "\n");
-			tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis())+"<//FONT><br />")));
-			tv.append(et.getText().toString() + "\n");
-			//wysylany.putString("hasloGG" , ggPasswordEdit.getText().toString());
+			//tv.append(Html.fromHtml("<b><FONT COLOR=\"GREEN\">"+"Ja"+"</FONT></b>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis())+"<//FONT><br />")));
+			//tv.append(et.getText().toString() + "\n");			
+			efAdapter.addItem(new MessageClass(System.currentTimeMillis(),"-1","Ja",et.getText().toString()));
+			efAdapter.notifyDataSetChanged();
+			l1.setSelection(efAdapter.getCount());
 			et.setText("");
 			msg.setData(wysylany);
 			
@@ -396,16 +470,23 @@ public class Tab extends Activity{
                 	else if(!wiadomoscOd.equalsIgnoreCase(Tab.this.ggnumber))
                 		break;
                 	String tresc = odebrany.getString("tresc");
-                	String przyszlaO = odebrany.getString("przyszlaO");
-                	    	
-                	//String tmp = tresc.toString();
-                	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
-                	//Tab.this.tv.setBackgroundColor(R.color.conctactbookdown);
-                	//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
-                	tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOdN+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));                	
-                	tv.append(tresc+"\n");
-                	Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
-                	//Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
+                	String przyszlaO = odebrany.getString("przyszlaO");                	                  	
+                	
+					efAdapter.addItem(new MessageClass(System.currentTimeMillis(),wiadomoscOd,wiadomoscOdN,tresc));
+					efAdapter.notifyDataSetChanged();
+					//przesuniecie listy na sam dol pod warunkiem, ze dotad lista
+					//ustawiona byla na samym dole.
+					//Jesli lista byla gdzie wyzej, to nie zostanie przewinieta
+					//na sam dol. To na wypadek, gdyby ktos przegladal rozmowe,
+					//a ktos by do niego pisal, to zeby lista caly czas mu nie zjezdzala
+					//na sam dol.
+					//ewentualnie w tym warunku bedzie mozna tez ustawic, zeby zjezdzal na
+					//sam dol listy, jesli to uzytkownik wysyla wiadomosc.
+					if(l1.getLastVisiblePosition() >= (efAdapter.getCount()-3))
+						l1.setSelection(efAdapter.getCount());
+                	//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOdN+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));                	
+                	//tv.append(tresc+"\n");
+                	//Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
                 	Log.i("[Tab]Od numeru", wiadomoscOd);
                 	Log.i("[Tab]O godzinie", przyszlaO);

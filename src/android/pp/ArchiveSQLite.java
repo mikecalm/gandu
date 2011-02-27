@@ -371,7 +371,115 @@ public class ArchiveSQLite {
 		}
 	}
 	
-	//pobiera z bazy wiadomosc z ostatnich lastTimeInSeconds sekund, wymieniane z ggNum (otrzymywane/wysylane)  
+	//pobiera z bazy ostatnich X wiadomosc sprzed wiadomosci o ID lid, wymieniane z ggNum (otrzymywane/wysylane)  
+	public Cursor readLastXMessagesFrom(int ggNum, int X, int lid)
+	{
+		//jesli proba dodania rekordu sie powiedzie, to metoda zwroci
+		//id nowo dodanej wiadomosci w bazie.
+		//-1 bedzie oznaczac blad dodawania rekordu.
+		Cursor rezultat = null;
+		try
+		{
+			//String[] kolumny = new String[] {messageid, messagetimestamp, message};
+			//String where = unread + " != 1 AND "+sender+" = "+ggNum+" AND "+messagetimestamp+" > "+lastTime+ " AND "+conferenceMembers+" is null";
+			String where = unread + " != 1 AND ("+sender+" = "+ggNum+" OR "+recipient+" = "+ggNum+") AND "+
+				messageid+" < "+lid+ " AND "+conferenceMembers+" is null";
+			SQLiteDatabase db = dbHelper.getReadableDatabase();			
+			String orderBy = messageid+" DESC";
+			//rezultat = db.query(DATABASE_TABLE, kolumny, where, null, null, null, orderBy);
+			rezultat = db.query(DATABASE_TABLE, null, where, null, null, null, orderBy, ""+X);
+			//db.close();
+		}
+		catch(Exception exc)
+		{
+			Log.e("ArchiveSQLite", exc.getMessage());
+		}
+		finally
+		{
+			return rezultat;
+		}
+	}
+	
+	//pobranie id ostatniej wiadomosci z archiwum
+	public int getLastArchiveMessageID()
+	{
+		int wynik = -1;
+		try
+		{
+			String where = unread + " != 1";
+			SQLiteDatabase db = dbHelper.getReadableDatabase();			
+			String orderBy = messageid+" DESC";
+			Cursor rezultat = db.query(DATABASE_TABLE, null, where, null, null, null, orderBy, "1");
+			while(rezultat.moveToNext())
+			{
+				wynik = rezultat.getInt(messageidCol);
+			}
+			rezultat.close();
+		}
+		catch(Exception exc)
+		{
+			Log.e("ArchiveSQLite", exc.getMessage());
+		}
+		finally
+		{
+			return wynik;
+		}
+	}
+	
+	//pobranie id ostatniej wiadomosci wymienianej z ggNum (niekonferencyjnej)
+	public int getLastMessageID(int ggNum)
+	{
+		int wynik = -1;
+		try
+		{
+			String where = unread + " != 1 AND "+"("+sender+" = "+ggNum+" OR "+recipient+" = "+ggNum+") "+
+				" AND "+conferenceMembers+" is null";
+			SQLiteDatabase db = dbHelper.getReadableDatabase();			
+			String orderBy = messageid+" DESC";
+			Cursor rezultat = db.query(DATABASE_TABLE, null, where, null, null, null, orderBy, "1");
+			while(rezultat.moveToNext())
+			{
+				wynik = rezultat.getInt(messageidCol);
+			}
+			rezultat.close();
+		}
+		catch(Exception exc)
+		{
+			Log.e("ArchiveSQLite", exc.getMessage());
+		}
+		finally
+		{
+			return wynik;
+		}
+	}
+	
+	//pobranie id ostatniej wiadomosci wymienianej z konferentami _conferenceMembers
+	public int getLastMessageIDConference(String _conferenceMembers)
+	{
+		int wynik = -1;
+		try
+		{			
+			String where = unread + " != 1 AND "+conferenceMembers+" LIKE '"+_conferenceMembers+"'";
+			SQLiteDatabase db = dbHelper.getReadableDatabase();			
+			String orderBy = messageid+" DESC";
+			Cursor rezultat = db.query(DATABASE_TABLE, null, where, null, null, null, orderBy, "1");
+			while(rezultat.moveToNext())
+			{
+				wynik = rezultat.getInt(messageidCol);
+			}
+			rezultat.close();
+		}
+		catch(Exception exc)
+		{
+			Log.e("ArchiveSQLite", exc.getMessage());
+		}
+		finally
+		{
+			return wynik;
+		}
+	}
+	
+	//pobiera z bazy wiadomosc z ostatnich lastTimeInSeconds sekund, wymieniane z _conferenceMembers (otrzymywane/wysylane)  
 	public Cursor readLastMessagesFromConference(String _conferenceMembers, int lastTimeInSeconds)
 	{
 		//jesli proba dodania rekordu sie powiedzie, to metoda zwroci
@@ -391,6 +499,37 @@ public class ArchiveSQLite {
 			String orderBy = messageid+" ASC";
 			//rezultat = db.query(DATABASE_TABLE, kolumny, where, null, null, null, orderBy);
 			rezultat = db.query(DATABASE_TABLE, null, where, null, null, null, orderBy);
+			//db.close();
+		}
+		catch(Exception exc)
+		{
+			Log.e("ArchiveSQLite", exc.getMessage());
+		}
+		finally
+		{
+			return rezultat;
+		}
+	}
+	
+	//pobiera z bazy X ostatnich wiadomosc sprzed wiadomosci o ID lid, wymieniane z _conferenceMembers (otrzymywane/wysylane)  
+	public Cursor readLastXMessagesFromConference(String _conferenceMembers, int X, int lid)
+	{
+		//jesli proba dodania rekordu sie powiedzie, to metoda zwroci
+		//id nowo dodanej wiadomosci w bazie.
+		//-1 bedzie oznaczac blad dodawania rekordu.
+		Cursor rezultat = null;
+		try
+		{
+			//String[] kolumny = new String[] {messageid, messagetimestamp, message};
+			//String where = unread + " != 1 AND "+sender+" = "+ggNum+" AND "+messagetimestamp+" > "+lastTime+ " AND "+conferenceMembers+" is null";
+			//String where = unread + " != 1 AND ("+sender+" = "+ggNum+" OR "+recipient+" = "+ggNum+") AND "+
+			//	messagetimestamp+" > "+lastTime+ " AND "+conferenceMembers+" is null";			
+			String where = unread + " != 1 AND "+
+				messageid+" < "+lid+ " AND "+conferenceMembers+" LIKE '"+_conferenceMembers+"'";
+			SQLiteDatabase db = dbHelper.getReadableDatabase();			
+			String orderBy = messageid+" DESC";
+			//rezultat = db.query(DATABASE_TABLE, kolumny, where, null, null, null, orderBy);
+			rezultat = db.query(DATABASE_TABLE, null, where, null, null, null, orderBy, ""+X);
 			//db.close();
 		}
 		catch(Exception exc)
@@ -430,6 +569,37 @@ public class ArchiveSQLite {
 		return wiadomosci;
 	}
 	
+	public ArrayList<String> showLastXMessages(Cursor _cursor, int ggNum)
+	{
+		ArrayList<String> wiadomosci = new ArrayList<String>();
+		if(_cursor.getCount() > 0)
+		{
+			_cursor.moveToLast();
+			do
+			{
+				if(_cursor.isLast())
+					wiadomosci.add(_cursor.getString(messageidCol));
+				String builder = "";
+				long messagetimestamp = _cursor.getLong(messagetimestampCol);
+				String message = _cursor.getString(messageCol);
+				if(_cursor.getInt(senderCol) == ggNum)
+				{
+					builder += messagetimestamp+";";
+					builder += message;
+				}
+				else
+				{
+					builder += "X"+messagetimestamp+";";
+					builder += message;
+				}
+				wiadomosci.add(builder);
+				Log.i("ArchiveSQLite showUnreadMessage:", builder);
+			}while(_cursor.moveToPrevious());
+		}
+		_cursor.close();
+		return wiadomosci;
+	}
+	
 	public ArrayList<String> showLastMessagesConference(Cursor _cursor, String _conferenceMembers)
 	{
 		ArrayList<String> wiadomosci = new ArrayList<String>();
@@ -446,6 +616,33 @@ public class ArchiveSQLite {
 			builder += sender;
 			wiadomosci.add(builder);
 			Log.i("ArchiveSQLite showUnreadMessage:", builder);
+		}
+		_cursor.close();
+		return wiadomosci;
+	}
+	
+	public ArrayList<String> showLastXMessagesConference(Cursor _cursor, String _conferenceMembers)
+	{
+		ArrayList<String> wiadomosci = new ArrayList<String>();
+		if(_cursor.getCount() > 0)
+		{
+			_cursor.moveToLast();
+			do
+			{
+				if(_cursor.isLast())
+					wiadomosci.add(_cursor.getString(messageidCol));
+				String builder = "";
+				long messagetimestamp = _cursor.getLong(messagetimestampCol);
+				//long messagetimestamp = _cursor.getLong(1);
+				String message = _cursor.getString(messageCol);
+				String sender = _cursor.getString(senderCol);
+				//String message = _cursor.getString(2);
+				builder += messagetimestamp+";";
+				builder += message+";";
+				builder += sender;
+				wiadomosci.add(builder);
+				Log.i("ArchiveSQLite showUnreadMessage:", builder);
+			}while(_cursor.moveToPrevious());
 		}
 		_cursor.close();
 		return wiadomosci;
