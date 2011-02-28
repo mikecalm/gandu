@@ -17,14 +17,16 @@
         android:id="@+id/entry"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"   
-        android:layout_alignParentBottom="true"      
+        android:layout_alignParentBottom="true"
+        android:layout_above ="@+id/lblComments"     
         android:layout_toRightOf="@+id/ok"
-        android:layout_alignWithParentIfMissing="true" 
+        android:layout_alignWithParentIfMissing="true"
+        android:hint ="Wiadomość..." 
         android:maxLines="5"/>
     <ListView 
 		android:id="@+id/MessagesListView01"    
         android:layout_above="@+id/entry" 
-		android:layout_height="fill_parent"
+        android:layout_height="fill_parent"
 	 	android:layout_width="fill_parent"
 	 	android:divider="#00000000"
        	android:dividerHeight="0px">

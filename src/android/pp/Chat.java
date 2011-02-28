@@ -344,7 +344,7 @@ public class Chat extends TabActivity{
 		inflater.inflate(R.menu.chatmenu, menu);
 		return true;
 	}
-	
+
 	//Funkcje potrzebne do zestawienia polaczenia aktywnosci z serwisem Gandu
 	/**
      * Handler of incoming messages from service.
