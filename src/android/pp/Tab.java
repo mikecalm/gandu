@@ -15,28 +15,40 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.pp.MessagesAdapter.ViewHolder;
+import android.text.ClipboardManager;
 import android.text.Html;
 import android.text.util.Linkify;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.View.OnKeyListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
+import android.widget.ScrollView;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 
 public class Tab extends Activity{
 	/** Messenger for communicating with service. */
     Messenger mService = null;
     boolean mIsBound;
     EditText et;
+    public ScrollView sv;
     String ggnumber = "";
     String ggnumberShowName = "";
     ArrayList<String> konferenciGG = null;
@@ -46,6 +58,8 @@ public class Tab extends Activity{
     ListView l1;
 	MessagesAdapter efAdapter;
 	int lastMessageID = Integer.MAX_VALUE;
+	public ClipboardManager clipboard;
+	String kopiowany = "";
     
     ArchiveSQLite archiveSQL;
 	
@@ -54,13 +68,19 @@ public class Tab extends Activity{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.tab_content);
-		
+		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE); 
 		l1 = (ListView) findViewById(R.id.MessagesListView01);
 		efAdapter = new MessagesAdapter(this);
 		l1.setAdapter(efAdapter);
+	    registerForContextMenu(l1);
 		
 		Button btn = (Button) findViewById(R.id.ok);
 		et = (EditText) findViewById(R.id.entry);
+		//tv = (TextView) findViewById(R.id.lblComments);
+		//sv = (ScrollView) findViewById(R.id.ScrollView01);
+		//tv.setMovementMethod(ScrollingMovementMethod.getInstance());
+		//tv.setText("");
+		//tv.setTextSize(18);
 		btn.setOnClickListener(listener);
 		//doBindService();
 		Intent intent = new Intent(getApplicationContext(), GanduService.class);
@@ -86,6 +106,22 @@ public class Tab extends Activity{
 				konferenciWBazie = b.getString("konferenciWBazie");
 			}
 		}
+		
+		OnCreateContextMenuListener contextmenulistener = new OnCreateContextMenuListener() {
+			
+			@Override
+			public void onCreateContextMenu(ContextMenu menu, View v,
+					ContextMenuInfo menuInfo) {
+				// TODO Auto-generated method stub
+				if(v.getId() == R.id.MessagesListView01)
+				{					
+					menu.add(Menu.NONE,0,0,"Kopiuj numer GG");
+					menu.add(Menu.NONE,1,1,"Kopiuj treœæ wiadomoœci");
+				}
+				
+			}
+		};
+		l1.setOnCreateContextMenuListener(contextmenulistener );
 		
 		archiveSQL = new ArchiveSQLite(this.getApplicationContext());		
 		//zakladka z rozmowa konferencyjna
@@ -117,6 +153,7 @@ public class Tab extends Activity{
 			}
 			efAdapter.addItemsToBeginning(dod);
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
+
 		}
 		//zakladka z rozmowa niekonferencyjna
 		else
@@ -139,14 +176,15 @@ public class Tab extends Activity{
 				dod.add(new MessageClass(dataEpoch*1000L,ggnumber,ggnumberShowName,wiadomosc));
 				//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+ggnumberShowName+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(dataEpoch*1000L))+"<//FONT><br />"));
 				//tv.append(wiadomosc + "\n");
+				
 			}
 			efAdapter.addItemsToBeginning(dod);
 			Log.i("[Tab"+ggnumber+"]KONIEC SQL","Odczyt ostatnich/nieprzeczytanych wiadomosci.");
-		}
-		
+		}	
 		efAdapter.notifyDataSetChanged();
 		l1.setSelection(0);
 		//Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);		
+		
 
 		l1.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -232,6 +270,10 @@ public class Tab extends Activity{
 					efAdapter.notifyDataSetChanged();
 					l1.setSelection(ostatnie.size());
 				}
+				/*else
+				{
+					clipboard.setText(efAdapter.messages.get(position).message);
+				}*/
 				//jesli wybrano element nie ze szczytu listy
 				//if(position != 0)
 				/*
@@ -263,7 +305,43 @@ public class Tab extends Activity{
 				*/
 			}
 		});		
+		
 	}
+	
+	
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		//return super.onContextItemSelected(item);
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo(); 
+		ContextMenuInfo cmi = (ContextMenuInfo)item.getMenuInfo();
+		//int child = ListView.g
+		switch(item.getItemId())
+		{
+			case 0: 
+			{
+				if (efAdapter.messages.get(info.position).senderNum == "-1")
+				{
+					clipboard.setText(mojNumer);
+				}
+				else
+				{
+					clipboard.setText(efAdapter.messages.get(info.position).senderNum);
+				}
+				break;
+			}
+			case 1:
+			{
+				clipboard.setText(efAdapter.messages.get(info.position).message);
+				break;
+			}
+		}
+		return true;
+	}
+
+
+
 	public void onResume(){
 		super.onResume();
 		/*Bundle b = this.getIntent().getExtras();
@@ -320,7 +398,7 @@ public class Tab extends Activity{
 		//doUnbindService();
 		//Toast.makeText(getApplicationContext(), "onStop()"+ggnumber, Toast.LENGTH_SHORT).show();
 	}
-	
+
 	OnClickListener listener = new OnClickListener() {
 		public void onClick(View v) {
 			Message msg = Message.obtain(null,Common.CLIENT_SEND_MESSAGE, 0, 0);
@@ -344,7 +422,6 @@ public class Tab extends Activity{
 			l1.setSelection(efAdapter.getCount());
 			et.setText("");
 			msg.setData(wysylany);
-			
 			try
 			{
 				mService.send(msg);				
@@ -470,7 +547,18 @@ public class Tab extends Activity{
                 	else if(!wiadomoscOd.equalsIgnoreCase(Tab.this.ggnumber))
                 		break;
                 	String tresc = odebrany.getString("tresc");
-                	String przyszlaO = odebrany.getString("przyszlaO");                	                  	
+                	String przyszlaO = odebrany.getString("przyszlaO");
+                	    	
+                	//String tmp = tresc.toString();
+                	//Log.i("Odebralem wiadomosc od Servicu", Integer.toString(num) + " " +Integer.toString(seq));
+                	//Tab.this.tv.setBackgroundColor(R.color.conctactbookdown);
+                	//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOd+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));
+                	//tv.append(Html.fromHtml("<FONT COLOR=\"RED\">"+wiadomoscOdN+"</FONT>"+"<FONT COLOR=\"WHITE\">"+(new java.text.SimpleDateFormat(" (dd/MM/yyyy HH:mm:ss) ").format(System.currentTimeMillis()))+"<//FONT><br />"));                	
+                	//tv.append(tresc+"\n");
+                	
+                	//Linkify.addLinks(tv, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+                	//Tab.this.tv.append(""+przyszlaO + "\n" + tresc + "\n");
+                	//String przyszlaO = odebrany.getString("przyszlaO");                	                  	
                 	
 					efAdapter.addItem(new MessageClass(System.currentTimeMillis(),wiadomoscOd,wiadomoscOdN,tresc));
 					efAdapter.notifyDataSetChanged();
@@ -490,7 +578,7 @@ public class Tab extends Activity{
                 	Log.i("[Tab]Odebralem wiadomosc od Serwisu", tresc);
                 	Log.i("[Tab]Od numeru", wiadomoscOd);
                 	Log.i("[Tab]O godzinie", przyszlaO);
-                	break;
+                  	break;
                 default:
                     super.handleMessage(msg);
             }

@@ -1481,8 +1481,7 @@ public class GanduService extends Service {
 							// ""+sender+": "+tresc, R.drawable.icon,
 							showNotification(tresc, "" + senderName, ""
 									+ senderName + ": " + tresc,
-									R.drawable.icon, Chat.class, Integer
-											.parseInt("" + idWiadomosci), true,
+									R.drawable.icon, Chat.class, sender, true,
 									false, true);
 							// ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 
@@ -1494,8 +1493,7 @@ public class GanduService extends Service {
 									tresc,
 									"" + senderName,
 									"[Konferencja]" + senderName + ": " + tresc,
-									R.drawable.icon, Chat.class, Integer
-											.parseInt("" + idWiadomosci), true,
+									R.drawable.icon, Chat.class, sender, true,
 									false, true);
 							// ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(300);
 
