@@ -1,7 +1,7 @@
 package android.pp;
 
 import java.util.ArrayList;
-import java.util.Random;
+
 import android.app.Activity;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -15,33 +15,23 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.pp.MessagesAdapter.ViewHolder;
 import android.text.ClipboardManager;
-import android.text.Html;
-import android.text.util.Linkify;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
-import android.view.View.OnKeyListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ExpandableListView;
-import android.widget.ScrollView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TabHost;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 
 public class Tab extends Activity{
 	/** Messenger for communicating with service. */
@@ -315,8 +305,6 @@ public class Tab extends Activity{
 		// TODO Auto-generated method stub
 		//return super.onContextItemSelected(item);
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo(); 
-		ContextMenuInfo cmi = (ContextMenuInfo)item.getMenuInfo();
-		//int child = ListView.g
 		switch(item.getItemId())
 		{
 			case 0: 
@@ -400,6 +388,7 @@ public class Tab extends Activity{
 	}
 
 	OnClickListener listener = new OnClickListener() {
+		@SuppressWarnings("unchecked")
 		public void onClick(View v) {
 			Message msg = Message.obtain(null,Common.CLIENT_SEND_MESSAGE, 0, 0);
 			if(konferenciGG != null)

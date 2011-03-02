@@ -2,15 +2,10 @@ package android.pp;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,11 +13,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
-
-import com.google.android.maps.GeoPoint;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -36,9 +28,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.location.Location;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -46,11 +35,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.test.UiThreadTest;
-import android.text.Html;
-import android.text.style.URLSpan;
-import android.text.util.Linkify;
-import android.text.util.Linkify.MatchFilter;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -60,8 +44,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.URLUtil;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
@@ -70,6 +52,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+
+import com.google.android.maps.GeoPoint;
 
 public class ContactBook extends ExpandableListActivity{
 
@@ -91,7 +75,7 @@ public class ContactBook extends ExpandableListActivity{
 	static final private int NEW_ANDROID_EXPLORER_ACTIVITY_RESULT = 1;
 	static final private int PREFERENCE_ACTIVITY_RESULT = 2;
 	public GetStatuses gs = new GetStatuses();
-	ArrayList<String> itemsy = new ArrayList();
+	ArrayList<String> itemsy = new ArrayList<String>();
 	String nazwaPliku = "";
 	float rozmWypisany = 0;
 	String jednostka = "";
@@ -1315,6 +1299,7 @@ public class ContactBook extends ExpandableListActivity{
     }
 	
 	//Posortowanie listy kontaktow przed jej prezentacja
+	@SuppressWarnings("unchecked")
 	private void sortContactListSIMPLE(SIMPLEContactBookList unsortedList)
 	{
 	  	try

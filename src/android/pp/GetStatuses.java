@@ -32,7 +32,8 @@ public class GetStatuses {
 			dos2.writeInt(Integer.reverseBytes(Common.GG_NOTIFY_LAST));
 			dos2.writeInt(dlugoscResztyPakietu);
 			dos2.write(resztaPaczki);
-			return wynik = paczkaWTabBajtow.toByteArray();
+			wynik = paczkaWTabBajtow.toByteArray();
+			return wynik;
 		}
 		catch(Exception e)
 		{

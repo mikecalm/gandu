@@ -1,10 +1,8 @@
 package android.pp;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -13,31 +11,18 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.os.Vibrator;
-import android.pp.ContactBook.IncomingHandler;
-import android.provider.Contacts.Intents;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.RemoteViews.ActionException;
-import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TabHost.TabSpec;
+import android.widget.Toast;
 
 public class Chat extends TabActivity{
 	public static TabHost tabHost;

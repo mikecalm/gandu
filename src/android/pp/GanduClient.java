@@ -1,10 +1,6 @@
 package android.pp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
 import android.app.Activity;
-import android.app.Application;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
@@ -28,7 +24,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.widget.TabHost.TabSpec;
 
 
 public class GanduClient extends Activity {

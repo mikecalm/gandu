@@ -1,6 +1,5 @@
 package android.pp;
 
-import java.util.Hashtable;
 
 public class Common {
 	
