@@ -357,6 +357,9 @@ public class GanduService extends Service {
 			String ipWyizolowany = ip[2].split(":")[0];
 			// int portWyizolowany = Integer.parseInt(ip[2].split(":")[1]);
 			int portWyizolowany = 443;
+			//javax.net.ssl.SSLSocketFactory.getDefault()
+			//javax.net.SocketFactory socketFactory = javax.net.ssl.SSLSocketFactory.getDefault(); 
+			//socket = socketFactory.createSocket(ipWyizolowany, portWyizolowany);
 			socket = new Socket(ipWyizolowany, portWyizolowany);
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
