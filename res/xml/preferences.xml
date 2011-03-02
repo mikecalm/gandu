@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	
+	<PreferenceCategory
+		android:title="Powiadomienie o nowej wiadomości">
+		
+		<CheckBoxPreference
+			android:key="wibracja"
+			android:title="Wibracja"
+			android:summary="Ustaw wibrację po odebraniu wiadomości"
+			android:defaultValue="true" />
+		<CheckBoxPreference
+			android:key="dzwiek"
+			android:title="Dźwięk"
+			android:summary="Ustaw dźwięk po odebraniu wiadomości"
+			android:defaultValue="false" />
+		<RingtonePreference
+            android:key="wybierz_dzwiek"
+            android:title="Dźwięk powiadomienia"
+            android:ringtoneType="notification"
+            android:showDefault="false"
+            android:summary="Wybierz dźwięk powiadomienia" />			
+	</PreferenceCategory>
+	
+	<PreferenceCategory
+		android:title="Status i opis po zalogowaniu">
+		
+		<ListPreference
+			android:key="status_po_zalogowaniu"
+			android:title="Status"
+			android:summary="Ustaw status po zalogowaniu"
+			android:entries="@array/entries_list_preference"
+			android:entryValues="@array/entryvalues_list_preference"
+			android:defaultValue="Dostepny"
+			android:dialogTitle="Wybierz status" />	
+		
+		<EditTextPreference
+			android:key="opis_po_zalogowaniu"
+			android:title="Opis"
+			android:summary="Ustaw opis po zalogowaniu"
+			android:defaultValue="http://code.google.com/p/gandu/"
+			android:dialogTitle="Ustaw opis" />                        
+		
+	</PreferenceCategory>
+	
+	<PreferenceCategory
+		android:title="Lista kontaktów">
+		
+		<CheckBoxPreference
+			android:key="krotkie_opisy"
+			android:title="Krótkie opisy"
+			android:summary="Nie wyświetlaj długich opisów" />
+		<CheckBoxPreference
+			android:key="awatary"
+			android:title="Awatary"
+			android:summary="Pobieraj awatary" />
+		
+	</PreferenceCategory>
+	
+</PreferenceScreen>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+	
+	<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    >
+		<ImageView 
+			android:id="@+id/ImageView02" 
+			android:layout_width="50px" 
+			android:layout_height="50px"
+			android:layout_gravity="center_vertical"
+			android:scaleType="centerInside"
+			android:src="@drawable/unknown_avatar">
+		</ImageView>
+		<ImageView 
+			android:id="@+id/ImageView01" 
+			android:layout_width="20px" 
+			android:layout_height="20px"
+			android:scaleType="centerInside"
+			android:layout_gravity="top|left" 
+			android:src="@drawable/avatar">
+		</ImageView>
+	</FrameLayout>
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+   		<TextView android:id="@+id/username"
+	        android:textSize="14px"
+	        android:textStyle="bold"
+	        android:textColor="#FFFFFF"
+	        android:paddingLeft="3px"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"/>
+
+   		 <TextView android:id="@+id/description"
+	        android:textSize="14px"
+	        android:textStyle="italic"
+	        android:paddingLeft="3px"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:minLines ="2"
+	        />
+   	</LinearLayout>
+         
+</LinearLayout>

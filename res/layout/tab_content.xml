@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout 
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >    
+     <Button
+        android:id="@+id/ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" 
+        android:singleLine="true"   
+        android:layout_alignWithParentIfMissing="true"
+        android:text="Wyślij"/>        
+    <EditText
+        android:id="@+id/entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"   
+        android:layout_alignParentBottom="true"
+        android:layout_above ="@+id/lblComments"     
+        android:layout_toRightOf="@+id/ok"
+        android:layout_alignWithParentIfMissing="true"
+        android:hint ="Wiadomość..." 
+        android:maxLines="5"/>
+    <ListView 
+		android:id="@+id/MessagesListView01"    
+        android:layout_above="@+id/entry" 
+        android:layout_height="fill_parent"
+	 	android:layout_width="fill_parent"
+	 	android:divider="#00000000"
+       	android:dividerHeight="0px">
+	</ListView>
+</RelativeLayout>
