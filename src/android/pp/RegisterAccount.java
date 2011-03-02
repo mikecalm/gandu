@@ -7,22 +7,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
-import org.apache.http.NameValuePair;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -231,7 +224,7 @@ public class RegisterAccount extends Activity {
     
     private String makeEmailPassHash(String email, String haslo)
     {
-    	int a, c, j;
+    	int a, c;
     	int b = -1;
     	String polaczoneEmailHaslo = email+haslo;
     	byte[] polaczoneByte = polaczoneEmailHaslo.getBytes();

@@ -135,25 +135,24 @@ public class Maps extends MapActivity implements LocationListener {
 		criteria.setPowerRequirement(Criteria.POWER_LOW);
 		
 		List<String> providers = locationManager.getProviders(true);
-		double [] tmp = new double[2];
-			for(int i=0; i<providers.size(); i++) {
-				locationManager.requestLocationUpdates(providers.get(i), 5000, 2.0f,this);
-				mLocation = locationManager.getLastKnownLocation(providers.get(i));
-				
-				if(mLocation != null)
-				{
-					tmp[0] = mLocation.getLatitude();
-					tmp[1] = mLocation.getLongitude();
-				}
-				else {
-					;
-				}			
+		double[] tmp = new double[2];
+		for (int i = 0; i < providers.size(); i++) {
+			locationManager.requestLocationUpdates(providers.get(i), 5000,
+					2.0f, this);
+			mLocation = locationManager.getLastKnownLocation(providers.get(i));
+
+			if (mLocation != null) {
+				tmp[0] = mLocation.getLatitude();
+				tmp[1] = mLocation.getLongitude();
+			} else {
+				;
 			}
-			if(tmp == null){
-				tmp[0] = 1;
-				tmp[1] = 1;
-			}
-			return tmp;
+		}
+		if (tmp == null) {
+			tmp[0] = 1;
+			tmp[1] = 1;
+		}
+		return tmp;
 		
 	}
 
