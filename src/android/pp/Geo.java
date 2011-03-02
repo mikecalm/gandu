@@ -9,17 +9,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import com.google.android.maps.GeoPoint;
-
-import android.location.Location;
 import android.text.Html;
-import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.util.Log;
+
+import com.google.android.maps.GeoPoint;
 
 public class Geo {
 	

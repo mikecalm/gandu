@@ -2,6 +2,6 @@
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-<item android:title="Zamknij" android:id="@+id/ZamknijOkno01"></item>
-<item android:title="Prześlij zdjęcie" android:id="@+id/photo"></item>
+<item android:title="Zamknij" android:id="@+id/ZamknijOkno01" android:icon="@drawable/close"></item>
+<item android:title="Prześlij zdjęcie" android:id="@+id/photo" android:icon="@drawable/camera"></item>
 </menu>

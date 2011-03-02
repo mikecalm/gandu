@@ -22,7 +22,7 @@ public class Files {
 	public int proxyIP2 = -1;
 	public short proxyPort2 = -1;
 	
-	public void Files()
+	public Files()
 	{
 		this.proxyIP1 = -1;
 		this.proxyPort1 = -1;
