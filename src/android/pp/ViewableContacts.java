@@ -1,7 +1,5 @@
 package android.pp;
 
-import java.util.Hashtable;
-
 import android.graphics.Bitmap;
 
 public class ViewableContacts implements Comparable{

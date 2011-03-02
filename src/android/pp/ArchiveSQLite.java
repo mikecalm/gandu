@@ -2,14 +2,13 @@ package android.pp;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class ArchiveSQLite {
@@ -175,7 +174,7 @@ public class ArchiveSQLite {
 		Cursor rezultat = null;
 		try
 		{
-			String[] kolumny = new String[] {sender};
+			//String[] kolumny = new String[] {sender};
 			String where = conferenceMembers+" is null";
 			SQLiteDatabase db = dbHelper.getReadableDatabase();
 			//rezultat = db.query(DATABASE_TABLE, kolumny, where, null, null, null, orderBy);

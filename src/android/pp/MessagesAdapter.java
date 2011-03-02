@@ -1,7 +1,6 @@
 package android.pp;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -100,7 +99,8 @@ public class MessagesAdapter extends BaseAdapter {
 		 messages.add(msg);
 	 }	
 	 
-	 public void addItemsToBeginning(ArrayList<MessageClass> rozmowyZArch)
+	 @SuppressWarnings("unchecked")
+	public void addItemsToBeginning(ArrayList<MessageClass> rozmowyZArch)
 	 {
 		 int wstawianych = rozmowyZArch.size();
 		 if(rozmowyZArch != null)

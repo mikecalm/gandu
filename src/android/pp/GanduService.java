@@ -10,14 +10,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Writer;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -29,17 +26,12 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import com.google.android.maps.ItemizedOverlay;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ConditionVariable;
@@ -51,7 +43,6 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.Vibrator;
-import android.preference.RingtonePreference;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -357,9 +348,6 @@ public class GanduService extends Service {
 			String ipWyizolowany = ip[2].split(":")[0];
 			// int portWyizolowany = Integer.parseInt(ip[2].split(":")[1]);
 			int portWyizolowany = 443;
-			//javax.net.ssl.SSLSocketFactory.getDefault()
-			//javax.net.SocketFactory socketFactory = javax.net.ssl.SSLSocketFactory.getDefault(); 
-			//socket = socketFactory.createSocket(ipWyizolowany, portWyizolowany);
 			socket = new Socket(ipWyizolowany, portWyizolowany);
 			in = new DataInputStream(socket.getInputStream());
 			out = new DataOutputStream(socket.getOutputStream());
@@ -1086,6 +1074,7 @@ public class GanduService extends Service {
 	/**
 	 * Show a notification while this service is running.
 	 */
+	@SuppressWarnings("unchecked")
 	private Notification showNotification(String wiadomosc, String tytul,
 			String przeplywajacaWiadomosc, int ikona,
 			Class<?> uruchamianaAktywnosc, int idWiadomosci,
@@ -1149,6 +1138,7 @@ public class GanduService extends Service {
 
 	// watek odbierajacy wiadomosci od serwera GG
 	public class ReplyInterpreter implements Runnable {
+		@SuppressWarnings("unchecked")
 		public void run() {
 			Log.i("ReplyInterpreter", "Watek wystartowal");
 			Bundle wysylany;
