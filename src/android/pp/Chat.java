@@ -446,7 +446,8 @@ public class Chat extends TabActivity{
                 		idMsgLastNotification = idSQL;
                 		
             		if(idMsgLastNotification != null)
-            			mNM.cancel(Integer.parseInt(idMsgLastNotification.toString()));
+            			//mNM.cancel(Integer.parseInt(idMsgLastNotification.toString()));
+            			mNM.cancel(Integer.parseInt(wiadomoscOd));
                 	Log.i("[Chat]Odebralem wiadomosc od Serwisu", tresc);
                 	Log.i("[Chat]Od numeru", wiadomoscOd);
                 	Log.i("[Chat]O godzinie", przyszlaO);
