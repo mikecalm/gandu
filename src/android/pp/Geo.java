@@ -9,13 +9,17 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import android.text.Html;
-import android.text.Spanned;
-import android.util.Log;
-
 import com.google.android.maps.GeoPoint;
+
+import android.location.Location;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.SpannedString;
+import android.util.Log;
 
 public class Geo {
 	
@@ -67,6 +71,7 @@ public class Geo {
 				while (instream.read(tmp) != -1) {
 					ByteArrayInputStream bais = new ByteArrayInputStream(tmp);
 					BufferedReader br = new BufferedReader(new InputStreamReader(bais));
+					br.skip(1049);
 					String readline = br.readLine();
 					//Log.i("GeoLocalization", readline);
 					Spanned data = Html.fromHtml(readline);
