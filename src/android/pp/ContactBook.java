@@ -27,6 +27,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.ConditionVariable;
@@ -101,10 +102,34 @@ public class ContactBook extends ExpandableListActivity{
     private ConditionVariable mCondition;
     private ConditionVariable mInitial;
     
+    //Dodanie uzytkownika o podanym numerze gg do listy uzytkownikow, ktorym
+    //udostepniamy nasza lokalizacje
+	public void geoAddPermission(String ggnum)
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		Editor edit = Geoprefs.edit();
+		edit.putString(ggnum, "granted");
+		edit.commit();
+	}
+	
+	//Usuniecie uzytkownika o podanym numerze gg z listy uzytkownikow, ktorym
+    //udostepniamy nasza lokalizacje
+	public void geoRemPermission(String ggnum)
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		Editor edit = Geoprefs.edit();
+		edit.remove(ggnum);
+		edit.commit();
+	}
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		
+		//GEOtest
+		//geoAddPermission("2522922");
+		//GEOtest
 		
 		itemsy.add("Dostepny");
 		itemsy.add("Zaraz wracam");

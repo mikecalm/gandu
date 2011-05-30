@@ -20,6 +20,7 @@ import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -41,7 +42,11 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -55,11 +60,16 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.Vibrator;
+import android.pp.MyLocation.LocationResult;
 import android.preference.RingtonePreference;
 import android.util.Log;
 import android.widget.Toast;
 
 public class GanduService extends Service {
+	//klasa sluzaca do jednokrotnego pobrania mojej lokaliazacji
+	MyLocation myLocation;
+	GeoSynchronizedList geoSynchronizedList;
+	
 	String[] ip = null;
 	private boolean connected = false;
 	Thread cThread;
@@ -106,6 +116,30 @@ public class GanduService extends Service {
 
 	public Files incomingFileTransfer = null;
 	public Files outcomingFileTransfer = null;
+	
+	//sprawdzenie czy udostepniamy nasza lokaliazacji uzytkownikowi o danym numerze gg
+	public boolean geoHavePermission(String ggnum)
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		return Geoprefs.contains(ggnum);
+	}
+	
+	//GEOtest
+	public LocationResult locationResult = new LocationResult(){
+	    @Override
+	    public void gotLocation(final Location location){
+	    	if(location != null)
+	    	{
+		        //Got the location!
+		    	//Wyslij lokalizacje do wszystkich z listy oczekujacych na lokalizacje
+		    	int currentTime = (int) (System.currentTimeMillis() / 1000L);
+		    	geoSynchronizedList.sendLocalization(out, location, currentTime);
+	    	}
+        };
+    };
+    //GEOtest
+
+
 
 	Handler someHandler = new Handler() {
 
@@ -1028,6 +1062,18 @@ public class GanduService extends Service {
 	@Override
 	public void onCreate() {
 
+		//GEOtest
+		geoSynchronizedList = new GeoSynchronizedList();
+		/*if(geoHavePermission("2522922"))
+			Toast.makeText(this,"2522922 Have geo permission", Toast.LENGTH_SHORT).show();
+		else
+			Toast.makeText(this,"2522922 DONT have geo permission", Toast.LENGTH_SHORT).show();
+		if(geoHavePermission("100"))
+			Toast.makeText(this,"100 Have geo permission", Toast.LENGTH_SHORT).show();
+		else
+			Toast.makeText(this,"100 DONT have geo permission", Toast.LENGTH_SHORT).show();*/
+		//GEOtest
+			
 		//Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		//START instrukcje potrzebne do setForeground/startForeground
@@ -1331,6 +1377,15 @@ public class GanduService extends Service {
 						Log.i("Lista kontaktow", lista);
 						break;
 					case Common.GG_RECV_MSG80:
+						//GEOtest
+						myLocation.getLocation(getApplicationContext(), locationResult);
+
+						/*double[] coord = geoMyCoordinates();
+						if(coord != null)
+							Log.e("GEO","MY coordinates: "+coord[0]+" "+coord[1]);
+						else
+							Log.e("GEO","NULL coordinates");*/
+						//GEOtest
 						Log.i("GanduService received message!: ", ""
 								+ typWiadomosci);
 						int dlugoscWiadomosci = Integer.reverseBytes(in
