@@ -44,6 +44,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -63,12 +64,17 @@ import android.os.Vibrator;
 import android.pp.MyLocation.LocationResult;
 import android.preference.RingtonePreference;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class GanduService extends Service {
+	//GEOtest
 	//klasa sluzaca do jednokrotnego pobrania mojej lokaliazacji
 	MyLocation myLocation;
 	GeoSynchronizedList geoSynchronizedList;
+	String geoReceiver;
+	//GEOtest
+	private Handler mHandler;
 	
 	String[] ip = null;
 	private boolean connected = false;
@@ -117,14 +123,15 @@ public class GanduService extends Service {
 	public Files incomingFileTransfer = null;
 	public Files outcomingFileTransfer = null;
 	
+	//GEOtest
 	//sprawdzenie czy udostepniamy nasza lokaliazacji uzytkownikowi o danym numerze gg
 	public boolean geoHavePermission(String ggnum)
 	{
 		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
-		return Geoprefs.contains(ggnum);
+		//return Geoprefs.contains(ggnum);
+		return Geoprefs.getBoolean(ggnum, false);
 	}
-	
-	//GEOtest
+		
 	public LocationResult locationResult = new LocationResult(){
 	    @Override
 	    public void gotLocation(final Location location){
@@ -1063,15 +1070,9 @@ public class GanduService extends Service {
 	public void onCreate() {
 
 		//GEOtest
+		myLocation = new MyLocation();
 		geoSynchronizedList = new GeoSynchronizedList();
-		/*if(geoHavePermission("2522922"))
-			Toast.makeText(this,"2522922 Have geo permission", Toast.LENGTH_SHORT).show();
-		else
-			Toast.makeText(this,"2522922 DONT have geo permission", Toast.LENGTH_SHORT).show();
-		if(geoHavePermission("100"))
-			Toast.makeText(this,"100 Have geo permission", Toast.LENGTH_SHORT).show();
-		else
-			Toast.makeText(this,"100 DONT have geo permission", Toast.LENGTH_SHORT).show();*/
+		mHandler = new Handler(this.getMainLooper());
 		//GEOtest
 			
 		//Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
@@ -1377,15 +1378,6 @@ public class GanduService extends Service {
 						Log.i("Lista kontaktow", lista);
 						break;
 					case Common.GG_RECV_MSG80:
-						//GEOtest
-						myLocation.getLocation(getApplicationContext(), locationResult);
-
-						/*double[] coord = geoMyCoordinates();
-						if(coord != null)
-							Log.e("GEO","MY coordinates: "+coord[0]+" "+coord[1]);
-						else
-							Log.e("GEO","NULL coordinates");*/
-						//GEOtest
 						Log.i("GanduService received message!: ", ""
 								+ typWiadomosci);
 						int dlugoscWiadomosci = Integer.reverseBytes(in
@@ -1476,6 +1468,34 @@ public class GanduService extends Service {
 						// String tresc = new
 						// String(trescCP1250.getBytes("CP1250"),"UTF-8");
 						String tresc = trescCP1250;
+						
+						//GEOtest
+						//sprawdzenie, czy to wiadomosc zwiazana z geolokalizacja
+						if(tresc.equals(":geoGet:"))
+						{
+							//sprawdzenie, czy udostepniamy nasza lokalizacje danej osobie
+							geoReceiver = ""+sender;
+							if(geoHavePermission(geoReceiver))
+							{
+								mHandler.post(new Runnable() {
+									@Override
+									public void run() {
+										//geoSynchronizedList.add("2522922");
+										geoSynchronizedList.add(geoReceiver);
+										myLocation.getLocation(getApplicationContext(), locationResult);
+									}
+								});
+							}
+							//w przeciwnym wypadku pytanie do uzytkownika czy chce udostepniac
+							//swoja lokalizacje danemu userowi (jednorazowo, lub zawsze)
+							else
+							{
+								;
+							}
+							break;
+						}
+						//GEOtest
+						
 						tresc = tresc.replace("\r", "");
 						Log.e("[GanduService]Odczytana wiadomosc: ", tresc);
 						Log.e("[GanduService]Od numeru: ", "" + sender);
@@ -2511,5 +2531,6 @@ public class GanduService extends Service {
 		// foreground state, since we could be killed at that point.
 		mNM.cancel(id);
 		setForeground(false);
-	}
+	}		
+
 }
