@@ -108,7 +108,8 @@ public class ContactBook extends ExpandableListActivity{
 	{
 		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
 		Editor edit = Geoprefs.edit();
-		edit.putString(ggnum, "granted");
+		//edit.putString(ggnum, "granted");
+		edit.putBoolean(ggnum, true);
 		edit.commit();
 	}
 	

@@ -23,7 +23,8 @@ public class GeoSynchronizedList {
 	 * @param ggnum - numer gg uzytkownika oczekujacego na nasza lokalizacje
 	 */
     public synchronized void add(String ggnum) {
-    	geoList.add(ggnum);
+    	if(!geoList.contains(ggnum))
+    		geoList.add(ggnum);
     }
 
     /**
@@ -35,8 +36,12 @@ public class GeoSynchronizedList {
     	{
     		try
     		{
-			byte[] paczka = new ChatMessage().setMessage("<geoLocation>"+location.getLatitude()+";"
-					+location.getLongitude()+"<geoLocation>", Integer.parseInt(ggnum), time);
+    			byte[] paczka;
+    			if(location != null)
+    				paczka = new ChatMessage().setMessage(":geoLoc:"+location.getLatitude()+";"
+    						+location.getLongitude()+":geoLoc:", Integer.parseInt(ggnum), time);
+    			else
+    				paczka = new ChatMessage().setMessage(":geoNotAvail:", Integer.parseInt(ggnum), time);
 	
 			out.write(paczka);
 			Log.i("GanduService", "Wyslalem wiadomosc");

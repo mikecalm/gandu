@@ -46,6 +46,7 @@ public class MyLocation {
     LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
             timer1.cancel();
+            timer1.purge();
             locationResult.gotLocation(location);
             lm.removeUpdates(this);
             lm.removeUpdates(locationListenerNetwork);
@@ -58,6 +59,7 @@ public class MyLocation {
     LocationListener locationListenerNetwork = new LocationListener() {
         public void onLocationChanged(Location location) {
             timer1.cancel();
+            timer1.purge();
             locationResult.gotLocation(location);
             lm.removeUpdates(this);
             lm.removeUpdates(locationListenerGps);
