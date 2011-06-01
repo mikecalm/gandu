@@ -7,7 +7,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +73,11 @@ public class ContactBook extends ExpandableListActivity{
 	public SharedPreferences.Editor editor;
 	private static final int DIALOG_STATUS = 1;
 	private static final int DIALOG_FILE_YES_NO = 2;
+	//GEOtest
 	private static final int DIALOG_GEO_ASK_PERM = 3;
+	private static final int DIALOG_GEO_MANAGE_FRIENDS_LIST = 4;
+	private static final int DIALOG_GEO_MANAGE_BLACK_LIST = 5;
+	//GEOtest
 	EditText statusDescription;
 	ImageButton statusButton;
 	int ustawionyStatus = 0;
@@ -1055,6 +1061,13 @@ public class ContactBook extends ExpandableListActivity{
 					Log.i("ContactBook",""+e.getMessage());
 				}
 				break;
+			//GEOtest
+			case R.id.ManageGeoFriendList:
+				showDialog(DIALOG_GEO_MANAGE_FRIENDS_LIST);
+				break;
+			case R.id.ManageGeoBlackList:
+				showDialog(DIALOG_GEO_MANAGE_BLACK_LIST);
+			//GEOtest
 			//Moreitemsgohere(ifany)...
 		}
 		return false;
@@ -1101,6 +1114,7 @@ public class ContactBook extends ExpandableListActivity{
         			.setPositiveButton("Tak", dialogClickListener)
         			.setNegativeButton("Nie", dialogClickListener)
         			.create();
+        //GEOtest
         case DIALOG_GEO_ASK_PERM:
         	return alertGeo = new AlertDialog.Builder(ContactBook.this)
         		.setMessage("Chcesz udostêpniæ swoj¹ lokalizacjê u¿ytkownikowi:\n"+geoUserAskPerm+"?")
@@ -1115,6 +1129,66 @@ public class ContactBook extends ExpandableListActivity{
 					}
 				})
         		.create();
+        case DIALOG_GEO_MANAGE_FRIENDS_LIST:
+        	String[] geoZnajomiLista = new String[]{"2522922","123213"};
+        	boolean[] friendsCheckboxes = new boolean[geoZnajomiLista.length];
+        	Arrays.fill(friendsCheckboxes, true);
+        	return new AlertDialog.Builder(ContactBook.this)
+            //.setIcon(R.drawable.ic_popup_reminder)
+            .setTitle("Udostêpniaj lokalizacjê")
+            .setMultiChoiceItems(geoZnajomiLista,
+            		friendsCheckboxes,
+                    new DialogInterface.OnMultiChoiceClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton,
+                                boolean isChecked) {
+
+                            /* User clicked on a check box do some stuff */
+                        }
+                    })
+            .setPositiveButton("Zapisz", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked Yes so do some stuff */
+                }
+            })
+            .setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked No so do some stuff */
+                }
+            })
+           .create();
+        
+        case DIALOG_GEO_MANAGE_BLACK_LIST:
+        	String[] geoCzarnaLista = new String[]{"2522922","123213"};
+        	boolean[] blackCheckboxes = new boolean[geoCzarnaLista.length];
+        	Arrays.fill(blackCheckboxes, true);
+        	return new AlertDialog.Builder(ContactBook.this)
+            //.setIcon(R.drawable.ic_popup_reminder)
+            .setTitle("Nie udostêpniaj lokalizacji")
+            .setMultiChoiceItems(geoCzarnaLista,
+            		blackCheckboxes,
+                    new DialogInterface.OnMultiChoiceClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton,
+                                boolean isChecked) {
+
+                            /* User clicked on a check box do some stuff */
+                        }
+                    })
+            .setPositiveButton("Zapisz", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked Yes so do some stuff */
+                }
+            })
+            .setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked No so do some stuff */
+                }
+            })
+           .create();
+        //GEOtest
         //metoda uruchamiana po wybraniu przycisku zmiany statusu
         case DIALOG_STATUS:
         	ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();

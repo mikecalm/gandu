@@ -7,5 +7,7 @@
 <item android:title="Import" android:id="@+id/Import01" android:icon="@drawable/import_list_icon"></item>
 <item android:title="Export" android:id="@+id/Export03"  android:icon="@drawable/export_list_icon"></item>
 <item android:title="Ustawienia" android:id="@+id/Prefs05"  android:icon="@drawable/settings"></item>
+<item android:title="Lokalizacja - lista znajomych" android:id="@+id/ManageGeoFriendList" android:icon="@drawable/geo_list"></item>
+<item android:title="Lokalizacja - czarna lista" android:id="@+id/ManageGeoBlackList" android:icon="@drawable/geo_list"></item>
 <item android:title="Wyloguj i zakończ" android:id="@+id/End02" android:icon="@drawable/logout_exit"></item>
 </menu>
