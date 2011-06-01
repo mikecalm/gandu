@@ -73,6 +73,9 @@ public class GanduService extends Service {
 	MyLocation myLocation;
 	GeoSynchronizedList geoSynchronizedList;
 	String geoReceiver;
+	String geoNewFriend;
+	String geoOnceFriend;
+	boolean geoWaitingForAnswer = false;
 	//GEOtest
 	private Handler mHandler;
 	
@@ -131,6 +134,12 @@ public class GanduService extends Service {
 		//return Geoprefs.contains(ggnum);
 		return Geoprefs.getBoolean(ggnum, false);
 	}
+	//sprawdzenie czy uzytkownik o numerze gg jest na naszej liscie geofriends (z flaga false lub true)
+	public boolean geoIsOnList(String ggnum)
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		return Geoprefs.contains(ggnum);
+	}
 		
 	public LocationResult locationResult = new LocationResult(){
 	    @Override
@@ -144,6 +153,39 @@ public class GanduService extends Service {
 	    	}
         };
     };
+    
+    //odeslanie odmowy udostepniania lokalizacji 
+    public void geoSendNegativeAnswer(String geoRejectedNum)
+    {
+	    try
+		{
+			byte[] geopaczka;
+			geopaczka = new ChatMessage().setMessage(":geoRejected:", Integer.parseInt(geoRejectedNum), (int) (System.currentTimeMillis() / 1000L));
+			out.write(geopaczka);
+			out.flush();
+		}catch(Exception exc)
+		{
+			Log.e(this.getClass().getSimpleName(), exc.getMessage());
+		}
+    }
+    
+    
+    //odeslanie wiadomosci informujacej, ze w tej chwili nie moge
+    //odpowiedziec na prosbe o lokalizacje (bo inny uzytkownik wczesniej
+    //poprosil o udzielenie lokalizacji i GanduService czeka na decyzje uzytkownika tel.)
+    public void geoSendBusyAnswer(String geoRejectedNum)
+    {
+	    try
+		{
+			byte[] geopaczka;
+			geopaczka = new ChatMessage().setMessage(":geoBusy:", Integer.parseInt(geoRejectedNum), (int) (System.currentTimeMillis() / 1000L));
+			out.write(geopaczka);
+			out.flush();
+		}catch(Exception exc)
+		{
+			Log.e(this.getClass().getSimpleName(), exc.getMessage());
+		}
+    }
     //GEOtest
 
 
@@ -1055,6 +1097,50 @@ public class GanduService extends Service {
 					}
 				}
 				break;
+			//GEOtest
+			case Common.GEO_ANSWER_YES:
+				geoWaitingForAnswer = false;
+				geoNewFriend = ""+msg.arg1;
+				
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						geoSynchronizedList.add(geoNewFriend);
+						myLocation.getLocation(getApplicationContext(), locationResult);
+					}
+				});
+				
+				break;
+			case Common.GEO_ANSWER_NO:
+				geoWaitingForAnswer = false;
+				String geoNoFriend = ""+msg.arg1;
+				
+				//odeslanie odmowy podania lokalizacji
+				geoSendNegativeAnswer(geoNoFriend);
+				
+				break;
+			case Common.GEO_ANSWER_ONCE:
+				geoWaitingForAnswer = false;
+				geoOnceFriend = ""+msg.arg1;
+
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						geoSynchronizedList.add(geoOnceFriend);
+						myLocation.getLocation(getApplicationContext(), locationResult);
+					}
+				});
+				
+				break;
+			case Common.GEO_ANSWER_CANCEL:
+				geoWaitingForAnswer = false;
+				String geoCancelFriend = ""+msg.arg1;
+				
+				//odeslanie wiadomosci, ze uzytkownik jest zajety
+				geoSendBusyAnswer(geoCancelFriend);
+				
+				break;
+			//GEOtest
 			default:
 				super.handleMessage(msg);
 			}
@@ -1472,26 +1558,51 @@ public class GanduService extends Service {
 						//GEOtest
 						//sprawdzenie, czy to wiadomosc zwiazana z geolokalizacja
 						if(tresc.equals(":geoGet:"))
-						{
-							//sprawdzenie, czy udostepniamy nasza lokalizacje danej osobie
+						{					
 							geoReceiver = ""+sender;
-							if(geoHavePermission(geoReceiver))
+							if(!geoWaitingForAnswer)
 							{
-								mHandler.post(new Runnable() {
-									@Override
-									public void run() {
-										//geoSynchronizedList.add("2522922");
-										geoSynchronizedList.add(geoReceiver);
-										myLocation.getLocation(getApplicationContext(), locationResult);
+								//sprawdzenie, czy uzytkownik jest na liscie geofriends
+								if(geoIsOnList(geoReceiver))
+								{
+									//sprawdzenie, czy udostepniamy nasza lokalizacje danej osobie
+									if(geoHavePermission(geoReceiver))
+									{
+										mHandler.post(new Runnable() {
+											@Override
+											public void run() {
+												//geoSynchronizedList.add("2522922");
+												geoSynchronizedList.add(geoReceiver);
+												myLocation.getLocation(getApplicationContext(), locationResult);
+											}
+										});
 									}
-								});
+									else 
+										//odeslanie odmowy podania lokalizacji
+										geoSendNegativeAnswer(geoReceiver);
+										break;
+								}
+								//w przeciwnym wypadku pytanie do uzytkownika czy chce udostepniac
+								//swoja lokalizacje danemu userowi (jednorazowo, lub zawsze)
+								else
+								{
+									geoWaitingForAnswer = true;
+									Bundle geoAskPerm = new Bundle();
+									geoAskPerm.putString("ggnum", geoReceiver);
+									Message geo_message = Message.obtain(null,
+											Common.GEO_ASK_PERMISSION, 0, 0);
+									geo_message.setData(geoAskPerm);
+									for (int i = 0; i < mClients.size(); i++) {
+										try {mClients.get(i).send(geo_message);} 
+										catch (Exception e) {Log.e("GanduService", "" + e.getMessage());}
+									}
+								}
 							}
-							//w przeciwnym wypadku pytanie do uzytkownika czy chce udostepniac
-							//swoja lokalizacje danemu userowi (jednorazowo, lub zawsze)
+							//na raz tylko jedna nowa osoba (nie bedaca na liscie geofriends) 
+							//moze nas prosic o udostepnienie lokalizacji
+							//Pozostalych prosby sa odrzucane
 							else
-							{
-								;
-							}
+								geoSendBusyAnswer(geoReceiver);
 							break;
 						}
 						//GEOtest
