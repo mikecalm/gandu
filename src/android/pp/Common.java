@@ -163,4 +163,10 @@ public class Common {
    static final int CLIENT_FILE_QUESTION = 26;
    static final int CLIENT_FILE_YES = 27;
    static final int CLIENT_FILE_NO = 28;
+   
+   static final int GEO_ASK_PERMISSION = 29;
+   static final int GEO_ANSWER_NO = 30;
+   static final int GEO_ANSWER_YES = 31;
+   static final int GEO_ANSWER_ONCE = 32;
+   static final int GEO_ANSWER_CANCEL = 33;
 }

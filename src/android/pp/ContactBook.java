@@ -1,5 +1,6 @@
 package android.pp;
 
+import java.awt.font.NumericShaper;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -27,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -69,6 +71,7 @@ public class ContactBook extends ExpandableListActivity{
 	public SharedPreferences.Editor editor;
 	private static final int DIALOG_STATUS = 1;
 	private static final int DIALOG_FILE_YES_NO = 2;
+	private static final int DIALOG_GEO_ASK_PERM = 3;
 	EditText statusDescription;
 	ImageButton statusButton;
 	int ustawionyStatus = 0;
@@ -78,6 +81,7 @@ public class ContactBook extends ExpandableListActivity{
 	public GetStatuses gs = new GetStatuses();
 	ArrayList<String> itemsy = new ArrayList<String>();
 	String nazwaPliku = "";
+	String geoUserAskPerm = "";
 	float rozmWypisany = 0;
 	String jednostka = "";
 	int plikOd = 0;
@@ -89,6 +93,7 @@ public class ContactBook extends ExpandableListActivity{
 	
 	AlertDialog alertDialog;
 	AlertDialog alertFile;
+	AlertDialog alertGeo;
 	
 	public NotificationManager mNM;
 
@@ -110,6 +115,17 @@ public class ContactBook extends ExpandableListActivity{
 		Editor edit = Geoprefs.edit();
 		//edit.putString(ggnum, "granted");
 		edit.putBoolean(ggnum, true);
+		edit.commit();
+	}
+	
+	//Dodanie uzytkownika o podanym numerze gg do listy uzytkownikow, ktorym
+    //nie chcemy udostepniac naszej lokalizacji
+	public void geoAddNegativePermission(String ggnum)
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		Editor edit = Geoprefs.edit();
+		//edit.putString(ggnum, "granted");
+		edit.putBoolean(ggnum, false);
 		edit.commit();
 	}
 	
@@ -1051,11 +1067,15 @@ public class ContactBook extends ExpandableListActivity{
 		switch(id){
 		case DIALOG_FILE_YES_NO:
 			((AlertDialog)dialog).setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd+"?");
+			break;
 			/*alertFile = new AlertDialog.Builder(ContactBook.this)
         	.setMessage("Chcesz odebraæ plik:"+"\n"+nazwaPliku+" ("+rozmWypisany+jednostka+")"+"\nod numeru:\n"+plikOd)
         			.setPositiveButton("Tak", dialogClickListener)
         			.setNegativeButton("Nie", dialogClickListener)
         			.create();*/
+		case DIALOG_GEO_ASK_PERM:
+			((AlertDialog)dialog).setMessage("Chcesz udostêpniæ swoj¹ lokalizacjê u¿ytkownikowi:\n"+geoUserAskPerm+"?");
+			break;
 		}
 	}
 	
@@ -1081,6 +1101,20 @@ public class ContactBook extends ExpandableListActivity{
         			.setPositiveButton("Tak", dialogClickListener)
         			.setNegativeButton("Nie", dialogClickListener)
         			.create();
+        case DIALOG_GEO_ASK_PERM:
+        	return alertGeo = new AlertDialog.Builder(ContactBook.this)
+        		.setMessage("Chcesz udostêpniæ swoj¹ lokalizacjê u¿ytkownikowi:\n"+geoUserAskPerm+"?")
+        		.setPositiveButton("Tak", geoDialogClickListener)
+        		.setNeutralButton("Tylko raz", geoDialogClickListener)
+        		.setNegativeButton("Nie", geoDialogClickListener)
+        		.setOnCancelListener(new OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface dialog) {
+						try{Message msg2 = Message.obtain(null,Common.GEO_ANSWER_CANCEL, Integer.parseInt(geoUserAskPerm), 0);mService.send(msg2);} 
+			        	catch(Exception exc3) {Log.e("[ContactBook]FileDialogBoxYesError",exc3.getMessage());}
+					}
+				})
+        		.create();
         //metoda uruchamiana po wybraniu przycisku zmiany statusu
         case DIALOG_STATUS:
         	ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -1185,6 +1219,33 @@ public class ContactBook extends ExpandableListActivity{
 		}
 		return false;
     }
+	
+	//dialogbox yes, no, tylko raz z pytaniem o prawa do podania lokalizacji
+	DialogInterface.OnClickListener geoDialogClickListener = new DialogInterface.OnClickListener() {
+	    @Override
+	    public void onClick(DialogInterface dialog, int which) {
+	        switch (which){
+	        case DialogInterface.BUTTON_POSITIVE:
+	            //Yes button clicked	 
+	        	geoAddPermission(geoUserAskPerm);
+	        	try {Message msg1 = Message.obtain(null,Common.GEO_ANSWER_YES, Integer.parseInt(geoUserAskPerm), 0);mService.send(msg1);} 
+	        	catch (Exception exc1) {Log.e("[ContactBook]FileDialogBoxYesError",exc1.getMessage());}
+	            break;
+
+	        case DialogInterface.BUTTON_NEGATIVE:
+	            //No button clicked
+	        	geoAddNegativePermission(geoUserAskPerm);
+	        	try{Message msg2 = Message.obtain(null,Common.GEO_ANSWER_NO, Integer.parseInt(geoUserAskPerm), 0);	mService.send(msg2);} 
+	        	catch(Exception exc2) {Log.e("[ContactBook]FileDialogBoxYesError",exc2.getMessage());}
+	            break;	         
+	        case DialogInterface.BUTTON_NEUTRAL:
+	        	//tylko raz button clicked
+	        	try{Message msg2 = Message.obtain(null,Common.GEO_ANSWER_ONCE, Integer.parseInt(geoUserAskPerm), 0);mService.send(msg2);} 
+	        	catch(Exception exc3) {Log.e("[ContactBook]FileDialogBoxYesError",exc3.getMessage());}
+	            break;
+	        }
+	    }
+	};
 	
 	//dialogbox yes, no z pytaniem o odbior pliku
 	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -1539,6 +1600,11 @@ public class ContactBook extends ExpandableListActivity{
                 	/*Toast.makeText(getApplicationContext(), "Pobraæ plik "+nazwaPliku
                 			+"\nod "+plikOd
                 			+"\nrozmiar pliku "+rozmiarPliku+"[Bajtow]", Toast.LENGTH_LONG).show();*/
+                	break;
+                case Common.GEO_ASK_PERMISSION:
+                	odebrany = msg.getData();
+                	geoUserAskPerm = odebrany.getString("ggnum");
+                	showDialog(DIALOG_GEO_ASK_PERM);
                 	break;
                 default:
                     super.handleMessage(msg);
