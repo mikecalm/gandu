@@ -39,7 +39,7 @@ public class GeoSynchronizedList {
     			byte[] paczka;
     			if(location != null)
     				paczka = new ChatMessage().setMessage(":geoLoc:"+location.getLatitude()+";"
-    						+location.getLongitude()+":geoLoc:", Integer.parseInt(ggnum), time);
+    						+location.getLongitude()+";"+location.getAccuracy()+":geoLoc:", Integer.parseInt(ggnum), time);
     			else
     				paczka = new ChatMessage().setMessage(":geoNotAvail:", Integer.parseInt(ggnum), time);
 	
