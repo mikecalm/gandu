@@ -1557,7 +1557,7 @@ public class GanduService extends Service {
 						String tresc = trescCP1250;
 						
 						//GEOtest
-						//sprawdzenie, czy to wiadomosc zwiazana z geolokalizacja
+						//sprawdzenie, czy to wiadomosc z prosba o nasza lokalizacje
 						if(tresc.equals(":geoGet:"))
 						{					
 							geoReceiver = ""+sender;
@@ -1604,6 +1604,32 @@ public class GanduService extends Service {
 							//Pozostalych prosby sa odrzucane
 							else
 								geoSendBusyAnswer(geoReceiver);
+							break;
+						}
+						
+						//sprawdzenie, czy to wiadomosc z grupowa prosba o nasza lokalizacje
+						//Odsylamy nasza lokalizacje tylko, jesli uzytkownik jest dodany do
+						//listy geofriends z flaga true
+						//W przeciwnym wypadku ignorujemy wiadomosc
+						if(tresc.equals(":geoGroupGet:"))
+						{
+							geoReceiver = ""+sender;
+							//sprawdzenie, czy uzytkownik jest na liscie geofriends
+							if(geoIsOnList(geoReceiver))
+							{
+								//sprawdzenie, czy udostepniamy nasza lokalizacje danej osobie
+								if(geoHavePermission(geoReceiver))
+								{
+									mHandler.post(new Runnable() {
+										@Override
+										public void run() {
+											//geoSynchronizedList.add("2522922");
+											geoSynchronizedList.add(geoReceiver);
+											myLocation.getLocation(getApplicationContext(), locationResult);
+										}
+									});
+								}
+							}
 							break;
 						}
 						//GEOtest
