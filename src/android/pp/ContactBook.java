@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,6 +79,9 @@ public class ContactBook extends ExpandableListActivity{
 	private static final int DIALOG_GEO_ASK_PERM = 3;
 	private static final int DIALOG_GEO_MANAGE_FRIENDS_LIST = 4;
 	private static final int DIALOG_GEO_MANAGE_BLACK_LIST = 5;
+	public static ArrayList<String> geo_rem_from_list;
+	public static String[] geoZnajomiLista;
+	public static String[] geoCzarnaLista;
 	//GEOtest
 	EditText statusDescription;
 	ImageButton statusButton;
@@ -113,6 +118,7 @@ public class ContactBook extends ExpandableListActivity{
     private ConditionVariable mCondition;
     private ConditionVariable mInitial;
     
+    //GEOtest
     //Dodanie uzytkownika o podanym numerze gg do listy uzytkownikow, ktorym
     //udostepniamy nasza lokalizacje
 	public void geoAddPermission(String ggnum)
@@ -144,6 +150,53 @@ public class ContactBook extends ExpandableListActivity{
 		edit.remove(ggnum);
 		edit.commit();
 	}
+	
+	//Pobranie wszystkich osob z geofriends, ktorym udostepniamy nasza
+	//lokalizacje
+	public String[] geoGetFriends()
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		Map<String, ?> geoTempList = Geoprefs.getAll();
+		if(geoTempList==null)
+			return null;
+		ArrayList<String> geoTempFriends = new ArrayList<String>();
+		for(String key:geoTempList.keySet())
+		{
+			if((Boolean)geoTempList.get(key))
+				geoTempFriends.add((String)key);
+		}
+		if(geoTempFriends.size() != 0)
+		{
+			String[] returnArray = new String[geoTempFriends.size()];
+			System.arraycopy(geoTempFriends.toArray(), 0, returnArray, 0, returnArray.length);
+			return returnArray;
+		}
+		return null;
+	}
+		
+	//Pobranie wszystkich osob z geofriends, ktorym NIE udostepniamy naszej
+	//lokalizacji
+	public String[] geoGetBlocked()
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		Map<String, ?> geoTempList = Geoprefs.getAll();
+		if(geoTempList==null)
+			return null;
+		ArrayList<String> geoTempBlocked = new ArrayList<String>();
+		for(String key:geoTempList.keySet())
+		{
+			if(!(Boolean)geoTempList.get(key))
+				geoTempBlocked.add((String)key);
+		}
+		if(geoTempBlocked.size() != 0)
+		{
+			String[] returnArray = new String[geoTempBlocked.size()];
+			System.arraycopy(geoTempBlocked.toArray(), 0, returnArray, 0, returnArray.length);
+			return returnArray;
+		}
+		return null;
+	}
+	//GEOtest
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -1063,9 +1116,15 @@ public class ContactBook extends ExpandableListActivity{
 				break;
 			//GEOtest
 			case R.id.ManageGeoFriendList:
+				//usuwamy okno dialogowe przed wyswietleniem go
+				//zeby na nowo zaladowal geoliste
+				removeDialog(DIALOG_GEO_MANAGE_FRIENDS_LIST);
 				showDialog(DIALOG_GEO_MANAGE_FRIENDS_LIST);
 				break;
 			case R.id.ManageGeoBlackList:
+				//usuwamy okno dialogowe przed wyswietleniem go
+				//zeby na nowo zaladowal geoliste
+				removeDialog(DIALOG_GEO_MANAGE_BLACK_LIST);
 				showDialog(DIALOG_GEO_MANAGE_BLACK_LIST);
 			//GEOtest
 			//Moreitemsgohere(ifany)...
@@ -1130,7 +1189,18 @@ public class ContactBook extends ExpandableListActivity{
 				})
         		.create();
         case DIALOG_GEO_MANAGE_FRIENDS_LIST:
-        	String[] geoZnajomiLista = new String[]{"2522922","123213"};
+        	//String[] geoZnajomiLista = new String[]{"2522922","123213"};
+        	geoZnajomiLista = geoGetFriends();
+        	if(geoZnajomiLista == null)
+        	{
+        		return new AlertDialog.Builder(ContactBook.this)
+        		.setTitle("Pusta lista")
+        		.setIcon(R.drawable.geo_list)
+        		.setCancelable(true)
+        		.setNeutralButton("Ok", null)
+        		.create();
+        	}
+        	geo_rem_from_list = new ArrayList<String>();
         	boolean[] friendsCheckboxes = new boolean[geoZnajomiLista.length];
         	Arrays.fill(friendsCheckboxes, true);
         	return new AlertDialog.Builder(ContactBook.this)
@@ -1143,12 +1213,21 @@ public class ContactBook extends ExpandableListActivity{
                                 boolean isChecked) {
 
                             /* User clicked on a check box do some stuff */
+                        	if(!isChecked)
+                        		geo_rem_from_list.add(geoZnajomiLista[whichButton]);
+                        	else                        		
+                        		geo_rem_from_list.remove(geoZnajomiLista[whichButton]);	
                         }
                     })
             .setPositiveButton("Zapisz", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
 
                     /* User clicked Yes so do some stuff */
+                	if(geo_rem_from_list.size() != 0)
+                	{
+                		for(String geoRemNum:geo_rem_from_list)
+                			geoRemPermission(geoRemNum);
+                	}
                 }
             })
             .setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
@@ -1160,7 +1239,17 @@ public class ContactBook extends ExpandableListActivity{
            .create();
         
         case DIALOG_GEO_MANAGE_BLACK_LIST:
-        	String[] geoCzarnaLista = new String[]{"2522922","123213"};
+        	geoCzarnaLista = geoGetBlocked();
+        	if(geoCzarnaLista == null)
+        	{
+        		return new AlertDialog.Builder(ContactBook.this)
+        		.setTitle("Pusta lista")
+        		.setIcon(R.drawable.geo_list)
+        		.setCancelable(true)
+        		.setNeutralButton("Ok", null)
+        		.create();
+        	}
+        	geo_rem_from_list = new ArrayList<String>();
         	boolean[] blackCheckboxes = new boolean[geoCzarnaLista.length];
         	Arrays.fill(blackCheckboxes, true);
         	return new AlertDialog.Builder(ContactBook.this)
@@ -1173,12 +1262,21 @@ public class ContactBook extends ExpandableListActivity{
                                 boolean isChecked) {
 
                             /* User clicked on a check box do some stuff */
+                        	if(!isChecked)
+                        		geo_rem_from_list.add(geoCzarnaLista[whichButton]);
+                        	else                        		
+                        		geo_rem_from_list.remove(geoCzarnaLista[whichButton]);
                         }
                     })
             .setPositiveButton("Zapisz", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
 
                     /* User clicked Yes so do some stuff */
+                	if(geo_rem_from_list.size() != 0)
+                	{
+                		for(String geoRemNum:geo_rem_from_list)
+                			geoRemPermission(geoRemNum);
+                	}
                 }
             })
             .setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
