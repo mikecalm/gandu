@@ -1157,7 +1157,8 @@ public class GanduService extends Service {
 
 		//GEOtest
 		myLocation = new MyLocation();
-		geoSynchronizedList = new GeoSynchronizedList();
+		//geoSynchronizedList = new GeoSynchronizedList();
+		geoSynchronizedList = new GeoSynchronizedList(this);
 		mHandler = new Handler(this.getMainLooper());
 		//GEOtest
 			
