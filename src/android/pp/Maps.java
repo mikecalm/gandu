@@ -7,7 +7,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Paint.Style;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -23,6 +25,7 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
+import com.google.android.maps.Projection;
 
 public class Maps extends MapActivity implements LocationListener {
 
@@ -33,6 +36,9 @@ public class Maps extends MapActivity implements LocationListener {
 	// private int latitude;
 	// private int longitude;
 	private GeoPoint gp;
+	//GEOtest
+	int gpAccuracy = 0;
+	//GEOtest
 	private String source; 
 
 	/** Called when the activity is first created. */
@@ -47,6 +53,8 @@ public class Maps extends MapActivity implements LocationListener {
 		
 		if (b.containsKey("latitude") && b.containsKey("longitude")) {
 			this.gp = new GeoPoint(b.getInt("latitude"), b.getInt("longitude"));
+			if(b.containsKey("accuracy"))
+				this.gpAccuracy = b.getInt("accuracy");
 			this.showOnMap(gp);
 		}
 		else if (b.containsKey("FromDevice") && b.containsKey("source"))
@@ -123,9 +131,18 @@ public class Maps extends MapActivity implements LocationListener {
 		this.gp = tmp;
 		mapController.animateTo(tmp);
 		MapOverlay mapOverlay = new MapOverlay();
+		
+		//GEOtest
+		SourceOverlay mapAccuracy = new SourceOverlay();
+		mapAccuracy.setSource(gp, this.gpAccuracy);
+		//GEOtest
+		
         List<Overlay> listOfOverlays = mapView.getOverlays();
         listOfOverlays.clear();
         listOfOverlays.add(mapOverlay); 
+        //GEOtest
+        listOfOverlays.add(mapAccuracy);
+        //GEOtest
 	}
 
 	public double [] getFix() {
@@ -211,5 +228,44 @@ public class Maps extends MapActivity implements LocationListener {
             canvas.drawBitmap(bmp, screenPts.x, screenPts.y-32, null);         
             return true;
         }
-    } 
+    }
+    
+    public class SourceOverlay extends Overlay {
+
+    	private GeoPoint sourcePoint;
+    	private float accuracy;
+
+    	public SourceOverlay() {
+    		super();
+    	}
+
+    	public void setSource(GeoPoint geoPoint, float accuracy) {
+    		sourcePoint = geoPoint;
+    		this.accuracy = accuracy;
+    	}
+
+    	@Override
+    	public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+    		super.draw(canvas, mapView, false);
+    		Projection projection = mapView.getProjection();
+    		Point center = new Point();
+
+    		int radius = (int) (projection.metersToEquatorPixels(accuracy));
+    		projection.toPixels(sourcePoint, center);
+
+    		Paint accuracyPaint = new Paint();
+    		accuracyPaint.setAntiAlias(true);
+    		accuracyPaint.setStrokeWidth(2.0f);
+    		accuracyPaint.setColor(0xff6666ff);
+    		accuracyPaint.setStyle(Style.STROKE);
+
+    		canvas.drawCircle(center.x, center.y, radius, accuracyPaint);
+
+    		accuracyPaint.setColor(0x186666ff);
+    		accuracyPaint.setStyle(Style.FILL);
+    		canvas.drawCircle(center.x, center.y, radius, accuracyPaint);
+
+    	}
+
+    }
 }

@@ -196,6 +196,16 @@ public class ContactBook extends ExpandableListActivity{
 		}
 		return null;
 	}
+	
+	//wyswietl na mapie pojedyncza osobe
+	public void geoShowUserOnMap(String latitude, String longitude)
+	{
+		GeoPoint g = new GeoPoint((int)(Double.parseDouble(latitude)*1E6), (int)(Double.parseDouble(longitude)*1E6));
+		Intent i = new Intent(this,Maps.class);
+		i.putExtra("latitude", g.getLatitudeE6());
+		i.putExtra("longitude", g.getLongitudeE6());
+		startActivity(i);
+	}
 	//GEOtest
     
 	@Override
@@ -829,7 +839,21 @@ public class ContactBook extends ExpandableListActivity{
 		        	}
 					break;
 				case 2: //Lokalizuj
-					Geo geo = new Geo();
+					//GEOtest
+					//wyslanie do service'u informacji, zeby wyslal
+					//wiadomosc z prosba o lokalizacje					
+					Message msg33 = Message.obtain(null,Common.CLIENT_GET_LOCATION, Integer.parseInt(pobrany.GGNumber), 0);	        
+    	    		try
+    	    		{    		    		
+    	    			mService.send(msg33);
+    	    		}catch(Exception excMsg)
+    	    		{
+    	    			Log.e("ContactBook","Blad wyslania info do serwisu o pobraniu lokalizacji:\n"+
+    	    					excMsg.getMessage());
+    	    		}
+					//GEOtest
+					
+					/*Geo geo = new Geo();
 					GeoPoint g = geo.getFix(pobrany.GGNumber);
 					if(g != null)
 					{
@@ -841,7 +865,7 @@ public class ContactBook extends ExpandableListActivity{
 					else 
 					{
 						Toast.makeText(getApplicationContext(), "U¿ytkownik nie udostêpnia \nswojej lokalizacji", Toast.LENGTH_SHORT).show();
-					}
+					}*/
 					
 					break;
 				case 3: //Lokalizuj mnie
@@ -1684,6 +1708,10 @@ public class ContactBook extends ExpandableListActivity{
                 case Common.CLIENT_SET_STATUSES:
                 	odebrany = msg.getData();
                 	updateSD(odebrany.getInt("ggnumber"), odebrany.getInt("status"), odebrany.getString("description"));
+                	
+                	//GEOtest
+                	//geoShowUserOnMap("52.427931", "16.9073621");
+                	//GEOtest
                 	//TODO dodac do listy
                 	break;
                 case Common.CLIENT_SET_INITIAL_INFO:

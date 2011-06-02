@@ -34,6 +34,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 
 import android.app.Notification;
@@ -186,6 +187,18 @@ public class GanduService extends Service {
 			Log.e(this.getClass().getSimpleName(), exc.getMessage());
 		}
     }
+    
+    //wyswietl na mapie pojedyncza osobe
+	public void geoShowUserOnMap(String latitude, String longitude, int accur)
+	{
+		GeoPoint g = new GeoPoint((int)(Double.parseDouble(latitude)*1E6), (int)(Double.parseDouble(longitude)*1E6));
+		Intent i = new Intent(this,Maps.class);
+		i.putExtra("latitude", g.getLatitudeE6());
+		i.putExtra("longitude", g.getLongitudeE6());
+		i.putExtra("accuracy", accur);
+		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(i);
+	}
     //GEOtest
 
 
@@ -1140,6 +1153,19 @@ public class GanduService extends Service {
 				geoSendBusyAnswer(geoCancelFriend);
 				
 				break;
+				
+			case Common.CLIENT_GET_LOCATION:
+				int geoGetGGNum = msg.arg1;
+				try
+				{
+					int currTime = (int) (System.currentTimeMillis() / 1000L);
+					paczka = new ChatMessage().setMessage(":geoGet:", geoGetGGNum, currTime);
+					
+					out.write(paczka);
+					Log.i("GanduService", "Wyslalem wiadomosc");
+					out.flush();
+				}catch(Exception excGeoGet){Log.e(this.getClass().getSimpleName(), excGeoGet.getMessage());}
+				break;
 			//GEOtest
 			default:
 				super.handleMessage(msg);
@@ -1611,7 +1637,7 @@ public class GanduService extends Service {
 						//Odsylamy nasza lokalizacje tylko, jesli uzytkownik jest dodany do
 						//listy geofriends z flaga true
 						//W przeciwnym wypadku ignorujemy wiadomosc
-						if(tresc.equals(":geoGroupGet:"))
+						else if(tresc.equals(":geoGroupGet:"))
 						{
 							geoReceiver = ""+sender;
 							//sprawdzenie, czy uzytkownik jest na liscie geofriends
@@ -1630,6 +1656,41 @@ public class GanduService extends Service {
 									});
 								}
 							}
+							break;
+						}
+						
+						//sprawdzenie czy to odpowiedz na nasze zadanie o czyjas lokalizacje
+						else if(tresc.startsWith(":geoLoc:") && tresc.endsWith(":geoLoc:"))
+						{
+							try
+							{
+								String koordynaty = tresc.substring(8, tresc.length()-8);
+								String latitude = koordynaty.substring(0, koordynaty.indexOf(';'));
+								koordynaty = koordynaty.substring(koordynaty.indexOf(';')+1);
+								String longitude = koordynaty.substring(0, koordynaty.indexOf(';'));
+								koordynaty = koordynaty.substring(koordynaty.indexOf(';')+1);
+								String accura = koordynaty.substring(0, koordynaty.indexOf(';'));
+								if(koordynaty.indexOf('.') != -1)
+									accura = koordynaty.substring(0, koordynaty.indexOf('.'));
+								
+								geoShowUserOnMap(latitude, longitude,Integer.parseInt(accura));
+								
+								/*wysylany = new Bundle();
+								wysylany.putString("latitude", latitude);
+								wysylany.putString("longitude", longitude);
+								wysylany.putString("wiadomoscOd", "" + sender);
+								
+								Message message_geo = Message.obtain(null,
+										Common.CLIENT_RECV_MESSAGE, 0, 0);
+								message_geo.setData(wysylany);
+								for (int i = 0; i < mClients.size(); i++) {
+									try {
+										mClients.get(i).send(message_geo);
+									} catch (Exception e) {
+										Log.e("GanduService", "" + e.getMessage());
+									}
+								}*/
+							}catch(Exception excKoord){Log.e(this.getClass().getSimpleName(),excKoord.getMessage());}
 							break;
 						}
 						//GEOtest
