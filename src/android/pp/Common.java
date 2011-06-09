@@ -170,4 +170,5 @@ public class Common {
    static final int GEO_ANSWER_ONCE = 32;
    static final int GEO_ANSWER_CANCEL = 33;
    static final int CLIENT_GET_LOCATION = 34;
+   static final int GEO_GROUP_GET = 35;
 }
