@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -62,6 +64,7 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.Vibrator;
+import android.pp.MyLocation.GetLastLocation;
 import android.pp.MyLocation.LocationResult;
 import android.preference.RingtonePreference;
 import android.util.Log;
@@ -77,6 +80,23 @@ public class GanduService extends Service {
 	String geoNewFriend;
 	String geoOnceFriend;
 	boolean geoWaitingForAnswer = false;
+	
+	int geoGroupStartTime;
+	Location geoMyLocCoord;
+	ArrayList<String> geoPeople;
+	String groupWaitLong;
+	String groupWaitLat;
+	String groupWaitAccur;
+	String groupWaitZakres;
+	String groupWaitGG;
+	int groupDist = 2000;
+	boolean groupPrzyjmuj = false;
+	Timer timer1;
+	int groupAskStartTime;
+	//czas oczekiwania (w sek) na zgloszenie lokalizacji znajomych w okolicy,
+	//po ktorym zostanie wyswietlona mapa ze znajomymi w okolicy 
+	int groupAskWaitingTime = 30;
+	ArrayList<String> groupReceive;
 	//GEOtest
 	private Handler mHandler;
 	
@@ -154,6 +174,91 @@ public class GanduService extends Service {
 	    	}
         };
     };
+            
+    public LocationResult groupLocationResult = new LocationResult(){
+	    @Override
+	    public void gotLocation(final Location location){
+	    	if(location != null)
+	    	{
+		        //Got the location!
+		    	//Wyslij geoGroupGet do wszystkich
+		    	int currentTime = (int) (System.currentTimeMillis() / 1000L);
+		    	groupAskStartTime = currentTime;
+		    	groupPrzyjmuj = true;
+		    	geoMyLocCoord = location;
+		    	sendGroupGet(location, groupDist, currentTime);
+		    	timer1=new Timer();
+		        timer1.schedule(new GetLastLocation(), groupAskWaitingTime*1000L);
+	    	}
+	    };
+    };
+        
+    public LocationResult locationGAResult = new LocationResult(){
+	    @Override
+	    public void gotLocation(final Location location){
+	    	if(location != null)
+	    	{
+		        //Got the location!
+	    		geoMyLocCoord = location;
+		    	//Wyslij lokalizacje do czlowieka lokalizujacego znajomych,
+	    		//jesli jestes w jego zasiegu
+	    		GeoPoint gpga = new GeoPoint((int)(Double.parseDouble(groupWaitLat)*1E6), (int)(Double.parseDouble(groupWaitLong)*1E6));
+	    		float[] wynik = new float[1];
+	    		//Location.distanceBetween(gpga.getLatitudeE6(), gpga.getLongitudeE6(), location.getLatitude()*1E6, location.getLongitude()*1E6, wynik);
+	    		Location.distanceBetween(gpga.getLatitudeE6()/1E6, gpga.getLongitudeE6()/1E6, location.getLatitude(), location.getLongitude(), wynik);
+	    		//poza zasiegiem
+	    		if(wynik[0] > Float.parseFloat(groupWaitZakres))
+	    			return;
+	    		//w zasiegu
+	    		try
+				{
+	    			int curT = (int) (System.currentTimeMillis() / 1000L);
+					byte[] paczka;
+					paczka = new ChatMessage().setMessage(":geoGLoc:"+location.getLatitude()+";"
+							+location.getLongitude()+";"+location.getAccuracy()
+							+";"+ggnum+":geoGLoc:"
+							, Integer.parseInt(groupWaitGG), curT);
+		
+				out.write(paczka);
+				Log.i("GanduService", "Wyslalem wiadomosc");
+				out.flush();
+				}catch(Exception exc)
+				{
+					Log.e(this.getClass().getSimpleName(), exc.getMessage());
+				}
+	    	}
+        };
+    };
+    
+    private void sendGroupGet(Location loc, int dist, int curT)
+    {
+    	for(int i=0; i<geoPeople.size(); i++)
+    	{
+    		//pominiecie infobota, blipa, ezobota, gaduaira, karoliny gg
+    		if(geoPeople.get(i).equals(ggnum) || geoPeople.get(i).equals("100") || geoPeople.get(i).equals("202") || geoPeople.get(i).equals("6600") || geoPeople.get(i).equals("729") || geoPeople.get(i).equals("801"))
+    			continue;
+	    	try
+			{
+				byte[] paczka;
+				if(loc != null)
+					paczka = new ChatMessage().setMessage(":geoGroupGet:"+loc.getLatitude()+";"
+							+loc.getLongitude()+";"+loc.getAccuracy()
+							+";"+dist+":geoGroupGet:"
+							, Integer.parseInt(geoPeople.get(i)), curT);
+				else
+					return;
+					//paczka = new ChatMessage().setMessage(":geoNotAvail:", Integer.parseInt(ggnum), time);
+	
+			out.write(paczka);
+			Log.i("GanduService", "Wyslalem wiadomosc");
+			out.flush();
+			}catch(Exception exc)
+			{
+				Log.e(this.getClass().getSimpleName(), exc.getMessage());
+			}
+    	}
+    }
+      
     
     //odeslanie odmowy udostepniania lokalizacji 
     public void geoSendNegativeAnswer(String geoRejectedNum)
@@ -196,7 +301,19 @@ public class GanduService extends Service {
 		i.putExtra("latitude", g.getLatitudeE6());
 		i.putExtra("longitude", g.getLongitudeE6());
 		i.putExtra("accuracy", accur);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(i);
+	}
+	
+	public void geoShowGUserOnMap()
+	{		
+		ArrayList<String> frieG = new ArrayList<String>();
+		frieG = this.groupReceive;
+		Intent i = new Intent(this,MapsGroup.class);
+		i.putExtra("groups", frieG);
+		i.putExtra("mylat", ""+geoMyLocCoord.getLatitude());
+		i.putExtra("mylong", ""+geoMyLocCoord.getLongitude());
+		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(i);
 	}
     //GEOtest
@@ -1166,6 +1283,21 @@ public class GanduService extends Service {
 					out.flush();
 				}catch(Exception excGeoGet){Log.e(this.getClass().getSimpleName(), excGeoGet.getMessage());}
 				break;
+				
+			case Common.GEO_GROUP_GET:
+				odebrany = msg.getData();
+				geoPeople = odebrany.getStringArrayList("geoPeople");
+				if(geoPeople==null)
+					break;
+				
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						myLocation.getLocation(getApplicationContext(), groupLocationResult);
+					}
+				});
+				
+				break;
 			//GEOtest
 			default:
 				super.handleMessage(msg);
@@ -1186,6 +1318,8 @@ public class GanduService extends Service {
 		//geoSynchronizedList = new GeoSynchronizedList();
 		geoSynchronizedList = new GeoSynchronizedList(this);
 		mHandler = new Handler(this.getMainLooper());
+		
+		groupReceive = new ArrayList<String>();
 		//GEOtest
 			
 		//Toast.makeText(this, "Gandu Service - Start", Toast.LENGTH_SHORT).show();
@@ -1637,7 +1771,8 @@ public class GanduService extends Service {
 						//Odsylamy nasza lokalizacje tylko, jesli uzytkownik jest dodany do
 						//listy geofriends z flaga true
 						//W przeciwnym wypadku ignorujemy wiadomosc
-						else if(tresc.equals(":geoGroupGet:"))
+						//else if(tresc.equals(":geoGroupGet:"))
+						else if(tresc.startsWith(":geoGroupGet:") && tresc.endsWith(":geoGroupGet:"))
 						{
 							geoReceiver = ""+sender;
 							//sprawdzenie, czy uzytkownik jest na liscie geofriends
@@ -1646,12 +1781,26 @@ public class GanduService extends Service {
 								//sprawdzenie, czy udostepniamy nasza lokalizacje danej osobie
 								if(geoHavePermission(geoReceiver))
 								{
+									//wycigniecie lokalizacji pytajacego i zakresu, w ktorym
+									//poszukuje znajomych
+									String koordynaty = tresc.substring(13, tresc.length()-13);
+									groupWaitLat = koordynaty.substring(0, koordynaty.indexOf(';'));
+									koordynaty = koordynaty.substring(koordynaty.indexOf(';')+1);
+									groupWaitLong = koordynaty.substring(0, koordynaty.indexOf(';'));
+									koordynaty = koordynaty.substring(koordynaty.indexOf(';')+1);
+									groupWaitAccur = koordynaty.substring(0, koordynaty.indexOf(';'));
+									if(koordynaty.indexOf('.') != -1)
+										groupWaitAccur = koordynaty.substring(0, koordynaty.indexOf('.'));
+									groupWaitZakres = koordynaty.substring(koordynaty.indexOf(';')+1);
+									
+									groupWaitGG = geoReceiver;
+									
 									mHandler.post(new Runnable() {
 										@Override
 										public void run() {
 											//geoSynchronizedList.add("2522922");
 											geoSynchronizedList.add(geoReceiver);
-											myLocation.getLocation(getApplicationContext(), locationResult);
+											myLocation.getLocation(getApplicationContext(), locationGAResult);
 										}
 									});
 								}
@@ -1690,6 +1839,38 @@ public class GanduService extends Service {
 										Log.e("GanduService", "" + e.getMessage());
 									}
 								}*/
+							}catch(Exception excKoord){Log.e(this.getClass().getSimpleName(),excKoord.getMessage());}
+							break;
+						}
+						
+						//sprawdzenie czy to odpowiedz na nasze zadanie o grupowa lokalizacje
+						else if(tresc.startsWith(":geoGLoc:") && tresc.endsWith(":geoGLoc:"))
+						{
+							try
+							{
+								String koordynatyG = tresc.substring(9, tresc.length()-9);																								
+								
+								//test
+								if(groupPrzyjmuj)
+								{
+									groupReceive.add(koordynatyG);
+								}
+								
+								/*groupReceive.add(koordynatyG);								
+								//if(groupReceive.size() == 3)
+								if(groupAskWaitingTime < (((int)(System.currentTimeMillis() / 1000L))) - groupAskStartTime)								
+								{
+									if(groupReceive.size() > 0)
+										geoShowGUserOnMap();
+									groupReceive = new ArrayList<String>();
+								}*/
+									
+								//test
+								
+								//sprawdzenie, czy minal juz czas oczekiwania na odpowiedzi znajomych
+								//w okolicy.
+								//jesli nie, to dodaj znajomego do listy
+								//jesli tak, to wyswietl mape ze znajomymi z listy
 							}catch(Exception excKoord){Log.e(this.getClass().getSimpleName(),excKoord.getMessage());}
 							break;
 						}
@@ -2731,5 +2912,15 @@ public class GanduService extends Service {
 		mNM.cancel(id);
 		setForeground(false);
 	}		
+	
+	class GetLastLocation extends TimerTask {
+        @Override
+        public void run() {
+        	groupPrzyjmuj = false;
+        	if(groupReceive.size() > 0)
+				geoShowGUserOnMap();
+			groupReceive = new ArrayList<String>();
+        }
+    }
 
 }

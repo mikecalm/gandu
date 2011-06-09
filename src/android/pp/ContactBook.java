@@ -1150,6 +1150,21 @@ public class ContactBook extends ExpandableListActivity{
 				//zeby na nowo zaladowal geoliste
 				removeDialog(DIALOG_GEO_MANAGE_BLACK_LIST);
 				showDialog(DIALOG_GEO_MANAGE_BLACK_LIST);
+				break;
+			case R.id.LocalizeGeoClosest:
+				//wyslanie do serwisu wiadomosci, ze chcemy zlokalizowac znajomych w okolicy    		
+	        	Message msg12 = Message.obtain(null,Common.GEO_GROUP_GET, 0, 0);	        
+	    		try
+	    		{
+		    		Bundle wysylany = new Bundle();
+					wysylany.putStringArrayList("geoPeople", getAllGGNumbers());
+					msg12.setData(wysylany);
+	    			mService.send(msg12);
+	    		}catch(Exception excMsg)
+	    		{
+	    			Log.e("Blad","Blad!!!!\n"+excMsg.getMessage());
+	    		}
+				return true;
 			//GEOtest
 			//Moreitemsgohere(ifany)...
 		}
@@ -1471,6 +1486,24 @@ public class ContactBook extends ExpandableListActivity{
 	        }
 	    }
 	};
+	
+	public ArrayList<String> getAllGGNumbers()
+	{
+		if(contactBookFull != null)
+		{
+			if(contactBookFull.A2Contactsy != null)
+			{
+				if(contactBookFull.A2Contactsy.Contacts != null)
+				{
+					ArrayList<String> numerIndex = new ArrayList<String>();
+					for(int i=0; i<contactBookFull.A2Contactsy.Contacts.size(); i++)
+						numerIndex.add(contactBookFull.A2Contactsy.Contacts.get(i).AA2GGNumber);
+					return numerIndex;
+				}
+			}
+		}
+		return null;
+	}
 	
 	public void prepareGGNumShowNameForIntent(Intent intent, Bundle bundle)
 	{
