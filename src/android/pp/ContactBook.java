@@ -82,6 +82,10 @@ public class ContactBook extends ExpandableListActivity{
 	public static ArrayList<String> geo_rem_from_list;
 	public static String[] geoZnajomiLista;
 	public static String[] geoCzarnaLista;
+	private static final int DIALOG_REJECTED = 6;
+	private static final int DIALOG_BUSY = 7;
+	String geoBusyUser;
+	String geoRejectUser;
 	//GEOtest
 	EditText statusDescription;
 	ImageButton statusButton;
@@ -1187,6 +1191,12 @@ public class ContactBook extends ExpandableListActivity{
 		case DIALOG_GEO_ASK_PERM:
 			((AlertDialog)dialog).setMessage("Chcesz udostêpniæ swoj¹ lokalizacjê u¿ytkownikowi:\n"+geoUserAskPerm+"?");
 			break;
+		case DIALOG_BUSY:
+			((AlertDialog)dialog).setTitle("U¿ytkownik "+geoBusyUser+" jest zajêty");
+			break;
+		case DIALOG_REJECTED:
+			((AlertDialog)dialog).setTitle("U¿ytkownik "+geoRejectUser+" odmawia lokalizowania");
+			break;
 		}
 	}
 	
@@ -1325,6 +1335,30 @@ public class ContactBook extends ExpandableListActivity{
                 }
             })
            .create();
+        	
+        case DIALOG_BUSY:
+        	return new AlertDialog.Builder(ContactBook.this)
+            .setTitle("U¿ytkownik "+geoBusyUser+" jest zajêty")
+            .setMessage("W tej chwili u¿ytkownik nie mo¿e dostarczyæ swojej lokalizacji.")
+            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked OK so do some stuff */
+                }
+            })
+            .create();
+        	
+        case DIALOG_REJECTED:
+        	return new AlertDialog.Builder(ContactBook.this)
+            .setTitle("U¿ytkownik "+geoRejectUser+" odmawia lokalizowania")
+            .setMessage("U¿ytkownik odmawia podania swojej lokalizacji.")
+            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    /* User clicked OK so do some stuff */
+                }
+            })
+            .create();
         //GEOtest
         //metoda uruchamiana po wybraniu przycisku zmiany statusu
         case DIALOG_STATUS:
@@ -1838,6 +1872,16 @@ public class ContactBook extends ExpandableListActivity{
                 	odebrany = msg.getData();
                 	geoUserAskPerm = odebrany.getString("ggnum");
                 	showDialog(DIALOG_GEO_ASK_PERM);
+                	break;
+                case Common.GEO_BUSY:
+                	odebrany = msg.getData();
+                	geoBusyUser = odebrany.getString("ggnum");
+                	showDialog(DIALOG_BUSY);
+                	break;
+                case Common.GEO_REJECTED:
+                	odebrany = msg.getData();
+                	geoRejectUser = odebrany.getString("ggnum");
+                	showDialog(DIALOG_REJECTED);
                 	break;
                 default:
                     super.handleMessage(msg);
