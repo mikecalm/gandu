@@ -177,6 +177,27 @@ public class ContactBook extends ExpandableListActivity{
 		}
 		return null;
 	}
+	
+	//Pobranie wszystkich osob z geofriends, ktorym udostepniamy nasza
+	//lokalizacje jako ArrayList<String>
+	public ArrayList<String> geoGetFriendsAL()
+	{
+		SharedPreferences Geoprefs = getSharedPreferences("geofriends", 0);
+		Map<String, ?> geoTempList = Geoprefs.getAll();
+		if(geoTempList==null)
+			return null;
+		ArrayList<String> geoTempFriends = new ArrayList<String>();
+		for(String key:geoTempList.keySet())
+		{
+			if((Boolean)geoTempList.get(key))
+				geoTempFriends.add((String)key);
+		}
+		if(geoTempFriends.size() != 0)
+		{
+			return geoTempFriends;
+		}
+		return null;
+	}
 		
 	//Pobranie wszystkich osob z geofriends, ktorym NIE udostepniamy naszej
 	//lokalizacji
@@ -1161,7 +1182,8 @@ public class ContactBook extends ExpandableListActivity{
 	    		try
 	    		{
 		    		Bundle wysylany = new Bundle();
-					wysylany.putStringArrayList("geoPeople", getAllGGNumbers());
+					//wysylany.putStringArrayList("geoPeople", getAllGGNumbers());
+		    		wysylany.putStringArrayList("geoPeople", geoGetFriendsAL());
 					msg12.setData(wysylany);
 	    			mService.send(msg12);
 	    		}catch(Exception excMsg)
